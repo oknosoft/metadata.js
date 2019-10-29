@@ -295,6 +295,7 @@ DataObj.propTypes = {
   _acl: PropTypes.string,             // Права на чтение-изменение
   _meta: PropTypes.object,            // Здесь можно переопределить метаданные
   match: PropTypes.object,            // match роутера, из него добываем ref, можно передать fake-объект со ссылкой
+  classes: PropTypes.object,          // имена css
 
   read_only: PropTypes.object,        // Элемент только для чтения
 

@@ -21,6 +21,7 @@ const {CheckboxEditor, DropDownEditor, SimpleTextEditor} = Editors;
 const {editors: {EditorBase}, Row, RowComparer} = DataGrid;
 
 const {DropDownFormatter, ImageFormatter} = Formatters;
+const stub = {presentation: ''};
 
 class ToggleEditor extends CheckboxEditor {
 
@@ -87,7 +88,7 @@ function rx_columns({utils: {moment}, enm, md}) {
     const _mgr = md.mgr_by_class_name(type);
     if(_mgr) {
       typed_formatters[type] = (row) => {
-        return presentation_formatter({value: _mgr.get(row.value)});
+        return presentation_formatter({value: _mgr.get(row.value, true) || stub});
       };
       return typed_formatters[type];
     }

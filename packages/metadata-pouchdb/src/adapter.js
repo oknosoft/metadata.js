@@ -1772,6 +1772,10 @@ function adapter({AbstracrAdapter}) {
             }
             for (const doc of docs) {
               doc.ref = doc._id.split('|')[1];
+              if(!selection._raw){
+                delete doc._id;
+                delete doc.class_name;
+              };
             }
             return selection._raw ? docs : _mgr.load_array(docs);
           })

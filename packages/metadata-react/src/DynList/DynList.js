@@ -67,24 +67,26 @@ class DynList extends MDNRComponent {
   // при изменении настроек или варианта компоновки
   handleSchemeChange = (scheme) => {
 
-    scheme && scheme.set_default();
-
     const {props: {handlers, _mgr}, _meta: {fields}, _mounted} = this;
     if(!_mounted) {
       return;
     }
 
-    handlers.handleSchemeChange && handlers.handleSchemeChange(scheme);
+    if(scheme) {
+      scheme.set_default();
+      handlers.handleSchemeChange && handlers.handleSchemeChange(scheme);
 
-    // пересчитываем и перерисовываем динсписок
-    const columns = scheme.rx_columns({mode: 'ts', fields, _mgr});
-    this.handleFilterChange(scheme, columns);
+      // пересчитываем и перерисовываем динсписок
+      const columns = scheme.rx_columns({mode: 'ts', fields, _mgr});
+      this.handleFilterChange(scheme, columns);
+    }
+
   };
 
   // при изменении параметров компоновки - схему не меняем, но выполняем пересчет
   handleFilterChange = (scheme, columns) => {
 
-    const {state, props, rows, fakeRows, ranges} = this;
+    const {state, rows, fakeRows, ranges} = this;
 
     if(!(scheme instanceof $p.CatScheme_settings)) {
       scheme = state.scheme;
@@ -514,52 +516,51 @@ class DynList extends MDNRComponent {
       handleFilterChange,
     };
 
-    const sorting = scheme.first_sorting();
-
-    return [
-
-      !context.dnr && <Helmet key="helmet" title={title}>
-        <meta name="description" content="Форма списка" />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content="Форма списка" />
-      </Helmet>,
-
-      // диалог предупреждений при удалении
-      confirm_text && <Confirm
-        key="confirm"
-        title={this._meta.synonym}
-        text={confirm_text}
-        handleOk={this._handleRemove}
-        handleCancel={this.handleConfirmClose}
-        open
-      />,
-
-      // диалог информации
-      info_text && <Confirm
-        key="info"
-        title={this._meta.synonym}
-        text={info_text}
-        handleOk={this.handleInfoText}
-        handleCancel={this.handleInfoText}
-        open
-      />,
-
-      // панель инструментов табчасти
-      <Toolbar key="toolbar" {...toolbar_props} />,
-
-      // панель настроек компоновки
-      settings_open && <SchemeSettingsTabs
-        key="settings"
-        height={show_grid ? 272 : (sizes.height || 500) - 104}
-        scheme={scheme}
-        tabParams={RepParams && <RepParams scheme={scheme} handleFilterChange={handleFilterChange}/>}
-        handleSchemeChange={handleSchemeChange}
-      />,
-
+    return <div>
+      {
+        !context.dnr && <Helmet key="helmet" title={title}>
+          <meta name="description" content="Форма списка" />
+          <meta property="og:title" content={title} />
+          <meta property="og:description" content="Форма списка" />
+        </Helmet>
+      }
+      {
+        // диалог предупреждений при удалении
+        confirm_text && <Confirm
+          key="confirm"
+          title={this._meta.synonym}
+          text={confirm_text}
+          handleOk={this._handleRemove}
+          handleCancel={this.handleConfirmClose}
+          open
+        />
+      }
+      {
+        // диалог информации
+        info_text && <Confirm
+          key="info"
+          title={this._meta.synonym}
+          text={info_text}
+          handleOk={this.handleInfoText}
+          handleCancel={this.handleInfoText}
+          open
+        />
+      }
+      <Toolbar key="toolbar" {...toolbar_props} />
+      {
+        // панель настроек компоновки
+        settings_open && <SchemeSettingsTabs
+          key="settings"
+          height={show_grid ? 272 : (sizes.height || 500) - 104}
+          scheme={scheme}
+          tabParams={RepParams && <RepParams scheme={scheme} handleFilterChange={handleFilterChange}/>}
+          handleSchemeChange={handleSchemeChange}
+        />
+      }
       <ReactDataGrid
         key="grid"
         ref={(el) => this.grid = el}
-        rowHeight={ROW_HEIGHT}
+        rowHeight={rowHeight || ROW_HEIGHT}
         minHeight={sizes.height - 50 - (settings_open ? 320 : 0)}
         minWidth={context.dnr && Math.max(sizes.width, sizes.columnsWidth)}
         cellNavigationMode="changeRow"
@@ -574,10 +575,9 @@ class DynList extends MDNRComponent {
           this.handleFilterChange();
         }}
       />
-    ];
+    </div>;
   }
-
-};
+}
 
 DynList.propTypes = {
 

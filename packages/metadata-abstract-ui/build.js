@@ -5,7 +5,7 @@ const rollup = require('rollup').rollup;
 const resolve = require('rollup-plugin-node-resolve');
 const replace = require('rollup-plugin-replace');
 const cleanup = require('rollup-plugin-cleanup');
-const webpack = require('webpack');
+//const webpack = require('webpack');
 const path = require('path');
 const package_data = require(path.resolve(__dirname, './package.json'));
 
@@ -100,11 +100,11 @@ return rollup({
     sourcemap: true,
   }))
   .then(() => {
-    webpack(require('./webpack.config'), (err, stats) => {
-      if (err || stats.hasErrors()) {
-        // Handle errors here
-      }
-      // Done processing
-    });
+    // webpack(require('./webpack.config'), (err, stats) => {
+    //   if (err || stats.hasErrors()) {
+    //     // Handle errors here
+    //   }
+    //   // Done processing
+    // });
   });
 

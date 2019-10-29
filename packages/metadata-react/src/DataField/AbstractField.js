@@ -23,7 +23,7 @@ export class FieldWithMeta extends MComponent {
     _meta: PropTypes.object,            // метаданные поля - могут быть переопределены снаружи, если не указано, будут задейтвованы стандартные метаданные
 
     fullWidth: PropTypes.bool,          // растягивать по ширине
-    label_position: PropTypes.object,   // положение заголовка, $p.enm.label_positions
+    label_position: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),   // положение заголовка, $p.enm.label_positions
     read_only: PropTypes.bool,          // поле только для чтения
     mandatory: PropTypes.bool,          // поле обязательно для заполнения
     multi: PropTypes.bool,              // множественный выбор - значение является массивом

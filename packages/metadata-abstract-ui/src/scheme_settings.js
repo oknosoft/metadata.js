@@ -723,8 +723,12 @@ export default function scheme_settings() {
      */
     mango_selector({columns, skip, limit, _owner}) {
 
-      function format(date) {
-        return utils.moment(date).format('YYYY-MM-DD');
+      function format(date, end) {
+        let d = utils.moment(date);
+        if(end) {
+          return d.endOf('day').format(moment._masks.iso);
+        }
+        return d.startOf('day').format(moment._masks.iso);
       }
 
       const res = {
@@ -748,7 +752,7 @@ export default function scheme_settings() {
       }
       else {
         res.selector.$and.push({date: {$gte: format(this.date_from)}});
-        res.selector.$and.push({date: {$lte: format(this.date_till) + '\ufff0'}});
+        res.selector.$and.push({date: {$lte: format(this.date_till, true)}});
         res.selector.$and.push({search: this._search ? {$regex: this._search} : {$gt: null}});
         res.use_index = ['mango', 'search'];
       }

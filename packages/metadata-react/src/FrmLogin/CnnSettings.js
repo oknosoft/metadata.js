@@ -62,18 +62,6 @@ class CnnSettings extends Component {
         value={couch_path}
       />,
 
-      // use_superlogin && <TextField
-      //   fullWidth
-      //   key="superlogin_path"
-      //   margin="dense"
-      //   label="Адрес Superlogin"
-      //   InputProps={{placeholder: 'superlogin_path'}}
-      //   helperText="URL сервера авторизации"
-      //   disabled={disable_settings}
-      //   onChange={this.valueToState('superlogin_path')}
-      //   value={superlogin_path}
-      // />,
-
       <TextField
         fullWidth
         key="zone"
@@ -90,7 +78,6 @@ class CnnSettings extends Component {
         <FormControl>
           <FormControlLabel
             control={<Switch
-              disabled={disable_settings}
               onChange={(event, checked) => this.setState({couch_direct: checked})}
               checked={couch_direct}/>}
             label="Прямое подключение без кеширования"

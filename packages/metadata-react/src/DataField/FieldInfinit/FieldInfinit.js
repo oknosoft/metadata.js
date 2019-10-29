@@ -292,11 +292,11 @@ class FieldInfinit extends AbstractField {
             >
               <InpitEditable
                 labelProps={getLabelProps()}
-                inputProps={getInputProps({
+                inputProps={Object.assign(getInputProps({
                   onKeyDown: this.inputKeyDown,
                   onBlur: () => this.setState({inputFocused: false}),
                   onFocus: () => this.setState({inputFocused: true}),
-                })}
+                }), props.inputProps)}
                 inputRef={this.inputRef}
                 inputFocused={state.inputFocused}
                 isTabular={isTabular}

@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.21-beta.2, built:2019-10-15
+ metadata-abstract-ui v2.0.21-beta.3, built:2019-10-29
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -772,8 +772,12 @@ function scheme_settings() {
       return this;
     }
     mango_selector({columns, skip, limit, _owner}) {
-      function format(date) {
-        return utils.moment(date).format('YYYY-MM-DD');
+      function format(date, end) {
+        let d = utils.moment(date);
+        if(end) {
+          return d.endOf('day').format(moment._masks.iso);
+        }
+        return d.startOf('day').format(moment._masks.iso);
       }
       const res = {
         selector: {
@@ -794,7 +798,7 @@ function scheme_settings() {
       }
       else {
         res.selector.$and.push({date: {$gte: format(this.date_from)}});
-        res.selector.$and.push({date: {$lte: format(this.date_till) + '\ufff0'}});
+        res.selector.$and.push({date: {$lte: format(this.date_till, true)}});
         res.selector.$and.push({search: this._search ? {$regex: this._search} : {$gt: null}});
         res.use_index = ['mango', 'search'];
       }
@@ -1314,7 +1318,7 @@ function mngrs() {
             select.is_folder = false;
           }
         }
-        if(/ram$/.test(cachable)) {
+        if(/ram$/.test(cachable) || this._direct_loaded) {
           select._top = top;
           select._skip = skip;
           if(sorting) {
@@ -1502,8 +1506,6 @@ function ipinfo() {
             break;
           case "postal_code":
             v.postal_code = c.short_name;
-            break;
-          default:
             break;
           }
         }
