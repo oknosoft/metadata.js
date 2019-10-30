@@ -23,7 +23,7 @@ const styles = theme => ({
   },
   suggestion: {
     padding: '4px 8px',
-    whiteSpace: 'nowrap',
+    whiteSpace: 'noWrap',
     //textOverflow: 'ellipsis',
   },
   suggestionSelected: {
@@ -62,10 +62,10 @@ const styles = theme => ({
   },
   flex: {
     flex: 1,
-    whiteSpace: 'nowrap',
+    whiteSpace: 'noWrap',
   },
   a: {
-    whiteSpace: 'nowrap',
+    whiteSpace: 'noWrap',
     textDecoration: 'underline',
     textTransform: 'none',
     fontSize: 'inherit',

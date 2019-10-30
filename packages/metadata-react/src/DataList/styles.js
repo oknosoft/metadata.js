@@ -3,7 +3,7 @@ import {withStyles} from '@material-ui/styles';
 
 export default withStyles(({palette, breakpoints}) => ({
   cell: {
-    whiteSpace: 'nowrap',
+    whiteSpace: 'noWrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     padding: '.3em',

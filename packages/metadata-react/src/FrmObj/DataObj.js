@@ -251,13 +251,13 @@ class DataObj extends MDNRComponent {
   }
 
   render() {
-    const {props: {_mgr, classes}, state: {_obj, _meta, _attachments}, context, _handlers, Toolbar} = this;
+    const {props: {_mgr, classes}, state: {_obj, _meta, _attachments}, context, _handlers, Toolbar, denyDel} = this;
     const toolbar_props = Object.assign({
       closeButton: !context.dnr,
       posted: _obj && _obj.posted,
       deleted: _obj && _obj.deleted,
       postable: !!(_meta.posted || _mgr.metadata('posted')),
-      deletable: !_meta.read_only,
+      deletable: !_meta.read_only && !denyDel,
       _obj,
     }, _handlers);
 

@@ -32,6 +32,7 @@ const styles = theme => ({
   },
   space: {
     flex: '1 1 auto',
+    whiteSpace: 'noWrap',
   },
   // https://github.com/philipwalton/flexbugs#3-min-height-on-a-flex-container-wont-apply-to-its-flex-items
   toolbarIe11: {
@@ -69,7 +70,7 @@ function AppDrawer(props) {
           >
             <IconHome className={classes.marginRight}/>
 
-            <Typography className={classes.space} variant="subtitle2" color="inherit">{title}</Typography>
+            <Typography className={classes.space} variant="h6" color="inherit">{title}</Typography>
             {onPermanentClose &&
             <IconButton onClick={(e) => {
               e.preventDefault();

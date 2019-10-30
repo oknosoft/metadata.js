@@ -20,7 +20,7 @@ export default withStyles(theme => ({
   },
   flex: {
     flex: 1,
-    whiteSpace: 'nowrap',
+    whiteSpace: 'noWrap',
     overflow: 'hidden',
   },
   inline: {
