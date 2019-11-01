@@ -98,14 +98,16 @@ class DataObj extends MDNRComponent {
     get
       .then((_obj) => _obj.load_linked_refs())
       .then((_obj) => this.setState({_obj}, () => {
-        _mgr.on({update: this.onDataChange, mixin: this.onDataChange});
+        const {onDataChange} = this;
+        _mgr.on({update: onDataChange, mixin: onDataChange, rows: onDataChange});
         this.shouldComponentUpdate(this.props);
       }))
       .catch(this.handleError);
   }
 
   componentWillUnmount() {
-    this.props._mgr.off({update: this.onDataChange, mixin: this.onDataChange});
+    const {onDataChange} = this;
+    this.props._mgr.off({update: onDataChange, mixin: onDataChange, rows: onDataChange});
     this.state._obj && this.state._obj.is_new() && this.state._obj.unload();
   }
 
