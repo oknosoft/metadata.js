@@ -115,14 +115,15 @@ export default class InfiniteList extends MComponent {
     // если объекты живут в ram
     let added = 0;
     if(/ram$/.test(_mgr.cachable)) {
-      _mgr.find_rows(select, (o) => {
+      const res = _mgr.find_rows(select, (o) => {
         // если значение уже есть в коллекции - пропускаем
         if(list.indexOf(o) === -1) {
           list.push(o);
           added++;
         }
       });
-      return Promise.resolve(update_state(added));
+      // если для менеджера переопределен find_rows и он вернул Promise - ждём завершения
+      return res instanceof Promise ? res.then(() => update_state(added)) : Promise.resolve(update_state(added));
     }
     // будем делать запрос к couchdb
     else {

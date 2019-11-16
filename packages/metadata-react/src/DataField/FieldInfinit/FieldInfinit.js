@@ -214,6 +214,8 @@ class FieldInfinit extends AbstractField {
             >Список</Button>
             <Typography variant="h6" color="inherit" className={classes.flex}> </Typography>
 
+            {props.btns}
+
             <IconButton
               title="Очистить"
               disabled={iconDisabled || _meta.disable_clear}
@@ -223,10 +225,9 @@ class FieldInfinit extends AbstractField {
 
             {_meta.type.types.length > 1 && <IconButton title="Выбрать тип значения"><TitleIcon/></IconButton>}
 
-            {!is_enm && _manager.acl.indexOf('i') != -1 && <IconButton title="Создать элемент"><AddIcon/></IconButton>}
+            {!is_enm && _manager.acl.includes('i') && <IconButton title="Создать элемент"><AddIcon/></IconButton>}
 
-            {!is_enm && _manager.acl.indexOf('v') != -1 &&
-            <IconButton
+            {!is_enm && _manager.acl.includes('v') && <IconButton
               title={_manager.frm_obj_name}
               disabled={iconDisabled}
               onClick={this.handleOpenObj}
