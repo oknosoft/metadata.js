@@ -100,7 +100,10 @@ export default class InfiniteList extends MComponent {
 
   loadMoreRows = ({startIndex, stopIndex}) => {
 
-    const {props, state, list} = this;
+    const {props, state, list, _mounted} = this;
+    if(!_mounted) {
+      return Promise.resolve();
+    }
     const {_mgr, _obj, _fld, _meta, search} = props;
     const {totalRows} = state;
     const increment = Math.max(limit, stopIndex - startIndex + 1);
