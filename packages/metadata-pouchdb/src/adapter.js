@@ -257,6 +257,11 @@ function adapter({AbstracrAdapter}) {
         remote.ram.login(username, password)
           .then((user) => {
             if(user.ref && typeof user.roles === 'string') {
+              // уточним зону
+              if(user.zones && user.zones.length && !user.zones.includes(props.zone)) {
+                props.zone = user.zones[0];
+                wsql.set_user_param('zone', props.zone);
+              }
               this.emit('authenticated', user);
               props._suffix = user.suffix || '';
               props._user = user.ref;
@@ -2226,6 +2231,13 @@ function adapter({AbstracrAdapter}) {
     get authorized() {
       const {_auth} = this.props;
       return _auth && _auth.username;
+    }
+
+    /**
+     * ### Методы для получения данных в режиме no_ram
+     */
+    no_ram() {
+      const {md} = this.$p;
     }
 
   };

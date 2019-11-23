@@ -10,6 +10,7 @@ import urlJoin from 'url-join';
 import urlParse from 'url-parse';
 import {toPromise} from 'pouchdb-utils';
 import oAuthPopup from './popup';
+import {load_common, load_ram} from './no_ram';
 
 class AuthError extends Error {
   constructor(message) {
@@ -75,7 +76,14 @@ export default function index (withMeta) {
         ajaxOpts.headers.impersonation = encodeURIComponent(impersonation);
       }
       fetch(getSessionUrl(this), ajaxOpts)
-        .then((res) => res.json())
+        .then((res) => {
+          let zones = res.headers.get('zones');
+          if(zones) {
+            zones = zones.split(',').map((v) => parseInt(v, 10));
+          }
+          return res.json()
+            .then(json => Object.assign(json, {zones}));
+        })
         .then((res) => {
           if(res.error) {
             throw new AuthError(res.message || `${res.error} ${res.reason}`);
@@ -134,3 +142,5 @@ export default function index (withMeta) {
     getBasicAuthHeaders,
   };
 };
+
+export {load_common, load_ram};
