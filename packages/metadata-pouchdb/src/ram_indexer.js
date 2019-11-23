@@ -7,7 +7,7 @@
  * Created by Evgeniy Malyarov on 29.09.2018.
  */
 
-const debug = require('debug')('wb:indexer');
+//const debug = require('debug')('wb:indexer');
 
 // компаратор сортировки
 function sort_fn(a, b) {
@@ -92,12 +92,12 @@ export default class RamIndexer {
 
   // сортирует кеш
   sort() {
-    debug('sorting');
+    //debug('sorting');
     for(const date in this.by_date) {
       this.by_date[date].sort(sort_fn);
     }
     this._ready = true;
-    debug('ready');
+    //debug('ready');
   }
 
   // помещает документ в кеш
@@ -303,7 +303,7 @@ export default class RamIndexer {
       };
       this._listeners.set(_mgr, listener)
       _mgr.on('change', listener);
-      debug('start');
+      //debug('start');
     }
 
     return _mgr.pouch_db.find({
@@ -316,7 +316,7 @@ export default class RamIndexer {
     })
       .then(({bookmark, docs}) => {
         this._count += docs.length;
-        debug(`received ${this._count}`);
+        //debug(`received ${this._count}`);
         for(const doc of docs) {
           if(this._area) {
             doc._area = _mgr.cachable;
@@ -324,7 +324,7 @@ export default class RamIndexer {
           this.put(doc, true);
         }
         _mgr.adapter.emit('indexer_page', {indexer: this, bookmark: bookmark || '', _mgr});
-        debug(`indexed ${this._count} ${bookmark.substr(10, 30)}`);
+        //debug(`indexed ${this._count} ${bookmark.substr(10, 30)}`);
         return docs.length === 10000 && this.init(bookmark, _mgr);
       });
   }

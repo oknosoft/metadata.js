@@ -2233,13 +2233,6 @@ function adapter({AbstracrAdapter}) {
       return _auth && _auth.username;
     }
 
-    /**
-     * ### Методы для получения данных в режиме no_ram
-     */
-    no_ram() {
-      const {md} = this.$p;
-    }
-
   };
 }
 

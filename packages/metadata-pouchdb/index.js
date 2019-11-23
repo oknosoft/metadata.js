@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.21-beta.3, built:2019-11-23
+ metadata-pouchdb v2.0.21-beta.4, built:2019-11-23
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -8,7 +8,6 @@
 
 'use strict';
 
-const debug = require('debug')('wb:indexer');
 function sort_fn(a, b) {
   if (a.date < b.date){
     return -1;
@@ -82,12 +81,10 @@ class RamIndexer {
     this.by_date = {};
   }
   sort() {
-    debug('sorting');
     for(const date in this.by_date) {
       this.by_date[date].sort(sort_fn);
     }
     this._ready = true;
-    debug('ready');
   }
   put(indoc, force) {
     const doc = {};
@@ -262,7 +259,6 @@ class RamIndexer {
       };
       this._listeners.set(_mgr, listener);
       _mgr.on('change', listener);
-      debug('start');
     }
     return _mgr.pouch_db.find({
       selector: {
@@ -274,7 +270,6 @@ class RamIndexer {
     })
       .then(({bookmark, docs}) => {
         this._count += docs.length;
-        debug(`received ${this._count}`);
         for(const doc of docs) {
           if(this._area) {
             doc._area = _mgr.cachable;
@@ -282,7 +277,6 @@ class RamIndexer {
           this.put(doc, true);
         }
         _mgr.adapter.emit('indexer_page', {indexer: this, bookmark: bookmark || '', _mgr});
-        debug(`indexed ${this._count} ${bookmark.substr(10, 30)}`);
         return docs.length === 10000 && this.init(bookmark, _mgr);
       });
   }
