@@ -17,6 +17,16 @@ import PropsFieldCell from 'metadata-react/DataField/FieldPropsCell';
 import dialogs from 'metadata-react/App/dialogs';
 import {Editors, Formatters} from 'react-data-grid-addons';
 import DataGrid from 'react-data-grid';
+import {withStyles} from '@material-ui/styles';
+import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import Radio from '@material-ui/core/Radio';
+import Paper from '@material-ui/core/Paper';
+import Button from '@material-ui/core/Button';
 const {CheckboxEditor, DropDownEditor, SimpleTextEditor} = Editors;
 const {editors: {EditorBase}, Row, RowComparer} = DataGrid;
 
@@ -259,17 +269,11 @@ export function export_handlers() {
 function print(ref, model, wnd) {
 
   function tune_wnd_print(wnd_print) {
-    if(wnd && wnd.progressOff) {
-      wnd.progressOff();
-    }
-    if(wnd_print) {
-      wnd_print.focus();
-    }
+    wnd && wnd.progressOff && wnd.progressOff()
+    wnd_print && wnd_print.focus();
   }
 
-  if(wnd && wnd.progressOn) {
-    wnd.progressOn();
-  }
+  wnd && wnd.progressOn && wnd.progressOn();
 
   setTimeout(tune_wnd_print, 3000);
 
@@ -280,22 +284,14 @@ function print(ref, model, wnd) {
 
   // если существует локальный обработчик, используем его
   if(model instanceof DataObj && model.execute) {
-
-    if(ref instanceof DataObj) {
-      return model.execute(ref)
-        .then(tune_wnd_print);
-    }
-    else {
-      return this.get(ref, true)
-        .then(model.execute.bind(model))
-        .then(tune_wnd_print);
-    }
-
+    return this.get(ref, true)
+      .then(model.execute.bind(model))
+      .then(tune_wnd_print);
   }
   else {
 
     // иначе - печатаем средствами 1С или иного сервера
-    var rattr = {};
+    const rattr = {};
     $p.ajax.default_attr(rattr, job_prm.irest_url());
     rattr.url += this.rest_name + '(guid\'' + utils.fix_guid(ref) + '\')' +
       '/Print(model=' + model + ', browser_uid=' + wsql.get_user_param('browser_uid') + ')';
@@ -338,7 +334,21 @@ export default {
 
     // публичные методы ui
     Object.defineProperty(this, 'ui', {
-      value: {dialogs}
+      value: {
+        dialogs,
+        React,
+        ReactDOM,
+        withStyles,
+        Typography,
+        Grid,
+        FormControl,
+        FormLabel,
+        FormControlLabel,
+        RadioGroup,
+        Radio,
+        Paper,
+        Button,
+      }
     });
 
   }

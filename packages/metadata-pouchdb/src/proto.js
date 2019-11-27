@@ -21,7 +21,7 @@ export default ({classes}) => {
 		 * Устанавливает новый номер документа или код справочника
 		 */
 		new_number_doc: {
-			value: function (prefix) {
+			value (prefix) {
 
 				if (!this._metadata().code_length) {
 					return Promise.resolve(this);
@@ -86,7 +86,7 @@ export default ({classes}) => {
 		},
 
 		new_cat_id: {
-			value: function (prefix) {
+			value (prefix) {
 
 				const {organization, _manager} = this;
 				const {current_user, wsql} = _manager._owner.$p;
@@ -129,7 +129,7 @@ export default ({classes}) => {
 		 * @for DataManager
 		 */
 		pouch_db: {
-      get: function () {
+      get () {
         const cachable = this.cachable.replace('_ram', '').replace('_doc', '');
         const {adapter} = this;
         if(cachable.indexOf('remote') != -1) {
