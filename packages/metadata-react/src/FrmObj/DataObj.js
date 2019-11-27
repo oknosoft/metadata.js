@@ -253,13 +253,14 @@ class DataObj extends MDNRComponent {
   }
 
   render() {
-    const {props: {_mgr, classes}, state: {_obj, _meta, _attachments}, context, _handlers, Toolbar, denyDel} = this;
+    const {props: {_mgr, classes}, state: {_obj, _meta, _attachments}, context, _handlers, Toolbar, denyDel, readOnly} = this;
     const toolbar_props = Object.assign({
       closeButton: !context.dnr,
       posted: _obj && _obj.posted,
       deleted: _obj && _obj.deleted,
       postable: !!(_meta.posted || _mgr.metadata('posted')),
-      deletable: !_meta.read_only && !denyDel,
+      deletable: !_meta.read_only && !denyDel && !readOnly,
+      read_only: _meta.read_only || readOnly,
       _obj,
     }, _handlers);
 
@@ -299,7 +300,7 @@ DataObj.propTypes = {
   match: PropTypes.object,            // match роутера, из него добываем ref, можно передать fake-объект со ссылкой
   classes: PropTypes.object,          // имена css
 
-  read_only: PropTypes.object,        // Элемент только для чтения
+  read_only: PropTypes.bool,          // Элемент только для чтения
 
   handlers: PropTypes.object.isRequired, // обработчики редактирования объекта
 };

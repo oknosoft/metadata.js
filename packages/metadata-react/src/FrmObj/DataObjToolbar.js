@@ -57,15 +57,18 @@ class DataObjToolbar extends Component {
     return (
 
       <Toolbar disableGutters className={props.classes.toolbar}>
-        {props.handleSaveClose && <Button
+        {props.handleSaveClose && !props.read_only && <Button
           title="Записать и закрыть"
           size="small"
           variant="outlined"
           className={props.classes.spaceLeft}
           onClick={props.handleSaveClose}>Записать и закрыть</Button>}
-        <IconButton title="Записать" onClick={props.handleSave}><SaveIcon/></IconButton>
-        {props.postable && <IconButton title={props.posted ? 'Отменить проведение' : 'Провести'} onClick={() => props.handleSave(!props.posted)}><SendIcon/></IconButton>}
-        {props.deletable && <IconButton title={props.deleted ? 'Снять пометку удаления' : 'Пометить на удаление'} onClick={props.handleMarkDeleted}><RemoveIcon/></IconButton>}
+        {!props.read_only && <IconButton title="Записать" onClick={props.handleSave}><SaveIcon/></IconButton>}
+        {!props.read_only && props.postable &&
+          <IconButton title={props.posted ? 'Отменить проведение' : 'Провести'} onClick={() => props.handleSave(!props.posted)}><SendIcon/></IconButton>}
+        {!props.read_only && props.deletable &&
+          <IconButton title={props.deleted ? 'Снять пометку удаления' : 'Пометить на удаление'} onClick={props.handleMarkDeleted}><RemoveIcon/></IconButton>}
+
         {props.buttons}
 
         <Typography variant="h6" color="inherit" className={props.classes.flex}> </Typography>
