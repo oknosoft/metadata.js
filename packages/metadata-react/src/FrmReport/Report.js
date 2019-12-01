@@ -11,18 +11,6 @@ import {withIface} from 'metadata-redux';
 
 class Report extends MDNRComponent {
 
-  static propTypes = {
-    _mgr: PropTypes.object.isRequired,    // менеджер отчета
-    _obj: PropTypes.object,               // объект данных - отчет DataProcessorObj
-    _tabular: PropTypes.string,           // имя табчасти, в которой живут данные отчета
-    _acl: PropTypes.string.isRequired,    // права текущего пользователя
-
-    handlePrint: PropTypes.func,          // внешний обработчик печати
-    handleSchemeChange: PropTypes.func,   // внешний обработчик при изменении настроек компоновки
-    ToolbarExt: PropTypes.func,
-
-  };
-
   constructor(props, context) {
 
     super(props, context);
@@ -37,9 +25,15 @@ class Report extends MDNRComponent {
     };
 
     $p.cat.scheme_settings.get_scheme(_mgr.class_name + `.${_tabular}`)
-      .then(this.handleSchemeChange);
+      .then(this.handleSchemeChange)
+      .then(() => {
+        if(props.autoexec) {
+          Promise.resolve().then(() => this.handleSave());
+        }
+      });
 
   }
+
 
   handleSave = () => {
     const {_obj, _columns, _tabular, scheme} = this.state;
@@ -154,6 +148,18 @@ class Report extends MDNRComponent {
     ];
   }
 }
+
+Report.propTypes = {
+  _mgr: PropTypes.object.isRequired,    // менеджер отчета
+  _obj: PropTypes.object,               // объект данных - отчет DataProcessorObj
+  _tabular: PropTypes.string,           // имя табчасти, в которой живут данные отчета
+  _acl: PropTypes.string,               // права текущего пользователя
+
+  handlePrint: PropTypes.func,          // внешний обработчик печати
+  handleSchemeChange: PropTypes.func,   // внешний обработчик при изменении настроек компоновки
+  ToolbarExt: PropTypes.func,
+
+};
 
 export default withIface(Report);
 
