@@ -195,7 +195,7 @@ class TabularSection extends MComponent {
 
   onCellSelected = (selected) => {
     this.setState({selected});
-    this.props.onCellSelected && this.props.onCellSelected(v);
+    this.props.onCellSelected && this.props.onCellSelected(selected);
   };
 
   onCellDeSelected = (v) => {
