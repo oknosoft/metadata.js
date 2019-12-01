@@ -72,10 +72,9 @@ class TabularSection extends MComponent {
   };
 
   handleRemove = () => {
-    const {state: {_tabular}, _grid: {state}} = this;
-    const {selected} = state;
+    const {_tabular, selected} = this.state;
     if(selected && selected.hasOwnProperty('rowIdx')) {
-      _tabular.del(selected.rowIdx);
+      _tabular.del(this.rowGetter(selected.rowIdx));
       this.forceUpdate();
     }
   };
@@ -83,7 +82,8 @@ class TabularSection extends MComponent {
   handleClear = () => {
     const {_tabular} = this.state;
     if(_tabular) {
-      _tabular.clear();
+      const rows = this.getRows();
+      _tabular.clear({row: {in: rows.map((v) => v.row)}});
       this.forceUpdate();
     }
   };
@@ -97,22 +97,26 @@ class TabularSection extends MComponent {
   };
 
   handleUp = () => {
-    const {state: {_tabular}, _grid: {state}} = this;
-    const {selected} = state;
+    const {_tabular, selected} = this.state;
     if(selected && selected.hasOwnProperty('rowIdx') && selected.rowIdx > 0) {
-      _tabular.swap(selected.rowIdx, selected.rowIdx - 1);
-      selected.rowIdx = selected.rowIdx - 1;
-      this.forceUpdate();
+      const rows = this.getRows();
+      if(row.row > 0) {
+        _tabular.swap(rows[selected.rowIdx], rows[selected.rowIdx - 1]);
+        selected.rowIdx = selected.rowIdx - 1;
+        this.setState({selected});
+      }
     }
   };
 
   handleDown = () => {
-    const {state: {_tabular}, _grid: {state}} = this;
-    const {selected} = state;
-    if(selected && selected.hasOwnProperty('rowIdx') && selected.rowIdx < _tabular.count() - 1) {
-      _tabular.swap(selected.rowIdx, selected.rowIdx + 1);
-      selected.rowIdx = selected.rowIdx + 1;
-      this.forceUpdate();
+    const {_tabular, selected} = this.state;
+    if(selected && selected.hasOwnProperty('rowIdx')) {
+      const rows = this.getRows();
+      if(selected.rowIdx < rows.length - 2) {
+        _tabular.swap(rows[selected.rowIdx], rows[selected.rowIdx + 1]);
+        selected.rowIdx = selected.rowIdx + 1;
+        this.setState({selected});
+      }
     }
   };
 
@@ -189,10 +193,22 @@ class TabularSection extends MComponent {
     });
   };
 
+  onCellSelected = (selected) => {
+    this.setState({selected});
+    this.props.onCellSelected && this.props.onCellSelected(v);
+  };
+
+  onCellDeSelected = (v) => {
+    const {selected} = this.state;
+    if(!v || selected.rowIdx !== v.rowIdx) {
+      this.setState({selected: null});
+    }
+  };
+
   render() {
     const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleRowsUpdated} = this;
     const {_meta, _tabular, _columns, scheme, selectedIds, settings_open} = state;
-    const {_obj, rowSelection, minHeight, hideToolbar, onCellSelected, classes, denyAddDel, denyReorder, btns, end_btns, menu_items} = props;
+    const {_obj, rowSelection, minHeight, hideToolbar, classes, denyAddDel, denyReorder, btns, end_btns, menu_items} = props;
     const Toolbar = props.Toolbar || TabularSectionToolbar;
 
     if(!_columns || !_columns.length) {
@@ -260,7 +276,8 @@ class TabularSection extends MComponent {
                 rowGetter={rowGetter}
                 rowsCount={this.rowsCount()}
                 rowSelection={rowSelection}
-                onCellSelected={onCellSelected}
+                onCellDeSelected={this.onCellDeSelected}
+                onCellSelected={this.onCellSelected}
                 onGridRowsUpdated={handleRowsUpdated}
                 editorPortalTarget={props.portalTarget || this.portalTarget}
               />

@@ -106,3 +106,4 @@ class TabularSectionToolbar extends Component {
 }
 
 export default withStyles(TabularSectionToolbar);
+export {withStyles, TabularSectionToolbar};
