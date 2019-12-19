@@ -24,13 +24,15 @@ class Report extends MDNRComponent {
       settings_open: false,
     };
 
-    $p.cat.scheme_settings.get_scheme(_mgr.class_name + `.${_tabular}`)
+    (props.scheme ? Promise.resolve(props.scheme) : $p.cat.scheme_settings.get_scheme(_mgr.class_name + `.${_tabular}`))
       .then(this.handleSchemeChange)
       .then(() => {
         if(props.autoexec) {
           Promise.resolve().then(() => this.handleSave());
         }
       });
+
+    props.registerRep && props.registerRep(this);
 
   }
 
@@ -105,13 +107,14 @@ class Report extends MDNRComponent {
     const show_grid = !settings_open || (props.height || 500) > 572;
 
     return [
-      <Helmet key="helmet" title={props.title}>
+
+      !props.ignoreTitle && <Helmet key="helmet" title={props.title}>
         <meta name="description" content="Отчет" />
         <meta property="og:title" content={props.title} />
         <meta property="og:description" content="Отчет" />
       </Helmet>,
 
-      <RepToolbar
+      !props.hideToolbar && <RepToolbar
         key="toolbar"
         _obj={_obj}
         _tabular={_tabular}

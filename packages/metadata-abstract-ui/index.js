@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.21-beta.4, built:2019-12-01
+ metadata-abstract-ui v2.0.21-beta.4, built:2019-12-19
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -927,7 +927,7 @@ function scheme_settings() {
       const ress = [];
       const resources = this.resources._obj.map(v => v.field);
       const {_manager} = collection._owner;
-      const meta = _manager.metadata(_manager._tabular || 'data').fields;
+      const meta = _manager.metadata(collection._name || 'data').fields;
       const _columns = this.rx_columns({_obj: this, mode: 'ts', fields: meta});
       _columns.forEach(({key}) => {
         if(dims.indexOf(key) == -1 && resources.indexOf(key) != -1) {
