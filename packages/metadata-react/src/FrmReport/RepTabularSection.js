@@ -153,14 +153,13 @@ export default class RepTabularSection extends Component {
   render() {
 
     const {props, state} = this;
-    const {_columns, minHeight} = props;
+    const {_columns, minHeight, hideHeader} = props;
 
     // rowRenderer={RowRenderer}
     // onRowExpandToggle={onRowExpandToggle}
     // rowGroupRenderer={RowGroupRenderer}
 
     return (
-
       <ReactDataGrid
         columns={_columns}
         enableCellSelect={true}
@@ -170,8 +169,8 @@ export default class RepTabularSection extends Component {
         onCellExpand={this.onCellExpand}
         minHeight={minHeight || 220}
         rowHeight={33}
+        headerRowHeight={hideHeader ? 1 : 33}
       />
-
     );
 
   }

@@ -104,7 +104,8 @@ class Report extends MDNRComponent {
       return <LoadingMessage text="Ошибка настроек компоновки..."/>;
     }
 
-    const show_grid = !settings_open || (props.height || 500) > 572;
+    const pheight = props.height || props.minHeight || 500;
+    const show_grid = !settings_open || pheight > 572;
 
     return [
 
@@ -132,7 +133,7 @@ class Report extends MDNRComponent {
 
       settings_open && <SchemeSettingsTabs
         key="tabs"
-        height={show_grid ? 272 : (props.height || 500) - 104}
+        height={show_grid ? 272 : pheight - 104}
         width={props.width}
         scheme={scheme}
         tabParams={RepParams && <RepParams _obj={_obj} scheme={scheme}/>}
@@ -146,7 +147,8 @@ class Report extends MDNRComponent {
         _tabular={_tabular}
         _columns={_columns}
         scheme={scheme}
-        minHeight={(props.height || 500) - 52 - (settings_open ? 320 : 0)}
+        minHeight={pheight - 52 - (settings_open ? 320 : 0)}
+        hideHeader={props.hideHeader}
       />
     ];
   }
