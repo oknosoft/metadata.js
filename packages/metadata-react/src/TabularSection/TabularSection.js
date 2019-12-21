@@ -59,7 +59,10 @@ class TabularSection extends MComponent {
   }
 
   getRows() {
-    const {scheme, _tabular} = this.state;
+    const {props: {filter}, state: {scheme, _tabular}} = this;
+    if(typeof filter === 'function') {
+      return filter(_tabular);
+    }
     return scheme ? scheme.filter(_tabular) : [];
   }
 
@@ -280,6 +283,7 @@ class TabularSection extends MComponent {
                 onCellSelected={this.onCellSelected}
                 onGridRowsUpdated={handleRowsUpdated}
                 editorPortalTarget={props.portalTarget || this.portalTarget}
+                hideHeader={props.hideHeader}
               />
 
             ];
