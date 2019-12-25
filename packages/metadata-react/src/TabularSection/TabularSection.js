@@ -157,7 +157,8 @@ class TabularSection extends MComponent {
     const _columns = scheme.rx_columns({
       mode: 'ts',
       fields: state._meta.fields,
-      _obj: props._obj
+      _obj: props._obj,
+      read_only: props.read_only,
     });
 
     if(this._mounted) {

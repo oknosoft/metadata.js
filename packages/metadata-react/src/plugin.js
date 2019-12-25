@@ -118,14 +118,14 @@ function rx_columns({utils: {moment}, enm, md}) {
     return <div title={value.toString()}>{value.presentation}</div>;
   };
 
-  return function columns({mode, fields, _obj, _mgr}) {
+  return function columns({mode, fields, _obj, _mgr, read_only}) {
 
     const res = this.columns(mode);
     const {input, text, label, link, cascader, toggle, image, type, path, props} = enm.data_field_kinds;
     if(!_mgr && _obj) {
       _mgr = _obj._manager;
     }
-    const editable = _obj ? _mgr.class_name.indexOf('rep.') !== 0 || this.obj.indexOf(`.${_mgr._tabular || 'data'}`) === -1 : false;
+    const editable = (_obj && !read_only) ? _mgr.class_name.indexOf('rep.') !== 0 || this.obj.indexOf(`.${_mgr._tabular || 'data'}`) === -1 : false;
 
     if(fields) {
       res.forEach((column) => {
