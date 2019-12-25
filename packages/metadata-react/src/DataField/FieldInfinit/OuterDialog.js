@@ -15,8 +15,12 @@ class OuterDialog extends React.Component {
   };
 
   render() {
-    const {_obj, _fld, dialogOpened, handleSelect, handleCloseDialog, components: {DataList, DataObj, DataTree}, _owner} = this.props;
+    const {_obj, _fld, dialogOpened, handleSelect, handleCloseDialog, components, _owner} = this.props;
     const {_manager: _mgr, ref} = _obj[_fld];
+    const DataList = _mgr.FrmList || components.DataList;
+    const DataObj = _mgr.FrmObj || components.DataObj;
+    const DataTree = _mgr.FrmTree || components.DataTree;
+
     const {current_user} = _mgr._owner.$p;
     const _acl = current_user ? current_user.get_acl(_mgr.class_name) : {};
     const title = (dialogOpened == 'list' || dialogOpened == 'tree') ?
