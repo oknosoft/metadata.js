@@ -153,12 +153,12 @@ class TabularSection extends MComponent {
   // обработчик при изменении настроек компоновки
   handleSchemeChange = (scheme) => {
 
-    const {props, state} = this;
+    const {props: {_obj, read_only}, state} = this;
     const _columns = scheme.rx_columns({
       mode: 'ts',
       fields: state._meta.fields,
-      _obj: props._obj,
-      read_only: props.read_only,
+      _obj,
+      read_only,
     });
 
     if(this._mounted) {
@@ -167,7 +167,6 @@ class TabularSection extends MComponent {
     else {
       Object.assign(state, {scheme, _columns});
     }
-
   };
 
   onRowsSelected = (rows) => {
@@ -211,8 +210,8 @@ class TabularSection extends MComponent {
 
   render() {
     const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleRowsUpdated} = this;
-    const {_meta, _tabular, _columns, scheme, selectedIds, settings_open} = state;
-    const {_obj, rowSelection, minHeight, hideToolbar, classes, denyAddDel, denyReorder, btns, end_btns, menu_items} = props;
+    const {_tabular, _columns, scheme, selectedIds, settings_open} = state;
+    const {_obj, rowSelection, minHeight, hideToolbar, denyAddDel, denyReorder, btns, end_btns, menu_items} = props;
     const Toolbar = props.Toolbar || TabularSectionToolbar;
 
     if(!_columns || !_columns.length) {

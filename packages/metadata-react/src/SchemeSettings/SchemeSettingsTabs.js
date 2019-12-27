@@ -104,6 +104,7 @@ export default class SchemeSettingsTabs extends Component {
           {is_tabular && <Tab label="Группировка"/>}
           {is_tabular && <Tab label="Ресурсы"/>}
           <Tab label="Сортировка"/>
+          <Tab label="Оформление"/>
           <Tab label="Вариант"/>
         </Tabs>
       </AppBar>,
@@ -120,17 +121,40 @@ export default class SchemeSettingsTabs extends Component {
             <TabularSection _obj={scheme} _tabular="params"/>
         ))}
 
-        {value === 1 && <TabularSection _obj={scheme} _tabular="fields" rowSelection={this.rowSelection(scheme)} denyAddDel/>}
+        {value === 1 && <TabularSection
+          _obj={scheme}
+          _tabular="fields"
+          rowSelection={this.rowSelection(scheme)}
+          denyAddDel
+        />}
 
-        {value === 2 && <TabularSection _obj={scheme} _tabular="selection" rowSelection={this.rowSelection(scheme, 'selection')}/>}
+        {value === 2 && <TabularSection
+          _obj={scheme}
+          _tabular="selection"
+          rowSelection={this.rowSelection(scheme, 'selection')}
+        />}
 
-        {is_tabular && (value === 3) && <TabularSection _obj={scheme} _tabular="dimensions" rowSelection={this.rowSelection(scheme, 'dimensions')}/>}
+        {is_tabular && (value === 3) && <TabularSection
+          _obj={scheme}
+          _tabular="dimensions"
+          rowSelection={this.rowSelection(scheme, 'dimensions')}
+        />}
 
         {is_tabular && (value === 4) && <TabularSection _obj={scheme} _tabular="resources"/>}
 
-        {value === (is_tabular ? 5 : 3) && <TabularSection _obj={scheme} _tabular="sorting" rowSelection={this.rowSelection(scheme, 'sorting')}/>}
+        {value === (is_tabular ? 5 : 3) && <TabularSection
+          _obj={scheme}
+          _tabular="sorting"
+          rowSelection={this.rowSelection(scheme, 'sorting')}
+        />}
 
-        {value === (is_tabular ? 6 : 4) && <SchemeSettingsSelect scheme={scheme} handleSchemeChange={handleSchemeChange}/>}
+        {value === (is_tabular ? 6 : 4) && <TabularSection
+          _obj={scheme}
+          _tabular="conditional_appearance"
+          rowSelection={this.rowSelection(scheme, 'conditional_appearance')}
+        />}
+
+        {value === (is_tabular ? 7 : 5) && <SchemeSettingsSelect scheme={scheme} handleSchemeChange={handleSchemeChange}/>}
 
       </div>
     ];

@@ -3,37 +3,6 @@ import PropTypes from 'prop-types';
 
 import ReactDataGrid from 'react-data-grid';
 
-const {Row} = ReactDataGrid;
-
-class RowRenderer extends Component {
-
-  static propTypes = {
-    idx: PropTypes.string.isRequired
-  };
-
-  // setScrollLeft(scrollBy) {
-  //   // if you want freeze columns to work, you need to make sure you implement this as apass through
-  //   this.row.setScrollLeft(scrollBy);
-  // },
-
-  getRowStyle() {
-    return {
-      color: this.getRowBackground()
-    };
-  }
-
-  getRowBackground() {
-    return this.props.idx % 2 ? 'green' : 'blue';
-  }
-
-  render() {
-    // here we are just changing the style
-    // but we could replace this with anything we liked, cards, images, etc
-    // usually though it will just be a matter of wrapping a div, and then calling back through to the grid
-    return (<div style={this.getRowStyle()}><Row ref={node => this.row = node} {...this.props}/></div>);
-  }
-};
-
 export default class RepTabularSection extends Component {
 
   static propTypes = {
@@ -140,6 +109,21 @@ export default class RepTabularSection extends Component {
     };
   };
 
+  RowRenderer = ({renderBaseRow, ...props}) => {
+    let formatted;
+    const {scheme} = this.props;
+    scheme.conditional_appearance.find_rows({use: true}, (crow) => {
+      if(crow.check(props.row)) {
+        try{
+          formatted = <div style={JSON.parse(crow.css)}>{renderBaseRow(props)}</div>;
+        }
+        catch(e) {}
+        return false;
+      }
+    });
+    return formatted || renderBaseRow(props);
+  };
+
   updateSubRowDetails = (subRows, parentTreeDepth) => {
     let treeDepth = parentTreeDepth || 0;
     subRows.forEach((sr, i) => {
@@ -152,7 +136,7 @@ export default class RepTabularSection extends Component {
 
   render() {
 
-    const {props, state} = this;
+    const {props, state, RowRenderer} = this;
     const {_columns, minHeight, hideHeader} = props;
 
     // rowRenderer={RowRenderer}
@@ -170,6 +154,7 @@ export default class RepTabularSection extends Component {
         minHeight={minHeight || 220}
         rowHeight={33}
         headerRowHeight={hideHeader ? 1 : 33}
+        rowRenderer={RowRenderer}
       />
     );
 

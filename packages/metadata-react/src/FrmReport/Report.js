@@ -35,10 +35,9 @@ class Report extends MDNRComponent {
     props.registerRep && props.registerRep(this);
 
   }
-
-
+  
   handleSave = () => {
-    const {_obj, _columns, _tabular, scheme} = this.state;
+    const {_obj, scheme} = this.state;
     if(scheme && !scheme.empty()){
       if(_obj.scheme !== scheme){
         _obj.scheme = scheme;
@@ -69,10 +68,14 @@ class Report extends MDNRComponent {
   // обработчик при изменении настроек компоновки
   handleSchemeChange = (scheme) => {
 
-    const {props, state} = this;
-    const {handleSchemeChange} = props;
-    const {_obj, _meta, _tabular} = state;
-    const _columns = scheme.rx_columns({mode: 'ts', fields: _meta.fields, _obj});
+    const {props, state: {_obj, _meta}} = this;
+    const {handleSchemeChange, read_only} = props;
+    const _columns = scheme.rx_columns({
+      mode: 'ts',
+      fields: _meta.fields,
+      _obj,
+      read_only,
+    });
 
     // в этом методе
     handleSchemeChange && handleSchemeChange(this, scheme);
@@ -157,11 +160,16 @@ class Report extends MDNRComponent {
 Report.propTypes = {
   _mgr: PropTypes.object.isRequired,    // менеджер отчета
   _obj: PropTypes.object,               // объект данных - отчет DataProcessorObj
+  _meta: PropTypes.object,              // метаданные можно переопределить
   _tabular: PropTypes.string,           // имя табчасти, в которой живут данные отчета
   _acl: PropTypes.string,               // права текущего пользователя
+  read_only: PropTypes.bool,            // морозит ячейки
+  autoexec: PropTypes.bool,             // запускает формирование отчета после монтирования компонента
+  ignoreTitle: PropTypes.bool,          // запрет установки заголовка приложения
 
   handlePrint: PropTypes.func,          // внешний обработчик печати
   handleSchemeChange: PropTypes.func,   // внешний обработчик при изменении настроек компоновки
+  registerRep: PropTypes.func,          // регистрация ссылки на объект отчета в родительском компоненте
   ToolbarExt: PropTypes.func,
 
 };

@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.21-beta.4, built:2019-12-19
+ metadata-abstract-ui v2.0.21-beta.4, built:2019-12-27
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -874,7 +874,81 @@ var meta = {
               name: 'conditional_appearance',
               synonym: 'Условное оформление',
               tooltip: '',
-              fields: {}
+              fields: {
+                parent: {
+                  synonym: 'Родитель',
+                  tooltip: '',
+                  type: {
+                    types: ['string'],
+                    str_len: 100
+                  }
+                },
+                use: {
+                  synonym: 'Использование',
+                  tooltip: '',
+                  type: {
+                    types: ['boolean']
+                  }
+                },
+                left_value: {
+                  synonym: 'Левое значение',
+                  tooltip: 'Путь к данным',
+                  type: {
+                    types: ['string'],
+                    str_len: 255
+                  }
+                },
+                left_value_type: {
+                  synonym: 'Тип слева',
+                  tooltip: 'Тип значения слева',
+                  default: 'path',
+                  type: {
+                    types: ['string'],
+                    str_len: 100
+                  }
+                },
+                comparison_type: {
+                  synonym: 'Вид сравнения',
+                  tooltip: '',
+                  type: {
+                    types: ['enm.comparison_types'],
+                    is_ref: true
+                  }
+                },
+                right_value: {
+                  synonym: 'Правое значение',
+                  tooltip: '',
+                  type: {
+                    types: ['string'],
+                    str_len: 100
+                  }
+                },
+                right_value_type: {
+                  synonym: 'Тип справа',
+                  tooltip: 'Тип значения справа',
+                  default: 'path',
+                  type: {
+                    types: ['string'],
+                    str_len: 100
+                  }
+                },
+                columns: {
+                  synonym: 'Колонки',
+                  tooltip: 'Список колонок через запятую, к которым будет применено оформление (по умолчанию - ко всей строке)',
+                  type: {
+                    types: ['string'],
+                    str_len: 0
+                  }
+                },
+                css: {
+                  synonym: 'Оформление',
+                  tooltip: 'В синтаксисе css',
+                  type: {
+                    types: ['string'],
+                    str_len: 0
+                  }
+                },
+              }
             }
           },
           cachable: 'doc'

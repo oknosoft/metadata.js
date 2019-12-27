@@ -845,36 +845,11 @@ export default function scheme_settings() {
       this.selection.find_rows({use: true}, (row) => selection.push(row));
 
       const res = [];
-      const {utils, md, enm: {comparison_types}} = $p;
       collection.forEach((row) => {
         let ok = true;
 
-        for(let {left_value, left_value_type, right_value, right_value_type, comparison_type} of selection){
-          // получаем значение слева
-          if(left_value_type === 'path'){
-            const path = left_value.split('.');
-            left_value = row[path[0]];
-            for(let i = 1; i < path.length; i++){
-              left_value = left_value[path[i]];
-            }
-          }
-          else if(left_value_type && left_value_type !== 'string'){
-            const mgr = md.mgr_by_class_name(left_value_type);
-            left_value = mgr ? mgr.get(left_value) : utils.fetch_type(left_value, {types: [left_value_type]});
-          }
-          // получаем значение справа
-          if(right_value_type === 'path'){
-            const path = right_value.split('.');
-            right_value = row[path[0]];
-            for(let i = 1; i < path.length; i++){
-              right_value = right_value[path[i]];
-            }
-          }
-          else if(right_value_type && right_value_type !== 'string'){
-            const mgr = md.mgr_by_class_name(right_value_type);
-            right_value = mgr ? mgr.get(right_value) : utils.fetch_type(right_value, {types: [right_value_type]});
-          }
-          ok = utils.check_compare(left_value, right_value, comparison_type, comparison_types);
+        for(const crow of selection){
+          ok = crow.check(row);
           if(!ok){
             break;
           }
@@ -1192,233 +1167,148 @@ export default function scheme_settings() {
 
   this.CatScheme_settingsDimensionsRow = class CatScheme_settingsDimensionsRow extends TabularSectionRow {
 
-    get parent() {
-      return this._getter('parent');
-    }
+    get parent() {return this._getter('parent');}
+    set parent(v) {this._setter('parent', v);}
 
-    set parent(v) {
-      this._setter('parent', v);
-    }
+    get use() {return this._getter('use');}
+    set use(v) {this._setter('use', v);}
 
-    get use() {
-      return this._getter('use');
-    }
-
-    set use(v) {
-      this._setter('use', v);
-    }
-
-    get field() {
-      return this._getter('field');
-    }
-
-    set field(v) {
-      this._setter('field', v);
-    }
+    get field() {return this._getter('field');}
+    set field(v) {this._setter('field', v);}
   };
 
   this.CatScheme_settingsResourcesRow = class CatScheme_settingsResourcesRow extends this.CatScheme_settingsDimensionsRow {
 
-    get use() {
-      return true;
-    }
+    get use() {return true;}
+    set use(v) {}
 
-    set use(v) {
-    }
-
-    get formula() {
-      return this._getter('formula');
-    }
-
-    set formula(v) {
-      this._setter('formula', v);
-    }
+    get formula() {return this._getter('formula');}
+    set formula(v) {this._setter('formula', v);}
   };
 
   this.CatScheme_settingsFieldsRow = class CatScheme_settingsFieldsRow extends this.CatScheme_settingsDimensionsRow {
 
-    get width() {
-      return this._getter('width');
-    }
+    get width() {return this._getter('width');}
+    set width(v) {this._setter('width', v);}
 
-    set width(v) {
-      this._setter('width', v);
-    }
+    get caption() {return this._getter('caption');}
+    set caption(v) {this._setter('caption', v);}
 
-    get caption() {
-      return this._getter('caption');
-    }
+    get tooltip() {return this._getter('tooltip');}
+    set tooltip(v) {this._setter('tooltip', v);}
 
-    set caption(v) {
-      this._setter('caption', v);
-    }
+    get ctrl_type() {return this._getter('ctrl_type');}
+    set ctrl_type(v) {this._setter('ctrl_type', v);}
 
-    get tooltip() {
-      return this._getter('tooltip');
-    }
+    get formatter() {return this._getter('formatter');}
+    set formatter(v) {this._setter('formatter', v);}
 
-    set tooltip(v) {
-      this._setter('tooltip', v);
-    }
-
-    get ctrl_type() {
-      return this._getter('ctrl_type');
-    }
-
-    set ctrl_type(v) {
-      this._setter('ctrl_type', v);
-    }
-
-    get formatter() {
-      return this._getter('formatter');
-    }
-
-    set formatter(v) {
-      this._setter('formatter', v);
-    }
-
-    get editor() {
-      return this._getter('editor');
-    }
-
-    set editor(v) {
-      this._setter('editor', v);
-    }
+    get editor() {return this._getter('editor');}
+    set editor(v) {this._setter('editor', v);}
 
   };
 
   this.CatScheme_settingsSortingRow = class CatScheme_settingsSortingRow extends this.CatScheme_settingsDimensionsRow {
-
-    get direction() {
-      return this._getter('direction');
-    }
-
-    set direction(v) {
-      this._setter('direction', v);
-    }
+    get direction() {return this._getter('direction');}
+    set direction(v) {this._setter('direction', v);}
   };
 
   this.CatScheme_settingsSelectionRow = class CatScheme_settingsSelectionRow extends TabularSectionRow {
 
-    get parent() {
-      return this._getter('parent');
-    }
+    get parent() {return this._getter('parent');}
+    set parent(v) {this._setter('parent', v);}
 
-    set parent(v) {
-      this._setter('parent', v);
-    }
+    get use() {return this._getter('use');}
+    set use(v) {this._setter('use', v);}
 
-    get use() {
-      return this._getter('use');
-    }
+    get left_value() {return this._getter('left_value');}
+    set left_value(v) {this._setter('left_value', v);}
 
-    set use(v) {
-      this._setter('use', v);
-    }
+    get left_value_type() {return this._getter('left_value_type');}
+    set left_value_type(v) {this._setter('left_value_type', v);}
 
-    get left_value() {
-      return this._getter('left_value');
-    }
+    get comparison_type() {return this._getter('comparison_type');}
+    set comparison_type(v) {this._setter('comparison_type', v);}
 
-    set left_value(v) {
-      this._setter('left_value', v);
-    }
+    get right_value() {return this._getter('right_value');}
+    set right_value(v) {this._setter('right_value', v);}
 
-    get left_value_type() {
-      return this._getter('left_value_type');
-    }
+    get right_value_type() {return this._getter('right_value_type');}
+    set right_value_type(v) {this._setter('right_value_type', v);}
 
-    set left_value_type(v) {
-      this._setter('left_value_type', v);
-    }
-
-    get comparison_type() {
-      return this._getter('comparison_type');
-    }
-
-    set comparison_type(v) {
-      this._setter('comparison_type', v);
-    }
-
-    get right_value() {
-      return this._getter('right_value');
-    }
-
-    set right_value(v) {
-      this._setter('right_value', v);
-    }
-
-    get right_value_type() {
-      return this._getter('right_value_type');
-    }
-
-    set right_value_type(v) {
-      this._setter('right_value_type', v);
+    check(row) {
+      const {comparison_types: ct} = enm;
+      let {left_value, left_value_type, right_value, right_value_type, comparison_type} = this;
+      // получаем значение слева
+      if(left_value_type === 'path'){
+        const path = left_value.split('.');
+        left_value = row[path[0]];
+        for(let i = 1; i < path.length; i++){
+          left_value = left_value[path[i]];
+        }
+      }
+      else if(left_value_type && left_value_type !== 'string'){
+        const mgr = md.mgr_by_class_name(left_value_type);
+        left_value = mgr ? mgr.get(left_value) : utils.fetch_type(left_value, {types: [left_value_type]});
+      }
+      // получаем значение справа
+      if(right_value_type === 'path'){
+        const path = right_value.split('.');
+        right_value = row[path[0]];
+        for(let i = 1; i < path.length; i++){
+          right_value = right_value[path[i]];
+        }
+      }
+      else if(right_value_type && right_value_type !== 'string'){
+        const mgr = md.mgr_by_class_name(right_value_type);
+        if([ct.in, ct.inh, ct.nin, ct.ninh].includes(comparison_type)) {
+          right_value = right_value.split(',').map((ref) => mgr ? mgr.get(ref) : utils.fetch_type(ref, {types: [right_value_type]}));
+        }
+        else {
+          right_value = mgr ? mgr.get(right_value) : utils.fetch_type(right_value, {types: [right_value_type]});
+        }
+      }
+      return utils.check_compare(left_value, right_value, comparison_type, ct);
     }
 
   };
 
   this.CatScheme_settingsParamsRow = class CatScheme_settingsParamsRow extends TabularSectionRow {
-    get param() {
-      return this._getter('param');
-    }
+    get param() {return this._getter('param');}
+    set param(v) {this._setter('param', v);}
 
-    set param(v) {
-      this._setter('param', v);
-    }
+    get value() {return this._getter('value');}
+    set value(v) {this._setter('value', v);}
 
-    get value() {
-      return this._getter('value');
-    }
+    get value_type() {return this._getter('value_type');}
+    set value_type(v) {this._setter('value_type', v);}
 
-    set value(v) {
-      this._setter('value', v);
-    }
+    get quick_access() {return this._getter('quick_access');}
+    set quick_access(v) {this._setter('quick_access', v);}
 
-    get value_type() {
-      return this._getter('value_type');
-    }
-
-    set value_type(v) {
-      this._setter('value_type', v);
-    }
-
-    get quick_access() {
-      return this._getter('quick_access');
-    }
-
-    set quick_access(v) {
-      this._setter('quick_access', v);
-    }
-
-    get output() {
-      return this._getter('output');
-    }
-
-    set output(v) {
-      this._setter('output', v);
-    }
+    get output() {return this._getter('output');}
+    set output(v) {this._setter('output', v);}
   };
 
   this.CatScheme_settingsCompositionRow = class CatScheme_settingsCompositionRow extends this.CatScheme_settingsDimensionsRow {
 
-    get kind() {
-      return this._getter('kind');
-    }
+    get kind() {return this._getter('kind');}
+    set kind(v) {this._setter('kind', v);}
 
-    set kind(v) {
-      this._setter('kind', v);
-    }
-
-    get definition() {
-      return this._getter('definition');
-    }
-
-    set definition(v) {
-      this._setter('definition', v);
-    }
+    get definition() {return this._getter('definition');}
+    set definition(v) {this._setter('definition', v);}
 
   };
+
+  this.CatScheme_settingsConditional_appearanceRow = class CatScheme_settingsConditional_appearanceRow extends this.CatScheme_settingsSelectionRow {
+
+    get columns() {return this._getter('columns');}
+    set columns(v) {this._setter('columns', v);}
+
+    get css() {return this._getter('css');}
+    set css(v) {this._setter('css', v);}
+
+  }
 
   cat.create('scheme_settings', SchemeSettingsManager);
   dp.create('scheme_settings', SchemeSelectManager);
