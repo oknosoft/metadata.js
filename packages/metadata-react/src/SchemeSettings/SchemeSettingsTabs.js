@@ -29,16 +29,6 @@ import Divider from '@material-ui/core/Divider';
  */
 export default class SchemeSettingsTabs extends Component {
 
-  static propTypes = {
-    scheme: PropTypes.object.isRequired,
-    handleSchemeChange: PropTypes.func.isRequired,
-    tabParams: PropTypes.object,
-  };
-
-  static contextTypes = {
-    dnr: PropTypes.object
-  };
-
   state = {
     value: 0
   };
@@ -160,3 +150,13 @@ export default class SchemeSettingsTabs extends Component {
     ];
   }
 }
+
+SchemeSettingsTabs.propTypes = {
+  scheme: PropTypes.object.isRequired,
+  handleSchemeChange: PropTypes.func.isRequired,
+  tabParams: PropTypes.object,
+};
+
+SchemeSettingsTabs.contextTypes = {
+  dnr: PropTypes.object
+};
