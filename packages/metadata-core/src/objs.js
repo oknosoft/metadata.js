@@ -450,13 +450,15 @@ export class BaseDataObj {
       if(Array.isArray(_obj[ts])){
         const tabular = this[ts];
         const Constructor = _manager.obj_constructor(ts, true);
-        const {fields} = tabular_sections[ts];
-        for(let i = 0; i < _obj[ts].length; i++) {
-          const row = _obj[ts][i];
-          const _row = new Constructor(tabular, row);
-          row.row = i + 1;
-          Object.defineProperty(row, '_row', {value: _row});
-          DataObj.fix_collection(_row, row, fields);
+        if(Constructor) {
+          const {fields} = tabular_sections[ts];
+          for(let i = 0; i < _obj[ts].length; i++) {
+            const row = _obj[ts][i];
+            const _row = new Constructor(tabular, row);
+            row.row = i + 1;
+            Object.defineProperty(row, '_row', {value: _row});
+            DataObj.fix_collection(_row, row, fields);
+          }
         }
       }
     }
