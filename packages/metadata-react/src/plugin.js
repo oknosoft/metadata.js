@@ -18,15 +18,9 @@ import dialogs from 'metadata-react/App/dialogs';
 import {Editors, Formatters} from 'react-data-grid-addons';
 import DataGrid from 'react-data-grid';
 import {withStyles} from '@material-ui/styles';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-import FormControl from '@material-ui/core/FormControl';
-import FormLabel from '@material-ui/core/FormLabel';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import Radio from '@material-ui/core/Radio';
-import Paper from '@material-ui/core/Paper';
-import Button from '@material-ui/core/Button';
+import * as muiCore from '@material-ui/core';
+import SchemeSettingsObj from './SchemeSettings/SchemeSettingsLazyObj';
+
 const {CheckboxEditor, DropDownEditor, SimpleTextEditor} = Editors;
 const {editors: {EditorBase}, Row, RowComparer} = DataGrid;
 
@@ -334,22 +328,14 @@ export default {
 
     // публичные методы ui
     Object.defineProperty(this, 'ui', {
-      value: {
-        dialogs,
-        React,
-        ReactDOM,
-        withStyles,
-        Typography,
-        Grid,
-        FormControl,
-        FormLabel,
-        FormControlLabel,
-        RadioGroup,
-        Radio,
-        Paper,
-        Button,
-      }
+      value: {dialogs, React, ReactDOM, withStyles, ...muiCore}
     });
+
+    // форма по умолчанию для scheme_settings
+    const {scheme_settings} = this.cat;
+    if(scheme_settings) {
+      scheme_settings.FrmObj = SchemeSettingsObj;
+    }
 
   }
 };
