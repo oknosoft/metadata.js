@@ -63,6 +63,24 @@ export default class RepTabularSection extends Component {
     }
   }
 
+  expandAll(level = 0) {
+    const dims = this.props.scheme.dims();
+    const {expanded, rows} = this.state;
+    if(rows.length && dims.length){
+      const srows = rows.slice(0);
+      rows.slice(0).forEach((rootRow, idx) => {
+        if(rootRow._level || !rootRow.children || expanded[rootRow.row]) {
+          return;
+        }
+        const subRows = rootRow.children;
+        srows.splice(srows.indexOf(rootRow) + 1, 0, ...subRows);
+        this.updateSubRowDetails(subRows, 1);
+        expanded[rootRow.row] = true;
+      });
+      this.setState({expanded, rows: srows});
+    }
+  }
+
   getRows = (i) => {
     return this.state.rows[i];
   };

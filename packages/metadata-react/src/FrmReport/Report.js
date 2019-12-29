@@ -35,17 +35,17 @@ class Report extends MDNRComponent {
     props.registerRep && props.registerRep(this);
 
   }
-  
+
   handleSave = () => {
     const {_obj, scheme} = this.state;
     if(scheme && !scheme.empty()){
       if(_obj.scheme !== scheme){
         _obj.scheme = scheme;
       }
-      _obj.calculate().then(() => this._result.expandRoot());
+      return _obj.calculate().then(() => this._result.expandRoot());
     }
     else{
-      $p.record_log({class: 'info', note: 'Пустая схема компоновки', obj: this.props._mgr.class_name});
+      return Promise.reject(new Error('Пустая схема компоновки'));
     }
   };
 
@@ -69,13 +69,14 @@ class Report extends MDNRComponent {
   handleSchemeChange = (scheme) => {
 
     const {props, state: {_obj, _meta}} = this;
-    const {handleSchemeChange, read_only} = props;
+    const {handleSchemeChange, handleColumns, read_only} = props;
     const _columns = scheme.rx_columns({
       mode: 'ts',
       fields: _meta.fields,
       _obj,
       read_only,
     });
+    handleColumns && handleColumns(_columns);
 
     // в этом методе
     handleSchemeChange && handleSchemeChange(this, scheme);
@@ -169,6 +170,7 @@ Report.propTypes = {
 
   handlePrint: PropTypes.func,          // внешний обработчик печати
   handleSchemeChange: PropTypes.func,   // внешний обработчик при изменении настроек компоновки
+  handleColumns: PropTypes.func,        // внешний обработчик при расчете свойств колонок - чтобы переопределить editors и formatters
   registerRep: PropTypes.func,          // регистрация ссылки на объект отчета в родительском компоненте
   ToolbarExt: PropTypes.func,
 
