@@ -1,7 +1,7 @@
 {
   "name": "metadata-dhtmlx",
   "description": "Dhtmlx UI components for metadata.js",
-  "version": "2.0.21-beta.4",
+  "version": "2.0.21-beta.5",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
