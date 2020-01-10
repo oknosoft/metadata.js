@@ -7,7 +7,9 @@
  */
 
 import React from 'react';
+import TextField from '@material-ui/core/TextField';
 import InputRadio from './InputRadio';
+import DynList from '../DynList';
 
 export default {
 
@@ -84,34 +86,71 @@ export default {
         reject();
       };
 
+      const handleChange = (v) => value = v;
+
       let timer = setTimeout(reject_confirm, timeout);
       let value;
-      let children;
-
-      if(list) {
-        if(!initialValue) {
-          initialValue = list[0].value || list[0].ref || list[0];
-        }
-        value = initialValue.value || initialValue.ref || initialValue;
-        children = <InputRadio
-          value={value}
-          list={list}
-          handleChange={(v) => value = v}
-        />;
-      }
-
-      this._handleIfaceState({
+      const iface_state = {
         component: '',
         name: 'confirm',
         value: {
           open: true,
           title,
           text,
-          children,
+          children: [],
           handleOk: close_confirm,
           handleCancel: reject_confirm,
         }
-      });
+      }
+
+      if(list) {
+        if(!initialValue) {
+          initialValue = list[0].value || list[0].ref || list[0];
+        }
+        value = initialValue.value || initialValue.ref || initialValue;
+        iface_state.value.children = <InputRadio
+          value={value}
+          list={list}
+          handleChange={handleChange}
+        />;
+      }
+      else if(type.includes('.')) {
+        value = initialValue ? (initialValue.ref || initialValue) : '';
+        const _mgr = $p.md.mgr_by_class_name(type);
+        if(_mgr) {
+          iface_state.value.children = <DynList
+            _mgr={_mgr}
+            _acl="r"
+            _ref={value}
+            handlers={{
+              handleSelect: (v) => {
+                _mgr.get(v, 'promise')
+                  .then((v) => {
+                    handleChange(v);
+                    close_confirm();
+                  });
+              },
+            }}
+            selectionMode
+            denyAddDel
+          />;
+          iface_state.value.noSpace = true;
+          iface_state.value.hide_actions = true;
+        }
+        else {
+          iface_state.value.children = `Не найден менеджер для типа '${type}'`;
+        }
+      }
+      else {
+        value = initialValue.value || initialValue;
+        iface_state.value.children = <TextField
+          value={value}
+          onChange={handleChange}
+          InputProps={{type}}
+        />;
+      }
+
+      this._handleIfaceState(iface_state);
 
     });
   },
