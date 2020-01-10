@@ -86,6 +86,14 @@ class FrmLogin extends React.Component {
     }
   };
 
+  handleBranch = () => {
+    $p.ui.dialogs.input_value({type: 'cat.branches'})
+      .then((branch) => {
+        branch = null;
+      })
+      .catch(() => null);
+  };
+
   handleAuth = (provider) => {
     if(directLogins.includes(provider)) {
       this.setState({provider, error: ''});
@@ -117,7 +125,7 @@ class FrmLogin extends React.Component {
   };
 
   footer() {
-    const {state: {provider, error}, props: {classes, user, idle, handleLogOut, handleUnLock}, handleNavigate} = this;
+    const {state: {provider, error}, props: {classes, user, idle, handleLogOut, handleUnLock, _obj}} = this;
 
     function Button(props) {
       return <BaseButton color="primary" size="small" className={classes.dialogButton} {...props}/>;
@@ -125,10 +133,11 @@ class FrmLogin extends React.Component {
 
     return [
       <DialogActions key="actions">
-        {user.logged_in && !idle && <Button onClick={handleLogOut}>Выйти</Button>}
-        {user.logged_in && idle && <Button onClick={handleUnLock}>Войти</Button>}
-        {!user.logged_in && directLogins.includes(provider) && <Button onClick={() => this.handleLogin(provider)}>Войти</Button>}
-        {user.logged_in && !idle && <Button onClick={handleNavigate} title="Перейти к списку документов">К документам</Button>}
+        {user.logged_in && !idle && <Button onClick={handleLogOut} title="Завершить сеанс">Выйти</Button>}
+        {user.logged_in && idle && <Button onClick={handleUnLock} title="Возобновить сеанс">Войти</Button>}
+        {!user.logged_in && directLogins.includes(provider) && <Button onClick={() => this.handleLogin(provider)} title="Авторизация">Войти</Button>}
+        {user.logged_in && !idle && <Button onClick={this.handleNavigate} title="Перейти к списку документов">К документам</Button>}
+        {user.logged_in && _obj.branch.empty() && <Button onClick={this.handleBranch} title="Войти в базу отдела">Сменить отдел</Button>}
       </DialogActions>,
       (user.log_error || error) &&
       <FormGroup key="error" row>

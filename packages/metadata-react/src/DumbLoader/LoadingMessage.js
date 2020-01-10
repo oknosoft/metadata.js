@@ -7,7 +7,9 @@ import Typography from '@material-ui/core/Typography';
 function SimpleLoadingMessage({classes, text}) {
   return (
     <div className={classes.message}>
-      <div className={classes.text}>{text || <div><CircularProgress size={24}/> загрузка...</div>}</div>
+      <div className={classes.text}>
+        {text || <span><CircularProgress component="span" className={classes.progress} size={24}/> загрузка...</span>}
+      </div>
     </div>
   );
 }
@@ -27,9 +29,12 @@ export default withStyles({
   },
   text: {
     padding: '.4em 1em',
-    //fontSize: '1.2em',
     backgroundColor: '#f9f9f9',
     border: '1px solid #e0e0e0',
     maxWidth: '70%',
   },
+  progress: {
+    verticalAlign: 'middle',
+    marginRight: 8,
+  }
 })(SimpleLoadingMessage);
