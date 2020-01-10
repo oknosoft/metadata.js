@@ -87,9 +87,11 @@ class FrmLogin extends React.Component {
   };
 
   handleBranch = () => {
-    $p.ui.dialogs.input_value({type: 'cat.branches'})
+    const {ui, adapters: {pouch}} = $p;
+    ui.dialogs.input_value({type: 'cat.branches'})
       .then((branch) => {
-        branch = null;
+        pouch.props.branch = branch.empty() ? null : branch;
+        this.handleNavigate();
       })
       .catch(() => null);
   };

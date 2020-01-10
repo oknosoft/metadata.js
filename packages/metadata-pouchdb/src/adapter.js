@@ -40,6 +40,7 @@ function adapter({AbstracrAdapter}) {
         _suffix: '',
         _user: '',
         _push_only: false,
+        branch: null,
       };
 
       /**
@@ -58,6 +59,8 @@ function adapter({AbstracrAdapter}) {
        */
       this.remote = {};
 
+      this.fetch = this.fetch.bind(this);
+
     }
 
     /**
@@ -67,7 +70,7 @@ function adapter({AbstracrAdapter}) {
      */
     init(wsql, job_prm) {
 
-      const {props, local, remote, $p: {md}} = this;
+      const {props, local, remote, fetch, $p: {md}} = this;
 
       // настриваем параметры
       Object.assign(props, {
@@ -94,14 +97,14 @@ function adapter({AbstracrAdapter}) {
       }
 
       // создаём локальные базы
-      const opts = {auto_compaction: true, revs_limit: 3, owner: this};
+      const opts = {auto_compaction: true, revs_limit: 3, owner: this, fetch};
       const bases = md.bases();
 
       // если используется meta, вместе с локальной создаём удалённую, т.к. для неё не нужна авторизация
       if(props.use_meta !== false) {
         local.meta = new PouchDB(props.prefix + 'meta', opts);
         if(props.path) {
-          remote.meta = new PouchDB(props.path + 'meta', {skip_setup: true, owner: this});
+          remote.meta = new PouchDB(props.path + 'meta', {skip_setup: true, owner: this, fetch});
           setTimeout(() => this.run_sync('meta'));
         }
       }
@@ -150,8 +153,8 @@ function adapter({AbstracrAdapter}) {
      */
     after_init(bases, auth) {
 
-      const {props, remote, $p: {md, wsql}} = this;
-      const opts = {skip_setup: true, adapter: 'http', owner: this};
+      const {props, remote, fetch, $p: {md, wsql}} = this;
+      const opts = {skip_setup: true, adapter: 'http', owner: this, fetch};
 
       if(auth) {
         opts.auth = auth;
@@ -420,7 +423,7 @@ function adapter({AbstracrAdapter}) {
      * @method log_out
      */
     log_out() {
-      const {props, local, remote, authorized, $p: {md}} = this;
+      const {props, local, remote, fetch, authorized, $p: {md}} = this;
 
       if(authorized) {
         for (const name in local.sync) {
@@ -450,7 +453,7 @@ function adapter({AbstracrAdapter}) {
                     remote[name] = null;
                   }
                   else {
-                    remote[name] = new PouchDB(dbpath, {skip_setup: true, adapter: 'http', owner: this});
+                    remote[name] = new PouchDB(dbpath, {skip_setup: true, adapter: 'http', owner: this, fetch});
                   }
                 });
               res = res ? res.then(() => sub) : sub;
@@ -2231,6 +2234,26 @@ function adapter({AbstracrAdapter}) {
     get authorized() {
       const {_auth} = this.props;
       return _auth && _auth.username;
+    }
+
+    fetch(url, opts) {
+      const {authorized, remote, props} = this;
+      if(!opts.headers.get('Authorization')) {
+        if(authorized) {
+          for(const name in remote) {
+            const db = remote[name];
+            const {auth} = db.__opts;
+            if(auth) {
+              Object.assign(opts.headers, db.getBasicAuthHeaders({prefix: this.auth_prefix(), ...auth}));
+              break;
+            }
+          }
+        }
+      }
+      if(props.branch) {
+        opts.headers.set('branch', props.branch.valueOf());
+      }
+      return PouchDB.fetch(url, opts);
     }
 
   };

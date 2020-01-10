@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.21-beta.5, built:2019-12-30
+ metadata-pouchdb v2.0.21-beta.5, built:2020-01-10
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -430,12 +430,14 @@ function adapter({AbstracrAdapter}) {
         _suffix: '',
         _user: '',
         _push_only: false,
+        branch: null,
       };
       this.local = {_loading: false, sync: {}};
       this.remote = {};
+      this.fetch = this.fetch.bind(this);
     }
     init(wsql, job_prm) {
-      const {props, local, remote, $p: {md}} = this;
+      const {props, local, remote, fetch, $p: {md}} = this;
       Object.assign(props, {
         path: wsql.get_user_param('couch_path', 'string') || job_prm.couch_path || '',
         zone: wsql.get_user_param('zone', 'number'),
@@ -458,12 +460,12 @@ function adapter({AbstracrAdapter}) {
       if(props.user_node && props.user_node.suffix) {
         props._suffix = props.user_node.suffix;
       }
-      const opts = {auto_compaction: true, revs_limit: 3, owner: this};
+      const opts = {auto_compaction: true, revs_limit: 3, owner: this, fetch};
       const bases = md.bases();
       if(props.use_meta !== false) {
         local.meta = new PouchDB$1(props.prefix + 'meta', opts);
         if(props.path) {
-          remote.meta = new PouchDB$1(props.path + 'meta', {skip_setup: true, owner: this});
+          remote.meta = new PouchDB$1(props.path + 'meta', {skip_setup: true, owner: this, fetch});
           setTimeout(() => this.run_sync('meta'));
         }
       }
@@ -498,8 +500,8 @@ function adapter({AbstracrAdapter}) {
       this.after_init( props.user_node ? bases : (props.autologin.length ? props.autologin : ['ram']));
     }
     after_init(bases, auth) {
-      const {props, remote, $p: {md, wsql}} = this;
-      const opts = {skip_setup: true, adapter: 'http', owner: this};
+      const {props, remote, fetch, $p: {md, wsql}} = this;
+      const opts = {skip_setup: true, adapter: 'http', owner: this, fetch};
       if(auth) {
         opts.auth = auth;
       }
@@ -712,7 +714,7 @@ function adapter({AbstracrAdapter}) {
         });
     }
     log_out() {
-      const {props, local, remote, authorized, $p: {md}} = this;
+      const {props, local, remote, fetch, authorized, $p: {md}} = this;
       if(authorized) {
         for (const name in local.sync) {
           if(name != 'meta' && props.autologin.indexOf(name) === -1) {
@@ -740,7 +742,7 @@ function adapter({AbstracrAdapter}) {
                     remote[name] = null;
                   }
                   else {
-                    remote[name] = new PouchDB$1(dbpath, {skip_setup: true, adapter: 'http', owner: this});
+                    remote[name] = new PouchDB$1(dbpath, {skip_setup: true, adapter: 'http', owner: this, fetch});
                   }
                 });
               res = res ? res.then(() => sub) : sub;
@@ -2061,6 +2063,25 @@ function adapter({AbstracrAdapter}) {
     get authorized() {
       const {_auth} = this.props;
       return _auth && _auth.username;
+    }
+    fetch(url, opts) {
+      const {authorized, remote, props} = this;
+      if(!opts.headers.get('Authorization')) {
+        if(authorized) {
+          for(const name in remote) {
+            const db = remote[name];
+            const {auth} = db.__opts;
+            if(auth) {
+              Object.assign(opts.headers, db.getBasicAuthHeaders({prefix: this.auth_prefix(), ...auth}));
+              break;
+            }
+          }
+        }
+      }
+      if(props.branch) {
+        opts.headers.set('branch', props.branch.valueOf());
+      }
+      return PouchDB$1.fetch(url, opts);
     }
   };
 }
