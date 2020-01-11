@@ -84,7 +84,7 @@ function adapter({AbstracrAdapter}) {
         autologin: job_prm.autologin || [],
       });
       if(props.path && props.path.indexOf('http') != 0 && typeof location != 'undefined') {
-        props.path = location.protocol + '//' + location.host + props.path;
+        props.path = `${location.protocol}//${location.host}${props.path}`;
       }
       if(job_prm.use_meta === false) {
         props.use_meta = false;

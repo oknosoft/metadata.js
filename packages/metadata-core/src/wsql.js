@@ -108,6 +108,7 @@ export default class WSQL {
       {p: 'couch_path', v: '', t: 'string'},
       {p: 'couch_direct', v: true, t: 'boolean'},
       {p: 'enable_save_pwd', v: true, t: 'boolean'},
+      {p: 'use_ram', v: job_prm.hasOwnProperty('use_ram') ? job_prm.use_ram : true, t: 'boolean', ls: true},
     ];
 
 		// подмешиваем к базовым параметрам настройки приложения
@@ -137,9 +138,15 @@ export default class WSQL {
 		  if(job_prm.url_prm && job_prm.url_prm.hasOwnProperty(prm.p)) {
         this.set_user_param(prm.p, this.fetch_type(job_prm.url_prm[prm.p], prm.t));
       }
-			else if (!this.prm_is_set(prm.p)){
-        this.set_user_param(prm.p, this.fetch_type(job_prm.hasOwnProperty(prm.p) ? job_prm[prm.p] : prm.v, prm.t));
-      }
+		  else if (prm.ls && this.prm_is_set(prm.p)){
+		    const v = this.get_user_param(prm.p, prm.t);
+		    if(job_prm[prm.p] != v) {
+          job_prm[prm.p] = v;
+        }
+		  }
+      else if (!this.prm_is_set(prm.p)){
+		    this.set_user_param(prm.p, this.fetch_type(job_prm.hasOwnProperty(prm.p) ? job_prm[prm.p] : prm.v, prm.t));
+		  }
 		});
 
 		// инициализируем метаданные

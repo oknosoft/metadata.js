@@ -20,7 +20,7 @@
     "downshift": "^4.0.4",
     "marked": "^0.8",
     "moment": "^2.24.0",
-    "pg": "^7.17.0",
+    "pg": "^7.17.1",
     "pouchdb-adapter-http": "7.1",
     "pouchdb-adapter-idb": "7.1",
     "pouchdb-adapter-memory": "7.1",

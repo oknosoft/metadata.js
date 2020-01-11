@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.21-beta.5, built:2019-12-30
+ metadata-core v2.0.21-beta.5, built:2020-01-11
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3931,6 +3931,7 @@ class WSQL {
       {p: 'couch_path', v: '', t: 'string'},
       {p: 'couch_direct', v: true, t: 'boolean'},
       {p: 'enable_save_pwd', v: true, t: 'boolean'},
+      {p: 'use_ram', v: job_prm.hasOwnProperty('use_ram') ? job_prm.use_ram : true, t: 'boolean', ls: true},
     ];
 		Array.isArray(job_prm.additional_params) && job_prm.additional_params.forEach((v) => nesessery_params.push(v));
     let zone;
@@ -3952,9 +3953,15 @@ class WSQL {
 		  if(job_prm.url_prm && job_prm.url_prm.hasOwnProperty(prm.p)) {
         this.set_user_param(prm.p, this.fetch_type(job_prm.url_prm[prm.p], prm.t));
       }
-			else if (!this.prm_is_set(prm.p)){
-        this.set_user_param(prm.p, this.fetch_type(job_prm.hasOwnProperty(prm.p) ? job_prm[prm.p] : prm.v, prm.t));
-      }
+		  else if (prm.ls && this.prm_is_set(prm.p)){
+		    const v = this.get_user_param(prm.p, prm.t);
+		    if(job_prm[prm.p] != v) {
+          job_prm[prm.p] = v;
+        }
+		  }
+      else if (!this.prm_is_set(prm.p)){
+		    this.set_user_param(prm.p, this.fetch_type(job_prm.hasOwnProperty(prm.p) ? job_prm[prm.p] : prm.v, prm.t));
+		  }
 		});
     if(meta) {
       meta(this.$p);
