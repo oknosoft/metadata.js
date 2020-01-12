@@ -9,7 +9,6 @@
 import React from 'react';
 import TextField from '@material-ui/core/TextField';
 import InputRadio from './InputRadio';
-import DynList from '../DynList';
 
 export default {
 
@@ -18,8 +17,14 @@ export default {
    * Сюда передаём метод управления состоянием
    * @param handleIfaceState
    */
-  init ({handleIfaceState}) {
+  init ({handleIfaceState, DataList, lazy}) {
     this._handleIfaceState = handleIfaceState;
+    if(DataList) {
+      this.DataList = DataList;
+    }
+    else if(lazy) {
+      this.lazy = lazy;
+    }
   },
 
   close_confirm(name = 'confirm') {
@@ -118,24 +123,33 @@ export default {
         value = initialValue ? (initialValue.ref || initialValue) : '';
         const _mgr = $p.md.mgr_by_class_name(type);
         if(_mgr) {
-          iface_state.value.children = <DynList
-            _mgr={_mgr}
-            _acl="r"
-            _ref={value}
-            handlers={{
-              handleSelect: (v) => {
-                _mgr.get(v, 'promise')
-                  .then((v) => {
-                    handleChange(v);
-                    close_confirm();
-                  });
-              },
-            }}
-            selectionMode
-            denyAddDel
-          />;
-          iface_state.value.noSpace = true;
-          iface_state.value.hide_actions = true;
+          let {DataList, lazy} = this;
+          if(!DataList && lazy){
+            DataList = lazy.DataList;
+          }
+          if(DataList) {
+            iface_state.value.children = <DataList
+              _mgr={_mgr}
+              _acl="r"
+              _ref={value}
+              handlers={{
+                handleSelect: (v) => {
+                  _mgr.get(v, 'promise')
+                    .then((v) => {
+                      handleChange(v);
+                      close_confirm();
+                    });
+                },
+              }}
+              selectionMode
+              denyAddDel
+            />;
+            iface_state.value.noSpace = true;
+            iface_state.value.hide_actions = true;
+          }
+          else {
+            iface_state.value.children = `Компонент DataList не подключен к $p.ui`;
+          }
         }
         else {
           iface_state.value.children = `Не найден менеджер для типа '${type}'`;
