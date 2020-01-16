@@ -201,7 +201,7 @@ function adapter({AbstracrAdapter}) {
             ;
           }
           else if(local._loading) {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
               this.once('pouch_data_loaded', resolve);
             });
           }
@@ -219,8 +219,8 @@ function adapter({AbstracrAdapter}) {
      * @return {Promise}
      */
     log_in(username, password) {
-      const {props, local, remote, $p} = this;
-      const {job_prm, wsql, aes, md, cat} = $p;
+      const {props, remote, $p} = this;
+      const {job_prm, wsql, aes, md} = $p;
 
       // реквизиты гостевого пользователя для демобаз
       if(username == undefined && password == undefined) {
@@ -345,7 +345,7 @@ function adapter({AbstracrAdapter}) {
                     props_by_user();
                   }
                 }, 100 + count * 500);
-              };
+              }
               props_by_user();
             });
           });
@@ -403,12 +403,12 @@ function adapter({AbstracrAdapter}) {
         .then((info) => {
           if(props._data_loaded && !props._doc_ram_loading) {
             if(props._doc_ram_loaded) {
-              this.emit('pouch_doc_ram_loaded')
+              this.emit('pouch_doc_ram_loaded');
             }
             else {
               this.load_doc_ram();
             }
-          };
+          }
           // запускаем синхронизацию для нужных баз
           return info && this.after_log_in();
         })
@@ -565,7 +565,7 @@ function adapter({AbstracrAdapter}) {
               const {views} = design;
               if(views.load_order){
                 index = true;
-              };
+              }
               return (Object.keys(views).length ? this.rebuild_indexes('ram') : Promise.resolve())
                 .then(() => db.info());
             }
@@ -755,7 +755,7 @@ function adapter({AbstracrAdapter}) {
             this.emit('pouch_load_start', _page);
           }
 
-          return new Promise((resolve, reject) => {
+          return new Promise((resolve) => {
 
             const options = {
               batch_size: 200,
@@ -862,7 +862,7 @@ function adapter({AbstracrAdapter}) {
                   if(typeof synced === 'number') {
                     this.rebuild_indexes(id)
                       .then(() => this.load_data());
-                  };
+                  }
                 }
                 else {
                   sync_events(db_local.replicate.from(db_remote, options), options);
@@ -993,7 +993,7 @@ function adapter({AbstracrAdapter}) {
               info._rev = doc._rev;
               return info;
             })
-            .catch((err) => {
+            .catch(() => {
               return info;
             });
         })
@@ -1055,7 +1055,7 @@ function adapter({AbstracrAdapter}) {
               .then(() => -1);
           }
         })
-        .catch((err) => {
+        .catch(() => {
           return false;
         });
     }
@@ -1222,7 +1222,7 @@ function adapter({AbstracrAdapter}) {
             //console.log(db.name + '/' + tObj._manager.class_name + '|' + tObj.ref);
           }
         })
-        .then((res) => {
+        .then(() => {
           return tObj;
         });
     }
@@ -1251,7 +1251,7 @@ function adapter({AbstracrAdapter}) {
         if(_data._saving > 10) {
           return Promise.reject(new Error(`Циклическая перезапись`));
         }
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           setTimeout(() => resolve(this.save_obj(tObj, attr)), 200);
         });
       }
@@ -1307,7 +1307,7 @@ function adapter({AbstracrAdapter}) {
             }
             return db.put(doc);
           })
-          .then((res) => {
+          .then(() => {
             tObj.is_new() && tObj._set_loaded(tObj.ref);
             return tObj;
           });
@@ -1347,7 +1347,7 @@ function adapter({AbstracrAdapter}) {
                 if(!tObj._attachments) {
                   tObj._attachments = {};
                 }
-                for (var att in tmp._attachments) {
+                for (let att in tmp._attachments) {
                   if(!tObj._attachments[att] || !tmp._attachments[att].stub) {
                     tObj._attachments[att] = tmp._attachments[att];
                   }
@@ -1410,9 +1410,7 @@ function adapter({AbstracrAdapter}) {
      * @return {Promise.<Array>}
      */
     get_selection(_mgr, attr) {
-
-      const {utils, classes} = this.$p;
-      const db = this.db(_mgr);
+      const {classes} = this.$p;
       const cmd = attr.metadata || _mgr.metadata();
       const flds = ['ref', '_deleted']; // поля запроса
       const selection = {
@@ -1581,7 +1579,7 @@ function adapter({AbstracrAdapter}) {
                     o[fldsyn] = '';
                   }
                   else {
-                    var mgr = _mgr.value_mgr(o, fld, mf.type, false, doc[fld]);
+                    const mgr = _mgr.value_mgr(o, fld, mf.type, false, doc[fld]);
                     if(mgr) {
                       o[fldsyn] = mgr.get(doc[fld]).presentation;
                     }
@@ -1783,7 +1781,7 @@ function adapter({AbstracrAdapter}) {
               if(!selection._raw){
                 delete doc._id;
                 delete doc.class_name;
-              };
+              }
             }
             return selection._raw ? docs : _mgr.load_array(docs);
           })
@@ -2033,7 +2031,7 @@ function adapter({AbstracrAdapter}) {
       }
 
       // получаем ревизию документа
-      var _rev,
+      let _rev,
         db = this.db(_mgr);
 
       ref = _mgr.class_name + '|' + this.$p.utils.fix_guid(ref);

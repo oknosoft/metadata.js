@@ -90,7 +90,8 @@ export class BaseDataObj {
         return res;
       }
 
-      let mgr = this._manager.value_mgr(_obj, f, mf);
+      const {_manager} = this;
+      const mgr = _manager.value_mgr(_obj, f, mf);
       if(mgr) {
         if(utils.is_data_mgr(mgr)) {
           return mgr.get(res, false, false);
@@ -101,7 +102,8 @@ export class BaseDataObj {
       }
 
       if(res) {
-        console.log([f, mf, _obj]);
+        // управляемый лог
+        typeof utils.debug === 'function' && utils.debug([f, mf, _obj]);
         return null;
       }
 

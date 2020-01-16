@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.21-beta.5, built:2020-01-14
+ metadata-core v2.0.21-beta.5, built:2020-01-16
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -605,7 +605,8 @@ class BaseDataObj {
       if(mf.hasOwnProperty('str_len') && !utils.is_guid(res)) {
         return res;
       }
-      let mgr = this._manager.value_mgr(_obj, f, mf);
+      const {_manager} = this;
+      const mgr = _manager.value_mgr(_obj, f, mf);
       if(mgr) {
         if(utils.is_data_mgr(mgr)) {
           return mgr.get(res, false, false);
@@ -615,7 +616,7 @@ class BaseDataObj {
         }
       }
       if(res) {
-        console.log([f, mf, _obj]);
+        typeof utils.debug === 'function' && utils.debug([f, mf, _obj]);
         return null;
       }
     }

@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.21-beta.5, built:2020-01-14
+ metadata-pouchdb v2.0.21-beta.5, built:2020-01-16
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -536,7 +536,7 @@ function adapter({AbstracrAdapter}) {
         .then(() => {
           if(props.use_ram === false) ;
           else if(local._loading) {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
               this.once('pouch_data_loaded', resolve);
             });
           }
@@ -546,8 +546,8 @@ function adapter({AbstracrAdapter}) {
         });
     }
     log_in(username, password) {
-      const {props, local, remote, $p} = this;
-      const {job_prm, wsql, aes, md, cat} = $p;
+      const {props, remote, $p} = this;
+      const {job_prm, wsql, aes, md} = $p;
       if(username == undefined && password == undefined) {
         if(job_prm.guests && job_prm.guests.length) {
           username = job_prm.guests[0].username;
@@ -656,7 +656,8 @@ function adapter({AbstracrAdapter}) {
                     props_by_user();
                   }
                 }, 100 + count * 500);
-              }              props_by_user();
+              }
+              props_by_user();
             });
           });
       if(!props.user_node) {
@@ -707,7 +708,8 @@ function adapter({AbstracrAdapter}) {
             else {
               this.load_doc_ram();
             }
-          }          return info && this.after_log_in();
+          }
+          return info && this.after_log_in();
         })
         .catch(err => {
           this.emit('user_log_fault', err);
@@ -833,7 +835,8 @@ function adapter({AbstracrAdapter}) {
               const {views} = design;
               if(views.load_order){
                 index = true;
-              }              return (Object.keys(views).length ? this.rebuild_indexes('ram') : Promise.resolve())
+              }
+              return (Object.keys(views).length ? this.rebuild_indexes('ram') : Promise.resolve())
                 .then(() => db.info());
             }
           })
@@ -964,7 +967,7 @@ function adapter({AbstracrAdapter}) {
             };
             this.emit('pouch_load_start', _page);
           }
-          return new Promise((resolve, reject) => {
+          return new Promise((resolve) => {
             const options = {
               batch_size: 200,
               batches_limit: 3,
@@ -1046,7 +1049,8 @@ function adapter({AbstracrAdapter}) {
                   if(typeof synced === 'number') {
                     this.rebuild_indexes(id)
                       .then(() => this.load_data());
-                  }                }
+                  }
+                }
                 else {
                   sync_events(db_local.replicate.from(db_remote, options), options);
                 }
@@ -1147,7 +1151,7 @@ function adapter({AbstracrAdapter}) {
               info._rev = doc._rev;
               return info;
             })
-            .catch((err) => {
+            .catch(() => {
               return info;
             });
         })
@@ -1206,7 +1210,7 @@ function adapter({AbstracrAdapter}) {
               .then(() => -1);
           }
         })
-        .catch((err) => {
+        .catch(() => {
           return false;
         });
     }
@@ -1331,7 +1335,7 @@ function adapter({AbstracrAdapter}) {
             throw err;
           }
         })
-        .then((res) => {
+        .then(() => {
           return tObj;
         });
     }
@@ -1346,7 +1350,7 @@ function adapter({AbstracrAdapter}) {
         if(_data._saving > 10) {
           return Promise.reject(new Error(`Циклическая перезапись`));
         }
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           setTimeout(() => resolve(this.save_obj(tObj, attr)), 200);
         });
       }
@@ -1392,7 +1396,7 @@ function adapter({AbstracrAdapter}) {
             }
             return db.put(doc);
           })
-          .then((res) => {
+          .then(() => {
             tObj.is_new() && tObj._set_loaded(tObj.ref);
             return tObj;
           });
@@ -1432,7 +1436,7 @@ function adapter({AbstracrAdapter}) {
                 if(!tObj._attachments) {
                   tObj._attachments = {};
                 }
-                for (var att in tmp._attachments) {
+                for (let att in tmp._attachments) {
                   if(!tObj._attachments[att] || !tmp._attachments[att].stub) {
                     tObj._attachments[att] = tmp._attachments[att];
                   }
@@ -1477,8 +1481,7 @@ function adapter({AbstracrAdapter}) {
         .then((ares) => this.$p.iface.data_to_tree.call(_mgr, ares, attr));
     }
     get_selection(_mgr, attr) {
-      const {utils, classes} = this.$p;
-      const db = this.db(_mgr);
+      const {classes} = this.$p;
       const cmd = attr.metadata || _mgr.metadata();
       const flds = ['ref', '_deleted'];
       const selection = {
@@ -1614,7 +1617,7 @@ function adapter({AbstracrAdapter}) {
                     o[fldsyn] = '';
                   }
                   else {
-                    var mgr = _mgr.value_mgr(o, fld, mf.type, false, doc[fld]);
+                    const mgr = _mgr.value_mgr(o, fld, mf.type, false, doc[fld]);
                     if(mgr) {
                       o[fldsyn] = mgr.get(doc[fld]).presentation;
                     }
@@ -1760,7 +1763,8 @@ function adapter({AbstracrAdapter}) {
               if(!selection._raw){
                 delete doc._id;
                 delete doc.class_name;
-              }            }
+              }
+            }
             return selection._raw ? docs : _mgr.load_array(docs);
           })
           .catch((err) => {
@@ -1942,7 +1946,7 @@ function adapter({AbstracrAdapter}) {
       if(!(attachment instanceof Blob) && type.indexOf('text') == -1) {
         attachment = new Blob([attachment], {type: type});
       }
-      var _rev,
+      let _rev,
         db = this.db(_mgr);
       ref = _mgr.class_name + '|' + this.$p.utils.fix_guid(ref);
       return db.get(ref)
