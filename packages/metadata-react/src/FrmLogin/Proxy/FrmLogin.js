@@ -101,7 +101,10 @@ class FrmLogin extends React.Component {
         // проверяем доступность базы, если ok - переходим в корень
         this.setState({fetching: true});
         pouch.remote.doc.info()
-          .then(() => this.handleNavigate())
+          .then(() => {
+            pouch.emit('branch_change', newBranch);
+            this.handleNavigate();
+          })
           .catch((err) => {
             this.setState({fetching: false});
             pouch.props.branch = branch;
