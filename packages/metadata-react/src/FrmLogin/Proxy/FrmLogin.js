@@ -15,13 +15,15 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import IconError from '@material-ui/icons/ErrorOutline';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Creditales from 'metadata-react/FrmLogin/Creditales';
-import DataField from 'metadata-react/DataField';
-import {withMeta} from 'metadata-redux';
-import classnames from 'classnames';
+import DataField from '../../DataField';
+import LoadingModal from '../../DumbLoader/LoadingModal';
+import Creditales from '../Creditales';
 import Provider from './Provider';
 import withStyles from './styles';
 import providers from './providers';
+
+import {withMeta} from 'metadata-redux';
+import classnames from 'classnames';
 
 const directLogins = ['couchdb', 'ldap'];
 
@@ -89,9 +91,25 @@ class FrmLogin extends React.Component {
   handleBranch = () => {
     const {ui, adapters: {pouch}} = $p;
     ui.dialogs.input_value({type: 'cat.branches'})
-      .then((branch) => {
-        pouch.props.branch = branch.empty() ? null : branch;
-        this.handleNavigate();
+      .then((newBranch) => {
+        // запоминаем прежний branch
+        const {branch} = pouch.props;
+
+        // устанавливаем новый
+        pouch.props.branch = newBranch.empty() ? null : newBranch;
+
+        // проверяем доступность базы, если ok - переходим в корень
+        this.setState({fetching: true});
+        pouch.remote.doc.info()
+          .then(() => this.handleNavigate())
+          .catch((err) => {
+            this.setState({fetching: false});
+            pouch.props.branch = branch;
+            ui.dialogs.alert({
+              title: 'Вход в область данных',
+              text: `Не удалось подключиться к базе отдела '${newBranch}'. ${err.message || err}`
+            });
+          });
       })
       .catch(() => null);
   };
@@ -209,6 +227,7 @@ class FrmLogin extends React.Component {
     })}>
       {this.creditales()}
       {this.footer()}
+      {fetching && <LoadingModal open text="Запрос к серверу..." />}
     </div>;
   }
 

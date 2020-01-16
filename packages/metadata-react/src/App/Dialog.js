@@ -126,7 +126,6 @@ class SimpleDialog extends React.Component {
   }
 }
 
-
 SimpleDialog.propTypes = {
   open: PropTypes.bool,
   fullScreen: PropTypes.bool,
@@ -134,9 +133,9 @@ SimpleDialog.propTypes = {
   initFullScreen: PropTypes.bool,
   toggleFullScreen: PropTypes.func,
   title: PropTypes.node.isRequired,
-  actions: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  toolbtns: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  children: PropTypes.oneOfType([PropTypes.object, PropTypes.node]),
+  actions: PropTypes.node,
+  toolbtns: PropTypes.node,
+  children: PropTypes.node,
   classes: PropTypes.object.isRequired,
   onClose: PropTypes.func.isRequired,
 };
