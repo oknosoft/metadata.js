@@ -2242,7 +2242,8 @@ function adapter({AbstracrAdapter}) {
             const db = remote[name];
             const {auth} = db.__opts;
             if(auth) {
-              Object.assign(opts.headers, db.getBasicAuthHeaders({prefix: this.auth_prefix(), ...auth}));
+              const {Authorization} = db.getBasicAuthHeaders({prefix: this.auth_prefix(), ...auth});
+              opts.headers.set('Authorization', Authorization);
               break;
             }
           }
