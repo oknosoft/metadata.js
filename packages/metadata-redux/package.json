@@ -15,7 +15,7 @@
     "react-router-dom": "^5.1",
     "react-router-redux": "github:unpete/react-router-redux",
     "redux": "^4.0",
-    "redux-dynamic-middlewares": "^1.0",
+    "redux-dynamic-middlewares": "^2.0",
     "redux-thunk": "^2.3"
   },
   "repository": {
