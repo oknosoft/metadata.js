@@ -1282,7 +1282,7 @@ function mngrs() {
         else if(adapter.db(this) instanceof classes.PouchDB){
           Object.assign(select, {
             selector: {class_name: this.class_name},
-            fields: ['_id', 'name'],
+            fields: ['_id', 'name', 'date', 'number_doc'],
             skip,
             limit: top
           });

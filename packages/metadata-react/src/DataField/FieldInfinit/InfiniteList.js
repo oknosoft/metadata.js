@@ -117,16 +117,28 @@ export default class InfiniteList extends MComponent {
 
     // если объекты живут в ram
     let added = 0;
-    if(/ram$/.test(_mgr.cachable)) {
-      const res = _mgr.find_rows(select, (o) => {
-        // если значение уже есть в коллекции - пропускаем
-        if(list.indexOf(o) === -1) {
-          list.push(o);
-          added++;
-        }
-      });
-      // если для менеджера переопределен find_rows и он вернул Promise - ждём завершения
-      return res instanceof Promise ? res.then(() => update_state(added)) : Promise.resolve(update_state(added));
+    if(/ram$/.test(_mgr.cachable) || _mgr._direct_loaded || _mgr.direct_load) {
+      return (_mgr.direct_load && !_mgr._direct_loaded ? _mgr.direct_load() : Promise.resolve())
+        .then(() => {
+          if(_mgr.hasOwnProperty('find_rows')) {
+            return _mgr.find_rows(select, (o) => {
+              // если значение уже есть в коллекции - пропускаем
+              if(!list.includes(o)) {
+                list.push(o);
+                added++;
+              }
+            });
+          }
+          const {docs} = $p.utils._find_rows_with_sort.call(_mgr, _mgr.alatable, select);
+          for(const {ref} of docs) {
+            const o = _mgr.by_ref[ref];
+            if(o && !list.includes(o)) {
+              list.push(o);
+              added++;
+            }
+          }
+        })
+        .then(() => update_state(added));
     }
     // будем делать запрос к couchdb
     else {
@@ -138,7 +150,10 @@ export default class InfiniteList extends MComponent {
           // обновляем массив результата
           for (let i = 0; i < docs.length; i++) {
             if(!list[i + startIndex]) {
-              list[i + startIndex] = {presentation: docs[i].name, ref: docs[i]._id.substr(class_name_length)};
+              list[i + startIndex] = {
+                presentation: docs[i].name || `${_mgr.metadata().synonym || _mgr.metadata().name} ${docs[i].number_doc} от ${docs[i].date}`,
+                ref: docs[i]._id.substr(class_name_length)
+              };
             }
           }
           update_state(docs.length);
