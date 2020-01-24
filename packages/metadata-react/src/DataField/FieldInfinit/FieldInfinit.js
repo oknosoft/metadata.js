@@ -165,6 +165,13 @@ class FieldInfinit extends AbstractField {
       keyIsSpecial = true;
       break;
 
+    case 'Home':
+    case 'End':
+      if(!downshift.state.isOpen) {
+        evt.preventDownshiftDefault = true;
+      }
+      break;
+
     case 'F2':
       downshift.toggleMenu();
       keyIsSpecial = true;
