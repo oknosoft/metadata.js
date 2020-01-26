@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.22-beta.1, built:2020-01-19
+ metadata-abstract-ui v2.0.22-beta.2, built:2020-01-26
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1282,7 +1282,7 @@ function mngrs() {
         else if(adapter.db(this) instanceof classes.PouchDB){
           Object.assign(select, {
             selector: {class_name: this.class_name},
-            fields: ['_id', 'name', 'date', 'number_doc'],
+            fields: ['_id', 'name'],
             skip,
             limit: top
           });

@@ -1,7 +1,7 @@
 {
   "name": "metadata-react",
   "description": "React UI components for metadata.js",
-  "version": "2.0.22-beta.1",
+  "version": "2.0.22-beta.2",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -15,8 +15,8 @@
     "downshift": "^4.0",
     "font-awesome": "^4.7.0",
     "marked": "^0.8",
-    "metadata-abstract-ui": "^2.0.22-beta.1",
-    "metadata-redux": "^2.0.22-beta.1",
+    "metadata-abstract-ui": "^2.0.22-beta.2",
+    "metadata-redux": "^2.0.22-beta.2",
     "rc-calendar": "^9.15",
     "rc-cascader": "^0.17",
     "rc-time-picker": "^3.7",
