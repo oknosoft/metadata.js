@@ -11,9 +11,6 @@ export default (BaseComponent) => class extends Component {
     super();
     // set initial state
     this.state = this.getSizes();
-    // bind window resize listeners
-    this.handleResize = this.handleResize.bind(this);
-    this.resizeFinish = this.resizeFinish.bind(this);
   }
 
   getSizes() {
@@ -23,11 +20,11 @@ export default (BaseComponent) => class extends Component {
     };
   }
 
-  resizeFinish() {
-    this.setState(this.getSizes());
+  resizeFinish = () => {
+    this._mounted && this.setState(this.getSizes());
   }
 
-  handleResize() {
+  handleResize = () => {
     if(this.resizeTimer){
       clearTimeout(this.resizeTimer);
     }
@@ -35,6 +32,7 @@ export default (BaseComponent) => class extends Component {
   }
 
   componentDidMount() {
+    this._mounted = true;
     this.handleResize();
     window.addEventListener('resize', this.handleResize);
     window.addEventListener('orientationchange', this.handleResize);
@@ -44,6 +42,7 @@ export default (BaseComponent) => class extends Component {
     // clean up listeners
     window.removeEventListener('resize', this.handleResize);
     window.removeEventListener('orientationchange', this.handleResize);
+    this._mounted = false;
   }
 
   render() {
