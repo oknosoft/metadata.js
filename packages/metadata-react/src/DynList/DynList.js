@@ -12,7 +12,7 @@ import MDNRComponent from '../common/MDNRComponent';
 import {withIface} from 'metadata-redux';
 import ReactDataGrid from 'react-data-grid';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
-import DataListToolbar from '../DataList/DataListToolbar';
+import DataListToolbar from './DataListToolbar';
 import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
 import Confirm from '../App/Confirm';
 import Helmet from 'react-helmet';
@@ -53,10 +53,24 @@ class DynList extends MDNRComponent {
   handleManagerChange({_mgr, _meta, _ref}) {
 
     const {class_name} = _mgr;
+    const {flat, parent, _owner} = this.props;
 
     this._meta = _meta || _mgr.metadata();
 
-    const newState = {ref: _ref || '', scrollSetted: false};
+    const newState = {
+      ref: _ref || '',
+      scrollSetted: false,
+      flat: flat || !this._meta.hierarchical,
+      parent: parent || _mgr.get(),
+    };
+
+    if(!newState.flat && _owner && _owner.props) {
+      const ov = (_owner._obj || _owner.props && _owner.props._obj)[_owner.props._fld];
+      if(ov && !ov.empty()) {
+        newState.parent = ov.parent;
+      }
+    }
+
     this.setState(newState);
 
     $p.cat.scheme_settings.get_scheme(class_name)
@@ -109,7 +123,10 @@ class DynList extends MDNRComponent {
   };
 
   loadMoreRows = ({startIndex, stopIndex}) => {
-    const {props: {_mgr, _owner, find_rows}, state: {scheme, columns, ref, scrollSetted}, rows, fakeRows, ranges}  = this;
+    const {
+      props: {_mgr, _owner, find_rows},
+      state: {scheme, columns, ref, scrollSetted, flat, parent},
+      rows, fakeRows, ranges}  = this;
 
     if(startIndex < 0) {
       startIndex = 0;
@@ -155,7 +172,7 @@ class DynList extends MDNRComponent {
       this.setState(newState);
 
       // в зависимости от типа кеширования...
-      if(/ram$/.test(_mgr.cachable)) {
+      if(/ram$/.test(_mgr.cachable) || _mgr._direct_loaded || _mgr.direct_load) {
         // фильтруем в озу
         const selector = _mgr.get_search_selector({
           _obj: _owner ? (_owner._obj || _owner.props && _owner.props._obj) : null,
@@ -165,12 +182,24 @@ class DynList extends MDNRComponent {
           skip: startIndex,
           top: increment + 1,
           sorting: scheme.sorting,
+          flat,
+          parent,
         });
         if(selector.top < LIMIT / 2) {
           selector.top = LIMIT / 2;
         }
-        return Promise.resolve($p.utils._find_rows_with_sort.call(_mgr, _mgr.alatable, selector))
+
+        return (_mgr.direct_load && !_mgr._direct_loaded ? _mgr.direct_load() : Promise.resolve())
+          .then(() => $p.utils._find_rows_with_sort.call(_mgr, _mgr.alatable, selector))
           .then(({docs, count}) => {
+            if(!flat && parent && !startIndex) {
+              let prnt = parent;
+              do {
+                docs.unshift(prnt.toJSON());
+                count++;
+                prnt = prnt.parent;
+              } while (!prnt.parent.empty());
+            }
             for(let j = startIndex; j <= stopIndex; j++) {
               fakeRows.delete(j);
             }
@@ -403,13 +432,23 @@ class DynList extends MDNRComponent {
 
   // обработчик выбора значения в списке
   handleSelect = () => {
-    const {selectedRow: row, props: {handlers, _mgr}} = this;
-    if(row) {
-      handlers.handleSelect && handlers.handleSelect(row, _mgr);
-    }
-    else {
-      this.handleInfoText('Не выбрана строка');
-    }
+    setTimeout(() => {
+      const {selectedRow: row, props: {handlers, _mgr}, state: {flat, parent}, _mounted} = this;
+      if(!_mounted) {
+        return;
+      }
+      if(row) {
+        if(!flat && parent && row.is_folder) {
+          this.setState({parent: row.ref == parent ? parent.parent : _mgr.get(row.ref)}, () => this.handleFilterChange());
+        }
+        else {
+          handlers.handleSelect && handlers.handleSelect(row, _mgr);
+        }
+      }
+      else {
+        this.handleInfoText('Не выбрана строка');
+      }
+    }, 200);
   };
 
   // обработчик добавления элемента списка

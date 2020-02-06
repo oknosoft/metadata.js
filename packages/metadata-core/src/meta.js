@@ -654,7 +654,7 @@ Meta._sys = [{
  * ### Служебные поля, которые сохраняем при прочистке
  * @type {string[]}
  */
-Meta._sys_fields = ['zone', 'zones', 'direct_zones', 'id', 'number_doc', 'date'];
+Meta._sys_fields = ['zone','zones','direct_zones','id','number_doc','date','parent'];
 Meta.Obj = MetaObj;
 Meta.Field = MetaField;
 

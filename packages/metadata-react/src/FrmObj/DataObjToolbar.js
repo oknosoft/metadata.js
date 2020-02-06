@@ -7,7 +7,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import MenuPrint from '../DataList/MenuPrint';
+import MenuPrint from '../DynList/MenuPrint';
 
 import SaveIcon from '@material-ui/icons/Save';
 import SendIcon from '@material-ui/icons/CheckCircleOutline';

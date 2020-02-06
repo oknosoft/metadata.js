@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.22-beta.2, built:2020-01-26
+ metadata-core v2.0.22-beta.2, built:2020-02-06
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -4496,7 +4496,7 @@ Meta._sys = [{
     },
   },
 }];
-Meta._sys_fields = ['zone', 'zones', 'direct_zones', 'id', 'number_doc', 'date'];
+Meta._sys_fields = ['zone','zones','direct_zones','id','number_doc','date','parent'];
 Meta.Obj = MetaObj;
 Meta.Field = MetaField;
 

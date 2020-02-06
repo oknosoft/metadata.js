@@ -47,7 +47,7 @@ export default function mngrs() {
      * @return Object
      */
     get_search_selector: {
-      value({_obj, _fld, _meta, search, top, skip, sorting}) {
+      value({_obj, _fld, _meta, search, top, skip, sorting, flat, parent}) {
         const {cachable, _owner, adapter} = this;
         const {md, utils, classes} = _owner.$p;
         const select = {};
@@ -83,15 +83,6 @@ export default function mngrs() {
               fields: input_by_string,
               value: search.trim().replace(/\s\s/g, ' ').split(' ').filter(v => v),
             }
-            // if(input_by_string.length > 1) {
-            //   select.or = [];
-            //   input_by_string.forEach((fld) => {
-            //     select.or.push({[fld]: {like: search}});
-            //   });
-            // }
-            // else {
-            //   select[input_by_string[0]] = {like: search};
-            // }
           }
 
           // для связей параметров выбора, значение берём из объекта
@@ -128,6 +119,19 @@ export default function mngrs() {
               select[choice.name].push(fval);
             }
           });
+
+          // учтём иерархию
+          if(!flat && parent) {
+            select.parent = parent.valueOf();
+            delete select.is_folder;
+
+            if(!select._sort) {
+              select._sort = [];
+            }
+            if(!select._sort.some(({field}) => field === 'is_folder')) {
+              select._sort.unshift({field: 'is_folder', direction: 'desc'});
+            }
+          }
 
         }
         else if(adapter.db(this) instanceof classes.PouchDB){

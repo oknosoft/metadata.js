@@ -5,7 +5,7 @@ import MDNRComponent from '../common/MDNRComponent';
 import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
 import cn from 'classnames';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
-import DataListToolbar from '../DataList/DataListToolbar';
+import DataListToolbar from '../DynList/DataListToolbar';
 import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
 import Confirm from '../App/Confirm';
 import withStyles from './styles';

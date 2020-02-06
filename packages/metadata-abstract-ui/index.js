@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.22-beta.2, built:2020-01-26
+ metadata-abstract-ui v2.0.22-beta.2, built:2020-02-06
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1217,7 +1217,7 @@ function mngrs() {
       }
     },
     get_search_selector: {
-      value({_obj, _fld, _meta, search, top, skip, sorting}) {
+      value({_obj, _fld, _meta, search, top, skip, sorting, flat, parent}) {
         const {cachable, _owner, adapter} = this;
         const {md, utils, classes} = _owner.$p;
         const select = {};
@@ -1278,6 +1278,16 @@ function mngrs() {
               select[choice.name].push(fval);
             }
           });
+          if(!flat && parent) {
+            select.parent = parent.valueOf();
+            delete select.is_folder;
+            if(!select._sort) {
+              select._sort = [];
+            }
+            if(!select._sort.some(({field}) => field === 'is_folder')) {
+              select._sort.unshift({field: 'is_folder', direction: 'desc'});
+            }
+          }
         }
         else if(adapter.db(this) instanceof classes.PouchDB){
           Object.assign(select, {
