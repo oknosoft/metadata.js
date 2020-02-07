@@ -64,7 +64,7 @@ class FieldInfinit extends AbstractField {
   handleSelect = (value) => {
     if(value) {
       const {_obj, _fld, handleValueChange} = this.props;
-      _obj[_fld] = value;
+      _obj[_fld] = value && value.ref ? value.ref : value;
       value = _obj[_fld];
       this.handleCloseDialog();
       const loader = value && value.is_new() ? value.load() : Promise.resolve();

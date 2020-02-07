@@ -198,12 +198,15 @@ class DynList extends MDNRComponent {
                 docs.unshift(prnt.toJSON());
                 count++;
                 prnt = prnt.parent;
-              } while (!prnt.parent.empty());
+              } while (!prnt.empty());
             }
             for(let j = startIndex; j <= stopIndex; j++) {
               fakeRows.delete(j);
             }
             this.updateList(docs, startIndex, count);
+            if(!startIndex && docs.length) {
+              this.setState({selectedRow: this.rows.get(0)}, () => this.grid.selectCell({rowIdx: 0, idx: 0}));
+            }
           });
       }
       else {
@@ -246,7 +249,7 @@ class DynList extends MDNRComponent {
                 }
                 this.setState(newState, () => {
                   //selectRow
-                  this.grid.openCellEditor(scroll, 0);
+                  this.grid.selectCell({rowIdx: scroll, idx: 0});
                 });
               }
             }
@@ -432,23 +435,21 @@ class DynList extends MDNRComponent {
 
   // обработчик выбора значения в списке
   handleSelect = () => {
-    setTimeout(() => {
-      const {selectedRow: row, props: {handlers, _mgr}, state: {flat, parent}, _mounted} = this;
-      if(!_mounted) {
-        return;
-      }
-      if(row) {
-        if(!flat && parent && row.is_folder) {
-          this.setState({parent: row.ref == parent ? parent.parent : _mgr.get(row.ref)}, () => this.handleFilterChange());
-        }
-        else {
-          handlers.handleSelect && handlers.handleSelect(row, _mgr);
-        }
+    const {selectedRow: row, props: {handlers, _mgr}, state: {flat, parent}, _mounted} = this;
+    if(!_mounted) {
+      return;
+    }
+    if(row) {
+      if(!flat && parent && row.is_folder) {
+        this.setState({parent: row.ref == parent ? parent.parent : _mgr.get(row.ref)}, () => this.handleFilterChange());
       }
       else {
-        this.handleInfoText('Не выбрана строка');
+        handlers.handleSelect && handlers.handleSelect(row, _mgr);
       }
-    }, 200);
+    }
+    else {
+      this.handleInfoText('Не выбрана строка');
+    }
   };
 
   // обработчик добавления элемента списка

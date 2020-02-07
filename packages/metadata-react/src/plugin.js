@@ -66,16 +66,46 @@ function rx_columns({utils: {moment}, enm, md}) {
 
   const typed_formatters = {};
 
-  const date_formatter = {
-    date: ({value}) => {
-      const presentation = !value || value.length < 5 ? value || '' : moment(value).format(moment._masks.date);
-      return <div title={presentation}>{presentation}</div>;
-    },
-    date_time: ({value}) => {
-      const presentation = !value || value.length < 5 ? value || '' : moment(value).format(moment._masks.date_time);
-      return <div title={presentation}>{presentation}</div>;
+  // const date_formatter = {
+  //   date: ({value}) => {
+  //     const presentation = !value || value.length < 5 ? value || '' : moment(value).format(moment._masks.date);
+  //     return <div title={presentation}>{presentation}</div>;
+  //   },
+  //   date_time: ({value}) => {
+  //     const presentation = !value || value.length < 5 ? value || '' : moment(value).format(moment._masks.date_time);
+  //     return <div title={presentation}>{presentation}</div>;
+  //   }
+  // };
+
+  const indicator_formatter = (is_doc) => ({value, row}) => {
+    if(value && value.toString) {
+      value = value.toString();
     }
+    let indicator = 'cell_ref_elm';
+    if(row.deleted) {
+      indicator = is_doc ? 'cell_doc_deleted' : 'cell_ref_elm_deleted';
+    }
+    else if(row.is_folder) {
+      indicator = 'cell_ref_folder';
+    }
+    else if(is_doc) {
+      indicator = row.posted ? 'cell_doc_posted' : 'cell_doc';
+    }
+    return <div className={indicator} title={value}>{value}</div>;
   };
+
+  const date_formatter = (format, indicator, is_doc) => {
+    const formatter = indicator && indicator_formatter(is_doc);
+    return ({value, row}) => {
+      if(!value || value.length < 5) {
+        value = value || '';
+      }
+      else {
+        value = moment(value).format(moment._masks[format]);
+      }
+      return formatter ? formatter({value, row}) : <div title={value}>{value}</div>;
+    }
+  }
 
   const presentation_formatter = ({value}) => {
     let text = typeof value === 'string' ? value : (value && value.presentation) || '';
@@ -122,9 +152,10 @@ function rx_columns({utils: {moment}, enm, md}) {
       _mgr = _obj._manager;
     }
     const editable = (_obj && !read_only) ? _mgr.class_name.indexOf('rep.') !== 0 || this.obj.indexOf(`.${_mgr._tabular || 'data'}`) === -1 : false;
+    const is_doc = _mgr.class_name.startsWith('doc.');
 
     if(fields) {
-      res.forEach((column) => {
+      res.forEach((column, index) => {
 
         const keys = column.key.split('.');
         let _fld = column._meta = fields[keys[0]];
@@ -144,7 +175,7 @@ function rx_columns({utils: {moment}, enm, md}) {
             column.formatter = !_obj && _fld.type.types[0].includes('.') ? typed_formatter(_fld.type.types[0]) : presentation_formatter;
           }
           else if(_fld.type.date_part) {
-            column.formatter = date_formatter[_fld.type.date_part];
+            column.formatter = date_formatter(_fld.type.date_part, !index && !editable, is_doc);
           }
           else if(_fld.type.digits && _fld.type.types.length === 1){
             column.formatter = number_formatter(_fld.type.fraction);
@@ -210,6 +241,9 @@ function rx_columns({utils: {moment}, enm, md}) {
         default:
           if(editable){
             column.editor = DataCell;
+          }
+          else if(!column.formatter && !index) {
+            column.formatter = indicator_formatter(is_doc);
           }
         }
 
