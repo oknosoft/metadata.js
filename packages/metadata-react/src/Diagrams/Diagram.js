@@ -72,7 +72,7 @@ class Diagram extends React.Component {
   render() {
     const {width, height, data, classes, isFullscreen, toggleFullscreen, prev, next} = this.props;
     return [
-      <div key="title" className={classes.container}>
+      toggleFullscreen && <div key="title" className={classes.container}>
         <Typography variant="h6" component="h3" color="primary" className={classes.flex}>{data.title}</Typography>
         <IconButton title={isFullscreen ? 'Свернуть' : 'Развернуть'} onClick={toggleFullscreen}>
           {isFullscreen ? <FullscreenExitIcon/> : <FullscreenIcon/>}
