@@ -6,9 +6,8 @@
  * Created 10.01.2017
  */
 
-import React, {Component} from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
-import PropTypes from 'prop-types';
 
 import DataCell from 'metadata-react/DataField/DataCell';
 import TypeFieldCell from 'metadata-react/DataField/FieldTypeCell';
@@ -185,7 +184,6 @@ function rx_columns({utils: {moment}, enm, md}) {
           }
         }
 
-        let options;
         switch (column.ctrl_type) {
 
         case label:
@@ -289,45 +287,48 @@ export function export_handlers() {
  */
 
 
-/**
- * Печатает объект
- * @method print
- * @param ref {DataObj|String} - guid ссылки на объект
- * @param model {String|DataObj.cat.formulas} - идентификатор команды печати
- * @param [wnd] {dhtmlXWindows} - окно, из которого вызываем печать
- */
-function print(ref, model, wnd) {
+function print(DataObj) {
+  /**
+   * Печатает объект
+   * @method print
+   * @param ref {DataObj|String} - guid ссылки на объект
+   * @param model {String|DataObj.cat.formulas} - идентификатор команды печати
+   * @param [wnd] {dhtmlXWindows} - окно, из которого вызываем печать
+   */
+  return function print(ref, model, wnd) {
 
-  function tune_wnd_print(wnd_print) {
-    wnd && wnd.progressOff && wnd.progressOff()
-    wnd_print && wnd_print.focus();
-  }
+    function tune_wnd_print(wnd_print) {
+      wnd && wnd.progressOff && wnd.progressOff()
+      wnd_print && wnd_print.focus();
+    }
 
-  wnd && wnd.progressOn && wnd.progressOn();
+    wnd && wnd.progressOn && wnd.progressOn();
 
-  setTimeout(tune_wnd_print, 3000);
+    setTimeout(tune_wnd_print, 3000);
 
-  // если _printing_plates содержит ссылку на обрабочтик печати, используем его
-  if(this._printing_plates[model] instanceof DataObj) {
-    model = this._printing_plates[model];
-  }
+    // если _printing_plates содержит ссылку на обрабочтик печати, используем его
+    if(this._printing_plates[model] instanceof DataObj) {
+      model = this._printing_plates[model];
+    }
 
-  // если существует локальный обработчик, используем его
-  if(model instanceof DataObj && model.execute) {
-    return this.get(ref, true)
-      .then(model.execute.bind(model))
-      .then(tune_wnd_print);
-  }
-  else {
+    // если существует локальный обработчик, используем его
+    if(model instanceof DataObj && model.execute) {
+      return this.get(ref, 'promise')
+        .then(model.execute.bind(model))
+        .then(tune_wnd_print);
+    }
+    else {
 
-    // иначе - печатаем средствами 1С или иного сервера
-    const rattr = {};
-    $p.ajax.default_attr(rattr, job_prm.irest_url());
-    rattr.url += this.rest_name + '(guid\'' + utils.fix_guid(ref) + '\')' +
-      '/Print(model=' + model + ', browser_uid=' + wsql.get_user_param('browser_uid') + ')';
+      // иначе - печатаем средствами 1С или иного сервера
+      const rattr = {};
+      $p.ajax.default_attr(rattr, job_prm.irest_url());
+      rattr.url += this.rest_name + '(guid\'' + utils.fix_guid(ref) + '\')' +
+        '/Print(model=' + model + ', browser_uid=' + wsql.get_user_param('browser_uid') + ')';
 
-    return $p.ajax.get_and_show_blob(rattr.url, rattr, 'get')
-      .then(tune_wnd_print);
+      return $p.ajax.get_and_show_blob(rattr.url, rattr, 'get')
+        .then(tune_wnd_print);
+    }
+
   }
 
 }
@@ -352,15 +353,13 @@ export default {
    */
   constructor() {
 
+    const {cat, CatScheme_settings, classes: {DataManager, DataObj}} = this;
+
     // модифицируем метод columns() справочника scheme_settings - добавляем форматтеры и редакторы
-    Object.defineProperty(this.CatScheme_settings.prototype, 'rx_columns', {
-      value: rx_columns(this)
-    });
+    Object.defineProperty(CatScheme_settings.prototype, 'rx_columns', {value: rx_columns(this)});
 
     // методы печати в прототип DataManager
-    Object.defineProperties(this.classes.DataManager, {
-      value: print
-    });
+    Object.defineProperty(DataManager.prototype, 'print', {value: print(DataObj)});
 
     // публичные методы ui
     Object.defineProperty(this, 'ui', {
@@ -368,7 +367,7 @@ export default {
     });
 
     // форма по умолчанию для scheme_settings
-    const {scheme_settings} = this.cat;
+    const {scheme_settings} = cat;
     if(scheme_settings) {
       scheme_settings.FrmObj = SchemeSettingsObj;
     }
