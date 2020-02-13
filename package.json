@@ -17,7 +17,7 @@
     "alasql": "^0.5.5",
     "cron": "^1.8.2",
     "dataframe": "^2.0",
-    "downshift": "^4.1.0",
+    "downshift": "^5.0.0",
     "marked": "^0.8",
     "moment": "^2.24.0",
     "pg": "^7.18.1",

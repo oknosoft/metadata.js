@@ -49,7 +49,7 @@ export class FieldWithMeta extends MComponent {
       const prm = _obj[path[path.length - 1]] || (_obj._owner && _obj._owner[path[path.length - 1]]);
       if(prm && !prm.empty()) {
         this._meta = Object.assign({}, this._meta, {type: prm.type});
-        prm.choice_params.forEach(({name, path}) => {
+        prm.choice_params && prm.choice_params.forEach(({name, path}) => {
           if(!this._meta.choice_params){
             this._meta.choice_params = [];
           }
