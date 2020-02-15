@@ -153,13 +153,15 @@ class TabularSection extends MComponent {
   // обработчик при изменении настроек компоновки
   handleSchemeChange = (scheme) => {
 
-    const {props: {_obj, read_only}, state} = this;
+    const {props: {_obj, read_only, columnsChange}, state} = this;
     const _columns = scheme.rx_columns({
       mode: 'ts',
       fields: state._meta.fields,
       _obj,
       read_only,
     });
+
+    columnsChange && columnsChange({scheme, columns: _columns});
 
     if(this._mounted) {
       this.setState({scheme, _columns});
@@ -316,6 +318,7 @@ TabularSection.propTypes = {
 
   onCellSelected: PropTypes.func,
   onRowUpdated: PropTypes.func,
+  columnsChange: PropTypes.func,
 };
 
 TabularSection.defaultProps = {
