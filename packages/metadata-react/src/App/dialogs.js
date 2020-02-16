@@ -252,4 +252,27 @@ export default {
     });
   },
 
+  /**
+   * Всплывающтй snackbar оповещений пользователя
+   * @param text
+   */
+  snack({message, timeout = 20000}) {
+
+    if(this._handleIfaceState) {
+      const close_confirm = () => {
+        this.close_confirm('snack');
+        if(timer) {
+          clearTimeout(timer);
+          timer = 0;
+        }
+      }
+      let timer = setTimeout(close_confirm, timeout);
+      this._handleIfaceState({
+        component: '',
+        name: 'snack',
+        value: {open: true, message, button: 'OK', handleClose: close_confirm}
+      });
+    }
+  }
+
 };
