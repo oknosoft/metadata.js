@@ -256,7 +256,7 @@ export default {
    * Всплывающтй snackbar оповещений пользователя
    * @param text
    */
-  snack({message, timeout = 20000}) {
+  snack({message, timeout = 10000}) {
 
     if(this._handleIfaceState) {
       const close_confirm = () => {
