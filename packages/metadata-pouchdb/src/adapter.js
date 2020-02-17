@@ -1794,7 +1794,7 @@ function adapter({AbstracrAdapter}) {
       const {utils} = this.$p;
       const res = [];
       const options = {
-        limit: 100,
+        limit: 200,
         include_docs: true,
         startkey: _mgr.class_name + '|',
         endkey: _mgr.class_name + '|\ufff0',
@@ -1806,6 +1806,10 @@ function adapter({AbstracrAdapter}) {
         if(selection._top) {
           top = selection._top;
           delete selection._top;
+          if(top > 1000) {
+            options.limit += 1000;
+            calc_count = true;
+          }
         }
         else {
           top = 300;
