@@ -65,18 +65,7 @@ function rx_columns({utils: {moment}, enm, md}) {
 
   const typed_formatters = {};
 
-  // const date_formatter = {
-  //   date: ({value}) => {
-  //     const presentation = !value || value.length < 5 ? value || '' : moment(value).format(moment._masks.date);
-  //     return <div title={presentation}>{presentation}</div>;
-  //   },
-  //   date_time: ({value}) => {
-  //     const presentation = !value || value.length < 5 ? value || '' : moment(value).format(moment._masks.date_time);
-  //     return <div title={presentation}>{presentation}</div>;
-  //   }
-  // };
-
-  const indicator_formatter = (is_doc) => ({value, row}) => {
+  const indicator_formatter = (is_doc, is_date) => ({value, row}) => {
     if(value && value.toString) {
       value = value.toString();
     }
@@ -90,19 +79,32 @@ function rx_columns({utils: {moment}, enm, md}) {
     else if(is_doc) {
       indicator = row.posted ? 'cell_doc_posted' : 'cell_doc';
     }
+    if(is_date) {
+      const values = value.split(' ');
+      if(values.length === 2) {
+        return <div className={indicator} title={value}>{values[0]}<small>{` ${values[1]}`}</small></div>;
+      }
+    }
     return <div className={indicator} title={value}>{value}</div>;
   };
 
   const date_formatter = (format, indicator, is_doc) => {
-    const formatter = indicator && indicator_formatter(is_doc);
+    const formatter = indicator && indicator_formatter(is_doc, true);
     return ({value, row}) => {
       if(!value || value.length < 5) {
-        value = value || '';
+        value = String(value || '');
       }
       else {
         value = moment(value).format(moment._masks[format]);
       }
-      return formatter ? formatter({value, row}) : <div title={value}>{value}</div>;
+      if(formatter) {
+        return formatter({value, row});
+      }
+      const values = value.split(' ');
+      if(values.length === 2) {
+        return <div className={indicator} title={value}>{values[0]}<small>{` ${values[1]}`}</small></div>;
+      }
+      return <div title={value}>{value}</div>;
     }
   }
 
