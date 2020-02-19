@@ -443,8 +443,8 @@ class DynList extends MDNRComponent {
       if(!flat && parent && row.is_folder) {
         this.setState({parent: row.ref == parent ? parent.parent : _mgr.get(row.ref)}, () => this.handleFilterChange());
       }
-      else {
-        handlers.handleSelect && handlers.handleSelect(row, _mgr);
+      else if(handlers.handleSelect) {
+         handlers.handleSelect(row, _mgr);
       }
     }
     else {
@@ -459,14 +459,17 @@ class DynList extends MDNRComponent {
   };
 
   // обработчик редактирования элемента списка
-  handleEdit = () => {
-    const {_meta, selectedRow: row, props: {handlers, _mgr}} = this;
+  handleEdit = (force) => () => {
+    const {_meta, selectedRow: row, props: {handlers, _mgr}, state: {flat, parent}} = this;
     if(!row || $p.utils.is_empty_guid(row.ref)) {
-      handlers.handleIfaceState({
+      return handlers.handleIfaceState({
         component: '',
         name: 'alert',
         value: {open: true, text: 'Укажите строку для редактирования', title: _meta.synonym}
       });
+    }
+    if(!force && !flat && parent && row.is_folder) {
+      this.setState({parent: row.ref == parent ? parent.parent : _mgr.get(row.ref)}, () => this.handleFilterChange());
     }
     else if(handlers.handleEdit) {
       handlers.handleEdit({row, ref: row.ref, _mgr});
@@ -546,7 +549,7 @@ class DynList extends MDNRComponent {
       settings_open,
       handleSelect: this.handleSelect,
       handleAdd: this.handleAdd,
-      handleEdit: this.handleEdit,
+      handleEdit: this.handleEdit(true),
       handleRemove: this.handleRemove,
       handlePrint: this.handlePrint,
       //handleAttachments: this.handleAttachments,
@@ -609,7 +612,7 @@ class DynList extends MDNRComponent {
         rowsCount={rowCount}
         onCellDeSelected={() => this.onRowSelect({selectedRow: null})}
         onCellSelected={(v) => this.onRowSelect({selectedRow: this.rows.get(v.rowIdx) || v.rowIdx})}
-        onRowDoubleClick={props.selectionMode ? this.handleSelect : this.handleEdit}
+        onRowDoubleClick={props.selectionMode ? this.handleSelect : this.handleEdit()}
         onGridSort={(sortColumn, sortDirection) => {
           scheme.first_sorting(sortColumn, sortDirection);
           this.handleFilterChange();
