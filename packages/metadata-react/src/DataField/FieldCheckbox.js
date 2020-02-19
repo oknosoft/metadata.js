@@ -7,7 +7,6 @@
  */
 
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Checkbox from '@material-ui/core/Checkbox';

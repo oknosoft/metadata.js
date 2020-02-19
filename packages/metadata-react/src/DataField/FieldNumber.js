@@ -5,9 +5,10 @@
  *
  * Created 22.09.2016
  */
-import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-import TextField from '@material-ui/core/TextField';
+import React from 'react';
+import InputLabel from '@material-ui/core/InputLabel';
+import Input from '@material-ui/core/Input';
+import FormControl from '@material-ui/core/FormControl';
 import IconButton from '@material-ui/core/IconButton';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Keyboard from '@material-ui/icons/Keyboard';
@@ -17,6 +18,7 @@ import Calculator from '../Calculator';
 
 import AbstractField from './AbstractField';
 import withStyles from './styles';
+
 
 class FieldNumber extends AbstractField {
 
@@ -57,16 +59,23 @@ class FieldNumber extends AbstractField {
   render() {
 
     const {state, props, _meta, isTabular} = this;
-    const {_obj, _fld, classes, className, read_only, fullWidth} = props;
+    const {_obj, _fld, classes, extClasses, className, read_only, label_position, fullWidth} = props;
     const inputProps={readOnly: Boolean(read_only)};
+    let endAdornment;
     if(navigator.userAgent.match(/android|ios|iphone/i)) {
       inputProps.type = 'number'
     }
     else {
-      inputProps.endAdornment = !read_only && (state.focused || state.isCalculatorVisible) ? <InputAdornment position="end">
+      endAdornment = !read_only && (state.focused || state.isCalculatorVisible) ? <InputAdornment position="end">
         <IconButton onClick={this.handleInputClick} tabIndex={-1}><Keyboard /></IconButton>
       </InputAdornment>  : undefined;
     }
+
+    const attr = {
+      disabled: read_only,
+      title: _meta.tooltip || _meta.synonym,
+    }
+    const v = state.focused && !read_only ? state.value : _obj[_fld];
 
     // Render plain html input in cell of table.
     return (
@@ -87,17 +96,28 @@ class FieldNumber extends AbstractField {
             onClick={this.handleInputClick}
           />
           :
-          <TextField
-            className={cn(classes.formControl, className)}
+          <FormControl
+            className={extClasses && extClasses.control ? '' : cn(classes.formControl, className, props.bar && classes.barInput)}
+            classes={extClasses && extClasses.control ? extClasses.control : null}
             fullWidth={fullWidth}
-            label={_meta.synonym}
-            title={_meta.tooltip || _meta.synonym}
-            value={state.focused && !read_only ? state.value : _obj[_fld]}
-            onChange={this.onChange}
-            onFocus={this.handleFocus}
-            onBlur={this.handleBlur}
-            InputProps={inputProps}
-          />
+            {...attr}
+          >
+            {label_position != 'hide' &&
+            <InputLabel
+              classes={extClasses && extClasses.label ? extClasses.label : null}
+            >{_meta.synonym}</InputLabel>}
+            <Input
+              value={v}
+              onChange={this.onChange}
+              onFocus={this.handleFocus}
+              onBlur={this.handleBlur}
+              inputProps={inputProps}
+              endAdornment={endAdornment}
+              classes={
+                Object.assign({input: cn(classes.input, attr.required && (!v || v.empty()) && classes.required)}, extClasses && extClasses.input)
+              }
+            />
+          </FormControl>
         }
       </div>
     );

@@ -5,14 +5,13 @@ import Input from '@material-ui/core/Input';
 import cn from 'classnames';
 import Adornment from './Adornment';
 
-
 export default function InpitEditable(props) {
-  const {_meta, _obj, _fld, classes, extClasses, fullWidth, mandatory, label_position, inputRef, inputProps, labelProps} = props;
+  const {_meta, _obj, _fld, classes, extClasses, className, fullWidth, mandatory, label_position, inputRef, inputProps, labelProps} = props;
   const value = _obj[_fld];
   const attr = {
     title: _meta.tooltip || _meta.synonym,
   }
-  if(_meta.mandatory) {
+  if(_meta.mandatory || mandatory) {
     attr.required = true;
   }
 
@@ -28,7 +27,7 @@ export default function InpitEditable(props) {
 
   return (
     <FormControl
-      className={extClasses && extClasses.control ? '' : cn(classes.formControl, props.bar && classes.barInput)}
+      className={extClasses && extClasses.control ? '' : cn(classes.formControl, className, props.bar && classes.barInput)}
       classes={extClasses && extClasses.control ? extClasses.control : null}
       fullWidth={fullWidth}
       onDoubleClick={null}
