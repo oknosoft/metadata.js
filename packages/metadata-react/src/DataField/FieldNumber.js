@@ -114,7 +114,7 @@ class FieldNumber extends AbstractField {
               inputProps={inputProps}
               endAdornment={endAdornment}
               classes={
-                Object.assign({input: cn(classes.input, attr.required && (!v || v.empty()) && classes.required)}, extClasses && extClasses.input)
+                Object.assign({input: cn(classes.input, attr.required && !v && classes.required)}, extClasses && extClasses.input)
               }
             />
           </FormControl>

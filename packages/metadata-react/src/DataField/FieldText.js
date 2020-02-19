@@ -47,7 +47,7 @@ class FieldText extends AbstractField {
           {...other}
           classes={
             Object.assign({
-              input: cn(classes.input, attr.required && (!other.value || other.value.empty()) && classes.required)
+              input: cn(classes.input, attr.required && !other.value && classes.required)
             }, extClasses && extClasses.input)
           }
         />
