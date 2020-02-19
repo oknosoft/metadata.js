@@ -16,6 +16,7 @@ import FieldText from './FieldText';
 import FieldDate from './FieldDate';
 import FieldNumber from './FieldNumber';
 import FieldToggle from './FieldToggle';
+import FieldCheckbox from './FieldCheckbox';
 import FieldThreeState from './FieldThreeState';
 
 import control_by_type from 'metadata-abstract-ui/ui';
@@ -46,6 +47,9 @@ export default class DataField extends FieldWithMeta {
 
     case 'ch':
       return <FieldToggle {...props} />;
+
+    case 'cb':
+      return <FieldCheckbox {...props} />;
 
     case 'threestate':
       return <FieldThreeState {...props} />;

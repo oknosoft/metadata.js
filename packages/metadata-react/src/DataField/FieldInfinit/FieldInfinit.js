@@ -264,17 +264,18 @@ class FieldInfinit extends AbstractField {
 
     const {props, state, _meta, paperProps, isTabular} = this;
     const {read_only} = (props.hasOwnProperty('read_only') ? props : _meta);
-    const {classes, _obj, _fld} = props;
+    const {classes, extClasses, _obj, _fld, fullWidth} = props;
     const value = _obj[_fld];
 
     return (
       read_only ? <InpitReadOnly
           _meta={_meta}
-          _fld={props._fld}
+          _fld={_fld}
           isTabular={isTabular}
           classes={classes}
+          extClasses={extClasses}
+          fullWidth={fullWidth}
           inputValue={suggestionText(value)}
-          fullWidth={props.fullWidth}
           label_position={props.label_position}
       />
         :
@@ -321,8 +322,9 @@ class FieldInfinit extends AbstractField {
                 _fld={_fld}
                 isOpen={isOpen}
                 classes={classes}
+                extClasses={extClasses}
+                fullWidth={fullWidth}
                 bar={props.bar}
-                fullWidth={props.fullWidth}
                 mandatory={props.mandatory}
                 label_position={props.label_position}
                 handleOpenObj={this.handleOpenObj}

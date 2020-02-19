@@ -16,6 +16,7 @@ import Select from '@material-ui/core/Select';
 
 import AbstractField, {suggestionText} from './AbstractField';
 import withStyles from './styles';
+import cn from 'classnames';
 
 class FieldSelect extends AbstractField {
 
@@ -77,24 +78,39 @@ class FieldSelect extends AbstractField {
   render() {
 
     const {props, _meta, isTabular, onChange} = this;
-    const {_obj, _fld, classes} = props;
+    const {_obj, _fld, classes, extClasses, fullWidth} = props;
     const value = _obj[_fld];
+    const attr = {
+      title: _meta.tooltip || _meta.synonym,
+    }
+    if(_meta.mandatory) {
+      attr.required = true;
+    }
 
     return isTabular ?
       <select
         value={value && value.valueOf()}
         onChange={onChange}
+        {...attr}
       >
         {this.renderOptions()}
       </select>
       :
-      <FormControl className={classes.formControl}>
-        <InputLabel>{_meta.tooltip || _meta.synonym}</InputLabel>
+      <FormControl
+        className={extClasses && extClasses.control ? '' : cn(classes.formControl, props.bar && classes.barInput)}
+        classes={extClasses && extClasses.control ? extClasses.control : null}
+        fullWidth={fullWidth}
+        {...attr}
+      >
+        <InputLabel classes={extClasses && extClasses.label ? extClasses.label : null}>{_meta.tooltip || _meta.synonym}</InputLabel>
         <Select
           native
           value={value && value.valueOf()}
           onChange={onChange}
-          input={<Input/>}
+          input={<Input classes={
+            Object.assign(
+              {input: cn(classes.input, attr.required && (!value || value.empty()) && classes.required)}, extClasses && extClasses.input)
+          }/>}
         >
           {this.renderOptions()}
         </Select>
