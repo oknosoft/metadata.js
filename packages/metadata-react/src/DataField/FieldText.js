@@ -19,7 +19,6 @@ class FieldText extends AbstractField {
     const {props, _meta, onChange} = this;
     const {_obj, _fld, classes, extClasses, className, fullWidth, read_only, InputProps, label_position, bar, isTabular, ...other} = props;
     const attr = {
-      disabled: read_only,
       title: _meta.tooltip || _meta.synonym,
     }
     Object.assign(other, {value: _obj[_fld], onChange});
@@ -28,6 +27,9 @@ class FieldText extends AbstractField {
       if(!other.value) {
         other.inputProps = Object.assign(other.inputProps || {}, {className: classes.required});
       }
+    }
+    if(read_only) {
+      other.readOnly = true;
     }
 
     return this.isTabular ?

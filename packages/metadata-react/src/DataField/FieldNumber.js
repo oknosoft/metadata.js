@@ -72,7 +72,6 @@ class FieldNumber extends AbstractField {
     }
 
     const attr = {
-      disabled: read_only,
       title: _meta.tooltip || _meta.synonym,
     }
     const v = state.focused && !read_only ? state.value : _obj[_fld];
