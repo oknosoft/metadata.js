@@ -102,7 +102,7 @@ class FieldSelect extends AbstractField {
         fullWidth={fullWidth}
         {...attr}
       >
-        <InputLabel classes={extClasses && extClasses.label ? extClasses.label : null}>{_meta.tooltip || _meta.synonym}</InputLabel>
+        <InputLabel classes={extClasses && extClasses.label ? extClasses.label : null}>{_meta.synonym}</InputLabel>
         <Select
           native
           value={value && value.valueOf()}

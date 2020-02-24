@@ -48,7 +48,7 @@ class FieldCheckbox extends AbstractField {
           fullWidth={fullWidth}
           {...attr}
         >
-          <InputLabel classes={extClasses && extClasses.label}>{_meta.tooltip || _meta.synonym}</InputLabel>
+          <InputLabel classes={extClasses && extClasses.label}>{_meta.synonym}</InputLabel>
           <Checkbox
             checked = {value}
             disabled = {read_only}

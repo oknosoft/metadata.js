@@ -20,9 +20,12 @@ class FieldSelectStatic extends AbstractField {
   render() {
 
     const {props: {_obj, _fld, options, classes}, _meta, isTabular, onChange} = this;
+    const attr = {
+      title: _meta.tooltip || _meta.synonym,
+    };
 
-    return <FormControl className={classes.formControl}>
-        <InputLabel>{_meta.tooltip || _meta.synonym}</InputLabel>
+    return <FormControl className={classes.formControl} {...attr}>
+        <InputLabel>{_meta.synonym}</InputLabel>
         <Select
           native
           value={_obj[_fld].valueOf()}

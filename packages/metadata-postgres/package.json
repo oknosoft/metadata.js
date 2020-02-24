@@ -9,7 +9,7 @@
     "npm": "^6.0"
   },
   "dependencies": {
-    "pg": "^7.18"
+    "pg": "^7.18.2"
   },
   "repository": {
     "type": "git",
