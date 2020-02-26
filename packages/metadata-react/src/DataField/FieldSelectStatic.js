@@ -14,23 +14,37 @@ import Select from '@material-ui/core/Select';
 
 import AbstractField from './AbstractField';
 import withStyles from './styles';
+import cn from 'classnames';
 
 class FieldSelectStatic extends AbstractField {
 
   render() {
 
-    const {props: {_obj, _fld, options, classes}, _meta, isTabular, onChange} = this;
+    const {props: {_obj, _fld, options, classes, extClasses, fullWidth, label_position}, _meta, onChange} = this;
     const attr = {
       title: _meta.tooltip || _meta.synonym,
     };
+    const value = _obj[_fld].valueOf();
 
-    return <FormControl className={classes.formControl} {...attr}>
-        <InputLabel>{_meta.synonym}</InputLabel>
+    return <FormControl
+        className={extClasses && extClasses.control ? '' : cn(classes.formControl, className, props.bar && classes.barInput)}
+        classes={extClasses && extClasses.control ? extClasses.control : null}
+        fullWidth={fullWidth}
+        {...attr}
+      >
+        {label_position != 'hide' &&
+        <InputLabel
+          classes={extClasses && extClasses.label ? extClasses.label : null}
+        >{_meta.synonym}</InputLabel>}
         <Select
           native
-          value={_obj[_fld].valueOf()}
+          value={value}
           onChange={onChange}
-          input={<Input/>}
+          input={<Input classes={
+            Object.assign({
+              input: cn(classes.input, attr.required && !value && classes.required)
+            }, extClasses && extClasses.input)
+          }/>}
         >
           {options.map((v, key) => <option key={key} value={v.valueOf()}>{v.toString()}</option>)}
         </Select>
