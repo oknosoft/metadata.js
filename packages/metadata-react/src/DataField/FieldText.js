@@ -33,7 +33,7 @@ class FieldText extends AbstractField {
     }
 
     return this.isTabular ?
-      <input type="text" {...attr}/>
+      <input type="text" {...attr} {...other}/>
       :
       <FormControl
         className={extClasses && extClasses.control ? '' : cn(classes.formControl, className, props.bar && classes.barInput)}
