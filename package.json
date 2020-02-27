@@ -31,10 +31,10 @@
     "pouchdb-mapreduce": "7.2",
     "pouchdb-replication": "7.2",
     "rc-calendar": "^9.15.9",
-    "rc-cascader": "^0.17.5",
+    "rc-cascader": "^1.0.1",
     "rc-time-picker": "^3.7.3",
     "superlogin-client": "^0.8.0",
-    "uuid": "^3.4.0"
+    "uuid": "^7.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
@@ -62,7 +62,7 @@
     "@babel/preset-env": "^7.8.4",
     "@babel/preset-react": "^7.8.3",
     "@babel/runtime": "^7.8.4",
-    "babel-eslint": "^10.0.3",
+    "babel-eslint": "^10.1.0",
     "babel-loader": "^8.0.6",
     "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
     "concat-files": "^0.1.1",
