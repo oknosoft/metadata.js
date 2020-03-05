@@ -50,7 +50,6 @@ export default class WindowPortal extends React.PureComponent {
     this.externalWindow.document.body.appendChild(containerEl);
 
     this.externalWindow.document.title = this.props.title || 'Документ';
-    copyStyles(document, this.externalWindow.document);
 
     // update the state in the parent component if the user closes the
     // new window
@@ -59,6 +58,7 @@ export default class WindowPortal extends React.PureComponent {
     });
 
     this.setState({containerEl}, () => {
+      copyStyles(document, this.externalWindow.document);
       if(this.props.print) {
         setTimeout(() => this.externalWindow && this.externalWindow.print(), 1000);
       }
