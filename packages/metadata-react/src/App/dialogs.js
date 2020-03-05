@@ -273,6 +273,16 @@ export default {
         value: {open: true, message, button: 'OK', handleClose: close_confirm}
       });
     }
+  },
+
+  window({Component, obj, title, attr, print}) {
+    if(this._handleIfaceState) {
+      this._handleIfaceState({
+        component: '',
+        name: 'wnd_portal',
+        value: {open: true, Component, obj, title, attr, print, handleClose: this.close_confirm.bind(this, 'wnd_portal')}
+      });
+    }
   }
 
 };
