@@ -45,30 +45,42 @@ export default class WindowPortal extends React.PureComponent {
     // appended to or it will fail in Edge with a "Permission Denied"
     // or similar error.
     // See: https://github.com/rmariuzzo/react-new-window/issues/12#issuecomment-386992550
-    this.externalWindow = window.open('', '', 'menubar=no,toolbar=no,location=no,status=no,directories=no');
-    const containerEl = this.externalWindow.document.createElement('div');
-    this.externalWindow.document.body.appendChild(containerEl);
+    this.externalWindow = window.open('', '', 'menubar=no,toolbar=no,location=no,status=no,dialog=yes,minimizable=yes');
+    if(this.externalWindow) {
+      const containerEl = this.externalWindow.document.createElement('div');
+      this.externalWindow.document.body.appendChild(containerEl);
 
-    this.externalWindow.document.title = this.props.title || 'Документ';
+      this.externalWindow.document.title = this.props.title || 'Документ';
 
-    // update the state in the parent component if the user closes the
-    // new window
-    this.externalWindow.addEventListener('beforeunload', () => {
-      this.props.handleClose();
-    });
+      // update the state in the parent component if the user closes the
+      // new window
+      this.externalWindow.addEventListener('beforeunload', () => {
+        if(this.externalWindow) {
+          this.externalWindow = null;
+          Promise.resolve().then(() => this.props.handleClose());
+        }
+      });
 
-    this.setState({containerEl}, () => {
-      copyStyles(document, this.externalWindow.document);
-      if(this.props.print) {
-        setTimeout(() => this.externalWindow && this.externalWindow.print(), 1000);
-      }
-    });
+      this.setState({containerEl}, () => {
+        this.externalWindow && copyStyles(document, this.externalWindow.document);
+        if(this.props.print) {
+          setTimeout(() => this.externalWindow && this.externalWindow.print(), 1000);
+        }
+      });
+    }
+    // else {
+    //   // обработать ошибку открытия окна
+    // }
   }
 
   componentWillUnmount() {
     // This will fire when this.state.showWindowPortal in the parent component becomes false
     // So we tidy up by just closing the window
-    this.externalWindow.close();
+    this.externalWindow && this.externalWindow.close();
+  }
+
+  print = () => {
+    return Promise.resolve().then(() => this.externalWindow && this.externalWindow.print());
   }
 
   render() {
@@ -83,7 +95,7 @@ export default class WindowPortal extends React.PureComponent {
     const {Component, children, obj, attr} = this.props;
 
     // Append props.children to the container <div> in the new window
-    return ReactDOM.createPortal(Component ? <Component obj={obj} attr={attr}/> : children, containerEl);
+    return ReactDOM.createPortal(Component ? <Component print={this.print} obj={obj} attr={attr}/> : children, containerEl);
   }
 }
 

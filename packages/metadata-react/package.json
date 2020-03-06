@@ -31,8 +31,8 @@
     "yamljs": "^0.3"
   },
   "peerDependencies": {
-    "react": "^16.12",
-    "react-dom": "^16.12"
+    "react": "^16.13",
+    "react-dom": "^16.13"
   },
   "scripts": {
     "build:es": "cross-env NODE_ENV=production BABEL_ENV=es babel --config-file ./babel.config.js ./src --out-dir . && node ./copy-files",
