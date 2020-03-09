@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.22-beta.3, built:2020-02-19
+ metadata-pouchdb v2.0.22-beta.3, built:2020-03-09
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -15,7 +15,7 @@ function sort_fn(a, b) {
   else if (a.date > b.date){
     return 1;
   }
-  else{
+  else {
     return 0;
   }
 }
@@ -343,7 +343,7 @@ var proto = ({classes}) => {
         if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
           this.number_doc = prefix + part;
         }
-        else{
+        else {
           this.id = prefix + part;
         }
         return this;
@@ -2024,7 +2024,7 @@ function adapter({AbstracrAdapter}) {
               return;
             }
           }
-          key = doc._id.split('|');
+          key = doc._id ? doc._id.split('|') : [doc.class_name, doc.ref];
           if(key[0] === 'system') {
             return !options && this.emit('system', key[1], doc);
           }

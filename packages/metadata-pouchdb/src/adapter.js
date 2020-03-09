@@ -2147,7 +2147,7 @@ function adapter({AbstracrAdapter}) {
               return;
             }
           }
-          key = doc._id.split('|');
+          key = doc._id ? doc._id.split('|') : [doc.class_name, doc.ref];
           if(key[0] === 'system') {
             return !options && this.emit('system', key[1], doc);
           }
