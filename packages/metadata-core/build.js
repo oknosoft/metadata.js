@@ -11,7 +11,7 @@ const package_data = require(path.resolve(__dirname, './package.json'));
 
 const external = ['events', 'moment', 'alasql'];
 const plugins = [
-	resolve(),
+	resolve({preferBuiltins: true}),
 	replace({PACKAGE_VERSION: `"${package_data.version}"`}),
 	cleanup(),
 ];

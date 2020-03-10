@@ -6,7 +6,11 @@
  * @final
  */
 
+import {DataManager, EnumManager} from './mngrs';
+import {DataObj, DocObj} from './objs';
+import {TabularSection, TabularSectionRow} from './tabulars';
 
+const {v1: uuidv1} = require('uuid');
 const moment = require('moment');
 require('moment/locale/ru');
 moment.locale('ru');
@@ -19,12 +23,6 @@ moment._masks = {
 if(typeof global != 'undefined'){
   global.moment = moment;
 }
-
-const uuidv1 = require('uuid/v1');
-
-import {DataManager, EnumManager} from './mngrs';
-import {DataObj, DocObj} from './objs';
-import {TabularSection, TabularSectionRow} from './tabulars';
 
 /**
  * Отбрасываем часовой пояс при сериализации даты

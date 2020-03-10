@@ -2975,6 +2975,7 @@ var data_managers = /*#__PURE__*/Object.freeze({
 	BusinessProcessManager: BusinessProcessManager
 });
 
+const {v1: uuidv1} = require('uuid');
 const moment$1 = require('moment');
 require('moment/locale/ru');
 moment$1.locale('ru');
@@ -2987,7 +2988,6 @@ moment$1._masks = {
 if(typeof global != 'undefined'){
   global.moment = moment$1;
 }
-const uuidv1 = require('uuid/v1');
 Date.prototype.toJSON = Date.prototype.toISOString = function () {
 	return moment$1(this).format(moment$1._masks.iso);
 };
