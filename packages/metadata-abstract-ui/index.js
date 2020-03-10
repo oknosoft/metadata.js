@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.22-beta.3, built:2020-02-19
+ metadata-abstract-ui v2.0.22-beta.4, built:2020-03-10
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -882,7 +882,7 @@ function scheme_settings() {
         if(self){
           !ok && res.push(row._obj);
         }
-        else{
+        else {
           ok && res.push(row);
         }
       });
@@ -894,7 +894,7 @@ function scheme_settings() {
         _obj.forEach((row, index) => row.row = index + 1);
         return collection;
       }
-      else{
+      else {
         return res;
       }
     }
@@ -961,7 +961,7 @@ function scheme_settings() {
           stack.push(row);
           row[col0.key] = col0._meta.type.is_ref ? {presentation: 'Σ'} : 'Σ';
         }
-        else{
+        else {
           stack.push({children: collection._rows});
         }
         for(const row of res) {
@@ -1323,7 +1323,7 @@ function mngrs() {
               if(Array.isArray(choice.path)){
                 choice.path.forEach(v => select.selector[choice.name].$in.push(v.valueOf()));
               }
-              else{
+              else {
                 select.selector[choice.name].$in.push(choice.path.valueOf());
               }
             }
@@ -1332,7 +1332,7 @@ function mngrs() {
               if(Array.isArray(choice.path)){
                 choice.path.forEach(v => select.selector[choice.name].$in.push(v.valueOf()));
               }
-              else{
+              else {
                 select.selector[choice.name].$in.push(choice.path.valueOf());
               }
             }

@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.22-beta.3, built:2020-02-20
+ metadata-core v2.0.22-beta.4, built:2020-03-10
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -268,7 +268,7 @@ class TabularSection {
       _obj.length = 0;
       !_owner._data._loading && _owner._manager.emit_async('rows', _owner, {[_name]: true});
     }
-    else{
+    else {
       this.find_rows(selection).forEach((row) => this.del(row.row-1));
     }
 		return this;
@@ -396,7 +396,7 @@ class TabularSection {
       if (res){
         res = false;
       }
-      else{
+      else {
         sql += ', ';
       }
       sql += '`' + f[0] + '`';
@@ -430,7 +430,7 @@ class TabularSection {
 			if (!sql){
         sql = "select ";
       }
-      else{
+      else {
         sql += ", ";
       }
       sql += aggr + "(`" + f + "`) `" + f + "`";
@@ -1486,7 +1486,7 @@ class MetaEventEmitter extends EventEmitter{
 			super.on(type, listener);
 			return [type, listener];
 		}
-		else{
+		else {
 			for(const fld in type){
         typeof type[fld] === 'function' && super.on(fld, type[fld]);
 			}
@@ -1508,7 +1508,7 @@ class MetaEventEmitter extends EventEmitter{
 		else if(typeof type === 'function'){
 			throw new TypeError('MetaEventEmitter.off: type must be a string')
 		}
-		else{
+		else {
 			super.removeAllListeners(type);
 		}
 	}
@@ -1608,7 +1608,7 @@ class DataManager extends MetaEventEmitter{
 		if(field_name){
 			return _meta.fields && _meta.fields[field_name] || md.get(this, field_name);
 		}
-		else{
+		else {
 			return _meta;
 		}
 	}
@@ -1818,7 +1818,7 @@ class DataManager extends MetaEventEmitter{
 			else if (utils.is_guid(property)){
 				oproperty = $p.cch.properties.get(property);
 			}
-			else{
+			else {
 				return;
 			}
 			if (utils.is_data_obj(oproperty)) {
@@ -1930,7 +1930,7 @@ class RefDataManager extends DataManager{
 			if(do_not_create){
 				do_not_create = rp;
 			}
-			else{
+			else {
 				do_not_create = arguments[2];
 			}
 		}
@@ -1939,7 +1939,7 @@ class RefDataManager extends DataManager{
 			if(do_not_create && do_not_create != rp){
 				return;
 			}
-			else{
+			else {
 				o = this.obj_constructor('', [ref, this]);
         created = true;
 			}
@@ -1954,11 +1954,11 @@ class RefDataManager extends DataManager{
             return o.is_new() ? o.after_create() : o;
           });
 			}
-			else{
+			else {
         created && arguments.length !== 3 && o.after_create();
 				return o;
 			}
-		}else{
+		}else {
 			return do_not_create == rp ? Promise.resolve(o) : o;
 		}
 	}
@@ -1986,7 +1986,7 @@ class RefDataManager extends DataManager{
       if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
         call_new_number_doc = !o.number_doc;
       }
-      else{
+      else {
         call_new_number_doc = !o.id;
       }
       return (call_new_number_doc ? o.new_number_doc() : Promise.resolve(o))
@@ -2084,7 +2084,7 @@ class RefDataManager extends DataManager{
 					flds.push("date");
 					flds.push("number_doc");
 				}
-				else{
+				else {
           if(cmd.hierarchical && cmd.group_hierarchy) {
             flds.push('is_folder');
           }
@@ -2150,7 +2150,7 @@ class RefDataManager extends DataManager{
 					else
 						s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" + (filter ? 0 : 1);
 				}
-				else{
+				else {
 					if(cmd.has_owners)
 						s = " WHERE (" + (owner == utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 					else
@@ -2162,7 +2162,7 @@ class RefDataManager extends DataManager{
 				else if(t instanceof DocManager){
           s += " OR _t_.number_doc LIKE '" + filter + "'";
         }
-				else{
+				else {
 					if(cmd["main_presentation_name"] || t instanceof ChartOfAccountManager)
 						s += " OR _t_.name LIKE '" + filter + "'";
 					if(cmd["code_length"])
@@ -2188,7 +2188,7 @@ class RefDataManager extends DataManager{
                 if(utils.is_data_obj(sel[key]) || utils.is_guid(sel[key])){
                   s += and + "(_t_." + key + " = '" + sel[key] + "') ";
                 }
-                else{
+                else {
                   var keys = Object.keys(sel[key]),
                     val = sel[key][keys[0]],
                     mf = cmd.fields[key] || t.metadata(key),
@@ -2236,7 +2236,7 @@ class RefDataManager extends DataManager{
                       return  sum;
                     }, "") + ")) ";
                   }
-                  else{
+                  else {
                     s += and + "(_t_." + key + " = '" + val + "') ";
                   }
                 }
@@ -2252,7 +2252,7 @@ class RefDataManager extends DataManager{
 					if(typeof attr.selection === "function"){
             attr.selection(s);
 					}
-					else{
+					else {
             attr.selection.forEach(sel_el);
           }
 				}
@@ -2312,7 +2312,7 @@ class RefDataManager extends DataManager{
 				sql += t.table_name+" (ref uuid PRIMARY KEY NOT NULL, _deleted boolean";
 				if(t instanceof DocManager)
 					sql += ", posted boolean, date timestamp with time zone, number_doc character(11)";
-				else{
+				else {
 					if(cmd.code_length)
 						sql += ", id character("+cmd.code_length+")";
 					sql += ", name character varying(50), is_folder boolean";
@@ -2321,7 +2321,7 @@ class RefDataManager extends DataManager{
 					if(f.length > 30){
 						if(cmd.fields[f].short_name)
 							f0 = cmd.fields[f].short_name;
-						else{
+						else {
 							trunc_index++;
 							f0 = f[0] + trunc_index + f.substr(f.length-27);
 						}
@@ -2331,7 +2331,7 @@ class RefDataManager extends DataManager{
 				}
 				for(f in cmd["tabular_sections"])
 					sql += ", " + "ts_" + f + " JSON";
-			}else{
+			}else {
 				sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `_deleted` BOOLEAN";
 				if(t instanceof DocManager)
 					sql += ", posted boolean, date Date, number_doc CHAR";
@@ -2572,7 +2572,7 @@ class EnumManager extends RefDataManager{
 				if(Array.isArray(sref)){
 					if(!sref.some(sv => sv.name == v.ref || sv.ref == v.ref || sv == v.ref))
 						return;
-				}else{
+				}else {
 					if(sref.name != v.ref && sref.ref != v.ref && sref != v.ref)
 						return;
 				}
@@ -2700,7 +2700,7 @@ class RegisterManager extends DataManager{
 									else if(typeof sel[key] == "object"){
 										if(utils.is_data_obj(sel[key]))
 											s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
-										else{
+										else {
 											var keys = Object.keys(sel[key]),
 												val = sel[key][keys[0]],
 												mf = cmd.fields[key],
@@ -2772,7 +2772,7 @@ class RegisterManager extends DataManager{
 					}else
 						sql += ", " + f;
 				}
-			}else{
+			}else {
 				sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `_deleted` BOOLEAN";
 				for(f in cmd.dimensions)
 					sql += sql_mask(f) + sql_type(t, f, cmd.dimensions[f].type);
@@ -3984,7 +3984,7 @@ class WSQL {
 			this._params[prm_name] = false;
 			prm_value = "";
 		}
-		else{
+		else {
 			_params[prm_name] = prm_value;
 		}
 		_ls.setItem($p.job_prm.local_storage_prefix+prm_name, prm_value);
@@ -4006,7 +4006,7 @@ class WSQL {
 			if(typeof options_saved[i] != "object"){
 				options[i] = options_saved[i];
 			}
-			else{
+			else {
 				if(!options[i]){
 					options[i] = {};
 				}
@@ -4673,7 +4673,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.22-beta.3";
+    return "2.0.22-beta.4";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
@@ -4706,7 +4706,7 @@ class MetaEngine {
           });
           return res;
         }
-        else{
+        else {
           const acn = class_name.split('.');
           return _acl && _acl[acn[0]] && _acl[acn[0]][acn[1]] ? _acl[acn[0]][acn[1]] : res;
         }
