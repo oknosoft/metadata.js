@@ -17,11 +17,13 @@ const page = {
   }
 };
 
-export function load_ram({adapters: {pouch}, md}) {
+export function load_ram({adapters: {pouch}, md}, types) {
   const {remote: {doc}, props} = pouch;
-  return fetch(`/couchdb/mdm/${props.zone}/${props._suffix}`, {
-    headers: doc.getBasicAuthHeaders({prefix: pouch.auth_prefix(), ...doc.__opts.auth}),
-  })
+  const headers = doc.getBasicAuthHeaders({prefix: pouch.auth_prefix(), ...doc.__opts.auth});
+  if(types) {
+    headers.types = types.join(',');
+  }
+  return fetch(`/couchdb/mdm/${props.zone}/${props._suffix}`, {headers})
     .then(stream_load(md, pouch))
     .then(() => {
       props._data_loaded = true;
@@ -40,8 +42,8 @@ export function load_ram({adapters: {pouch}, md}) {
 }
 
 // загружает данные, которые не зависят от отдела абонента
-export function load_common({adapters: {pouch}, md}) {
-  return fetch(`/couchdb/mdm/${pouch.props.zone}/common`)
+export function load_common({adapters: {pouch}, md}, types) {
+  return fetch(`/couchdb/mdm/${pouch.props.zone}/common`, types ? {headers: {types: types.join(',')}} : undefined)
     .then(stream_load(md, pouch))
     .then(() => pouch.emit('pouch_no_data', 'no_ram'));
 }
