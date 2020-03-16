@@ -2240,6 +2240,9 @@ function adapter({AbstracrAdapter}) {
 
     fetch(url, opts) {
       const {authorized, remote, props} = this;
+      if(!opts.headers) {
+        opts.headers = new Headers();
+      }
       if(!opts.headers.get('Authorization')) {
         if(authorized) {
           for(const name in remote) {
