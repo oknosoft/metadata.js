@@ -66,7 +66,7 @@
     "babel-loader": "^8.0.6",
     "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
     "concat-files": "^0.1.1",
-    "cross-env": "^7.0.2",
+    "cross-env": "^6.0",
     "debug": "^4.1.1",
     "decompress": "^4.2",
     "gulp": "^4.0.2",

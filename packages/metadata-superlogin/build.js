@@ -34,3 +34,16 @@ return rollup({
     sourcemap: true,
   }));
 
+  // .then(() => rollup({
+  //   input: path.resolve(__dirname, './proxy/index.js'),
+  //   external,
+  //   plugins,
+  // }))
+  // .then((bundle) => bundle.write({
+  //   format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
+  //   name: package_data.name.replace(/-/g, '_') + '_proxy',
+  //   banner: header,
+  //   file: path.resolve(__dirname, './plugin.js'),
+  //   sourcemap: true,
+  // }))
+
