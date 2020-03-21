@@ -2243,16 +2243,14 @@ function adapter({AbstracrAdapter}) {
       if(!opts.headers) {
         opts.headers = new Headers();
       }
-      if(!opts.headers.get('Authorization')) {
-        if(authorized) {
-          for(const name in remote) {
-            const db = remote[name];
-            const {auth} = db.__opts;
-            if(auth) {
-              const {Authorization} = db.getBasicAuthHeaders({prefix: this.auth_prefix(), ...auth});
-              opts.headers.set('Authorization', Authorization);
-              break;
-            }
+      if(authorized && !props.user_node) {
+        for(const name in remote) {
+          const db = remote[name];
+          const {auth} = db.__opts;
+          if(auth) {
+            const {Authorization} = db.getBasicAuthHeaders({prefix: this.auth_prefix(), ...auth});
+            opts.headers.set('Authorization', Authorization);
+            break;
           }
         }
       }
