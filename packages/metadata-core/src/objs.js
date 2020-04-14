@@ -739,9 +739,9 @@ export class DataObj extends BaseDataObj {
     }
 
     // выполняем обработчик перед записью
-    const {_data} = this;
+    const {_data, _manager} = this;
     _data._saving_trans = true;
-    return Promise.resolve()
+    return _manager.emit_promise('before_save', this)
       .then(() => this.before_save())
       .then((before_save_res) => {
 
@@ -801,9 +801,9 @@ export class DataObj extends BaseDataObj {
 
         // если не указаны обязательные реквизиты...
         const {fields, tabular_sections} = this._metadata();
-        const {msg, md, cch: {properties}, classes} = this._manager._owner.$p;
+        const {msg, md, cch: {properties}, classes} = _manager._owner.$p;
         const flds = Object.assign({}, fields);
-        if(this._manager instanceof classes.CatManager) {
+        if(_manager instanceof classes.CatManager) {
           flds.name = this._metadata('name') || {};
           flds.id = this._metadata('id') || {};
         }
@@ -842,9 +842,10 @@ export class DataObj extends BaseDataObj {
 
         // в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе
         return (numerator || Promise.resolve())
-          .then(() => this._manager.adapter.save_obj(this, Object.assign({post, operational, attachments}, attr)))
+          .then(() => _manager.adapter.save_obj(this, Object.assign({post, operational, attachments}, attr)))
           // и выполняем обработку после записи
           .then(() => this.after_save())
+          .then(() => _manager.emit_promise('after_save', this))
           .then(reset_modified)
           .catch((err) => {
             reset_modified();

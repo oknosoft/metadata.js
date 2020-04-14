@@ -1963,30 +1963,31 @@ export class RegisterManager extends DataManager{
 		return key;
 	}
 
-	create(attr){
+  create(attr) {
 
-		if(!attr || typeof attr != "object")
-			attr = {};
+    if(!attr || typeof attr != 'object') {
+      attr = {};
+    }
 
+    let o = this.by_ref[attr.ref];
+    if(!o) {
 
-		var o = this.by_ref[attr.ref];
-		if(!o){
+      o = this.obj_constructor('', [attr, this]);
 
-			o = this.obj_constructor('', [attr, this]);
+      // Триггер после создания
+      let after_create_res = {};
+      this.emit('after_create', o, after_create_res);
 
-			// Триггер после создания
-			let after_create_res = {};
-			this.emit("after_create", o, after_create_res);
+      if(after_create_res === false) {
+        return Promise.resolve(o);
+      }
+      else if(typeof after_create_res === 'object' && after_create_res.then) {
+        return after_create_res;
+      }
+    }
 
-			if(after_create_res === false)
-				return Promise.resolve(o);
-
-			else if(typeof after_create_res === "object" && after_create_res.then)
-				return after_create_res;
-		}
-
-		return Promise.resolve(o);
-	}
+    return Promise.resolve(o);
+  }
 
   /**
    * Выполняет перебор элементов локальной коллекции

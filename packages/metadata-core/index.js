@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.22-beta.5, built:2020-03-21
+ metadata-core v2.0.22-beta.5, built:2020-04-14
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -988,9 +988,9 @@ class DataObj extends BaseDataObj {
       initial_posted = this.posted;
       this.posted = post;
     }
-    const {_data} = this;
+    const {_data, _manager} = this;
     _data._saving_trans = true;
-    return Promise.resolve()
+    return _manager.emit_promise('before_save', this)
       .then(() => this.before_save())
       .then((before_save_res) => {
         const reset_modified = () => {
@@ -1037,9 +1037,9 @@ class DataObj extends BaseDataObj {
           }
         }
         const {fields, tabular_sections} = this._metadata();
-        const {msg, md, cch: {properties}, classes} = this._manager._owner.$p;
+        const {msg, md, cch: {properties}, classes} = _manager._owner.$p;
         const flds = Object.assign({}, fields);
-        if(this._manager instanceof classes.CatManager) {
+        if(_manager instanceof classes.CatManager) {
           flds.name = this._metadata('name') || {};
           flds.id = this._metadata('id') || {};
         }
@@ -1076,8 +1076,9 @@ class DataObj extends BaseDataObj {
           }
         }
         return (numerator || Promise.resolve())
-          .then(() => this._manager.adapter.save_obj(this, Object.assign({post, operational, attachments}, attr)))
+          .then(() => _manager.adapter.save_obj(this, Object.assign({post, operational, attachments}, attr)))
           .then(() => this.after_save())
+          .then(() => _manager.emit_promise('after_save', this))
           .then(reset_modified)
           .catch((err) => {
             reset_modified();
@@ -2865,21 +2866,24 @@ class RegisterManager extends DataManager{
 		}
 		return key;
 	}
-	create(attr){
-		if(!attr || typeof attr != "object")
-			attr = {};
-		var o = this.by_ref[attr.ref];
-		if(!o){
-			o = this.obj_constructor('', [attr, this]);
-			let after_create_res = {};
-			this.emit("after_create", o, after_create_res);
-			if(after_create_res === false)
-				return Promise.resolve(o);
-			else if(typeof after_create_res === "object" && after_create_res.then)
-				return after_create_res;
-		}
-		return Promise.resolve(o);
-	}
+  create(attr) {
+    if(!attr || typeof attr != 'object') {
+      attr = {};
+    }
+    let o = this.by_ref[attr.ref];
+    if(!o) {
+      o = this.obj_constructor('', [attr, this]);
+      let after_create_res = {};
+      this.emit('after_create', o, after_create_res);
+      if(after_create_res === false) {
+        return Promise.resolve(o);
+      }
+      else if(typeof after_create_res === 'object' && after_create_res.then) {
+        return after_create_res;
+      }
+    }
+    return Promise.resolve(o);
+  }
   each(fn) {
     for (const i in this.by_ref) {
       if(fn.call(this, this.by_ref[i]) === true) {
