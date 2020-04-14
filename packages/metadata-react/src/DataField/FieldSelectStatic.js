@@ -20,14 +20,14 @@ class FieldSelectStatic extends AbstractField {
 
   render() {
 
-    const {props: {_obj, _fld, options, classes, extClasses, fullWidth, label_position}, _meta, onChange} = this;
+    const {props: {_obj, _fld, options, classes, extClasses, fullWidth, label_position, bar, className}, _meta, onChange} = this;
     const attr = {
       title: _meta.tooltip || _meta.synonym,
     };
     const value = _obj[_fld].valueOf();
 
     return <FormControl
-        className={extClasses && extClasses.control ? '' : cn(classes.formControl, className, props.bar && classes.barInput)}
+        className={extClasses && extClasses.control ? '' : cn(classes.formControl, className, bar && classes.barInput)}
         classes={extClasses && extClasses.control ? extClasses.control : null}
         fullWidth={fullWidth}
         {...attr}
