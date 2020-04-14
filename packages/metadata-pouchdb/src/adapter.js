@@ -2238,7 +2238,7 @@ function adapter({AbstracrAdapter}) {
       return _auth && _auth.username;
     }
 
-    fetch(url, opts) {
+    fetch(url, opts = {}) {
       const {authorized, remote, props} = this;
       if(!opts.headers) {
         opts.headers = new Headers();
