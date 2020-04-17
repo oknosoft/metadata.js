@@ -8,7 +8,7 @@ import TextField from '@material-ui/core/TextField';
 import BaseButton from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import DialogActions from '@material-ui/core/DialogActions';
-import Helmet from 'react-helmet';
+import {Helmet} from 'react-helmet';
 import Typography from '@material-ui/core/Typography';
 import IconError from '@material-ui/icons/ErrorOutline';
 import Input from '@material-ui/core/Input';

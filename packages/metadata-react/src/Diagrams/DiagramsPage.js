@@ -9,7 +9,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
+import {Helmet} from 'react-helmet';
 import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
 import AppContent from 'metadata-react/App/AppContent';
 import Snack from 'metadata-react/App/Snack';

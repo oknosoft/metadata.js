@@ -6,7 +6,7 @@ import LoadingMessage from '../DumbLoader/LoadingMessage';
 import RepToolbar from './RepToolbar';
 import RepTabularSection from './RepTabularSection';
 import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
-import Helmet from 'react-helmet';
+import {Helmet} from 'react-helmet';
 import {withIface} from 'metadata-redux';
 
 class Report extends MDNRComponent {

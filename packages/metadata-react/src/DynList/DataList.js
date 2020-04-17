@@ -6,7 +6,7 @@ import InfiniteLoader from 'react-virtualized/dist/es/InfiniteLoader';
 import MultiGrid from 'react-virtualized/dist/es/MultiGrid';
 import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
 import cn from 'classnames';
-import Helmet from 'react-helmet';
+import {Helmet} from 'react-helmet';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 import DataListToolbar from './DataListToolbar';
 import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';

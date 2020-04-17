@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
+import {Helmet} from 'react-helmet';
 import {withStyles} from '@material-ui/styles';
 import {withIface} from 'metadata-redux';
 import Typography from '@material-ui/core/Typography';
