@@ -49,6 +49,10 @@ class DynList extends MDNRComponent {
     this.handleManagerChange(this.props);
   }
 
+  flatChange = () => {
+    this.setState(({flat}) => ({flat: !flat}), this.handleFilterChange);
+  };
+
   // при изменении менеджера данных
   handleManagerChange({_mgr, _meta, _ref}) {
 
@@ -56,11 +60,12 @@ class DynList extends MDNRComponent {
     const {flat, parent, _owner} = this.props;
 
     this._meta = _meta || _mgr.metadata();
+    this.show_flat = this._meta.hierarchical;
 
     const newState = {
       ref: _ref || '',
       scrollSetted: false,
-      flat: flat || !this._meta.hierarchical,
+      flat: flat || !this.show_flat,
       parent: parent || _mgr.get(),
     };
 
@@ -528,8 +533,8 @@ class DynList extends MDNRComponent {
 
   render() {
 
-    const {state, props, context, sizes, handleFilterChange, handleSchemeChange, Toolbar} = this;
-    const {columns, scheme, confirm_text, info_text, settings_open, rowCount} = state;
+    const {state, props, context, sizes, handleFilterChange, handleSchemeChange, Toolbar, show_flat} = this;
+    const {columns, scheme, confirm_text, info_text, settings_open, rowCount, flat} = state;
     const {_mgr: {RepParams}, classes, title, registerFilterChange, width, height, GridRenderer, rowHeight, ...others} = props;
 
     if(!scheme) {
@@ -547,6 +552,9 @@ class DynList extends MDNRComponent {
       scheme,
       ...others,
       settings_open,
+      flat,
+      show_flat,
+      flatChange: this.flatChange,
       handleSelect: this.handleSelect,
       handleAdd: this.handleAdd,
       handleEdit: this.handleEdit(true),

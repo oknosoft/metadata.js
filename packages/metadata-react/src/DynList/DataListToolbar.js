@@ -15,6 +15,8 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 import AttachIcon from '@material-ui/icons/AttachFile';
 import SelectIcon from '@material-ui/icons/PlaylistAddCheck';
 import SettingsIcon from '@material-ui/icons/Settings';
+import TreeIcon from '@material-ui/icons/AccountTree';
+import ListIcon from '@material-ui/icons/List';
 
 import SchemeSettingsButtons from '../SchemeSettings/SchemeSettingsButtons';
 import SearchBox from '../SchemeSettings/SearchBox';
@@ -57,7 +59,7 @@ class DataListToolbar extends Component {
   render() {
 
     const {props, state} = this;
-    const {classes, scheme, width, btns, end_btns, menu_items, toolbar2row} = props;
+    const {classes, scheme, width, btns, end_btns, menu_items, toolbar2row, flat, show_flat} = props;
     const widthUpSm = isWidthUp('sm', width);
 
     return [
@@ -73,6 +75,10 @@ class DataListToolbar extends Component {
         {!props.denyAddDel && <IconButton key="create" title="Создать объект" onClick={props.handleAdd}><AddIcon/></IconButton>}
         <IconButton key="edit" title="Открыть форму объекта" onClick={props.handleEdit}><EditIcon/></IconButton>
         {!props.denyAddDel && !props.denyDel && <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}
+        {show_flat && <IconButton
+          key="flat"
+          title={flat ? 'Включить иерархию' : 'Велючить плоский список'}
+          onClick={props.flatChange}>{flat ? <ListIcon/> : <TreeIcon/>}</IconButton>}
 
         {!scheme.standard_period.empty() && widthUpSm && <IconButton disabled>|</IconButton>}
         {!scheme.standard_period.empty() && widthUpSm && <DateRange
