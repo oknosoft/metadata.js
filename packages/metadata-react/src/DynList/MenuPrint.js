@@ -10,6 +10,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import IconButton from '@material-ui/core/IconButton';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import PrintIcon from '@material-ui/icons/Print';
 import ChevronLeft from '@material-ui/icons/ChevronLeft';
@@ -26,12 +27,16 @@ class SubMenu extends React.Component {
   };
 
   render() {
-    const {props: {items, Icon, text, handlePrint, prefix}, state: {anchorEl}} = this;
+    const {props: {items, Icon, text, handlePrint, prefix, variant}, state: {anchorEl}} = this;
+
     return [
-      <MenuItem key={`${prefix}_open`} onClick={this.handleOpen}>
-        {Icon && <ListItemIcon><Icon/></ListItemIcon>}
-        {text}
-      </MenuItem>,
+      variant === 'button' ?
+        <IconButton key="btn_open" onClick={this.handleOpen}><Icon/></IconButton>
+        :
+        <MenuItem key={`${prefix}_open`} onClick={this.handleOpen}>
+          {Icon && <ListItemIcon><Icon/></ListItemIcon>}
+          {text}
+        </MenuItem>,
       <Menu key={`${prefix}_menu`}
             open={Boolean(anchorEl)}
             anchorEl={anchorEl}
@@ -71,7 +76,8 @@ class MenuPrint extends SubMenu {
   }
 
   render() {
-    const {props: {handlePrint}, state: {anchorEl, plates}} = this;
+    const {props: {handlePrint, variant}, state: {anchorEl, plates}} = this;
+
     if(plates.length === 1) {
       return <SubMenu
         items={plates[0].value}
@@ -79,11 +85,14 @@ class MenuPrint extends SubMenu {
         text="Печать"
         handlePrint={handlePrint}
         prefix="root"
+        variant={variant}
       />;
     }
     return [
-      <MenuItem key="prn_open" onClick={this.handleOpen}>
-        <ListItemIcon><PrintIcon/></ListItemIcon>Печать</MenuItem>,
+      variant === 'button' ?
+        <IconButton key="btn_open" onClick={this.handleOpen}><PrintIcon/></IconButton>
+        :
+        <MenuItem key="prn_open" onClick={this.handleOpen}><ListItemIcon><PrintIcon/></ListItemIcon>Печать</MenuItem>,
       <Menu key="prn_menu"
             open={Boolean(anchorEl)}
             anchorEl={anchorEl}
@@ -104,8 +113,9 @@ class MenuPrint extends SubMenu {
 }
 
 MenuPrint.propTypes = {
-  scheme: PropTypes.object.isRequired,            // значение настроек компоновки
-  handlePrint: PropTypes.func.isRequired,         // обработчик открытия диалога печати
+  scheme: PropTypes.object.isRequired,    // значение настроек компоновки
+  handlePrint: PropTypes.func.isRequired, // обработчик открытия диалога печати
+  variant: PropTypes.string,              // использовать IconButton вместо MenuItem
 };
 
 export default MenuPrint;
