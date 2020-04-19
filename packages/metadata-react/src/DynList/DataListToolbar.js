@@ -59,7 +59,7 @@ class DataListToolbar extends Component {
   render() {
 
     const {props, state} = this;
-    const {classes, scheme, width, btns, end_btns, menu_items, toolbar2row, flat, show_flat} = props;
+    const {classes, scheme, width, btns, end_btns, menu_items, toolbar2row, flat, show_flat, setting_in_menu} = props;
     const widthUpSm = isWidthUp('sm', width);
 
     return [
@@ -77,7 +77,7 @@ class DataListToolbar extends Component {
         {!props.denyAddDel && !props.denyDel && <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}
         {show_flat && <IconButton
           key="flat"
-          title={flat ? 'Включить иерархию' : 'Велючить плоский список'}
+          title={flat ? 'Включить иерархию' : 'Включить плоский список'}
           onClick={props.flatChange}>{flat ? <ListIcon/> : <TreeIcon/>}</IconButton>}
 
         {!scheme.standard_period.empty() && widthUpSm && <IconButton disabled>|</IconButton>}
@@ -93,8 +93,6 @@ class DataListToolbar extends Component {
 
         <div className={classes.flex} />
 
-        {(!toolbar2row || widthUpSm) && end_btns /* дополнительные кнопки */}
-
         <SchemeSettingsButtons
           handleSettingsOpen={props.handleSettingsOpen}
           handleSettingsClose={props.handleSettingsClose}
@@ -105,8 +103,10 @@ class DataListToolbar extends Component {
           scheme={scheme}
           show_search={props.show_search && (!toolbar2row || widthUpSm)}
           show_variants={props.show_variants}
-          hide_btn={!widthUpSm}
+          hide_btn={!widthUpSm || setting_in_menu}
         />
+
+        {(!toolbar2row || widthUpSm) && end_btns /* дополнительные кнопки */}
 
         <IconButton onClick={this.handleClick} title="Дополнительно"><MoreVertIcon/></IconButton>
         <Menu
@@ -114,14 +114,14 @@ class DataListToolbar extends Component {
           open={state.open}
           onClose={this.handleRequestClose}
         >
-          {!widthUpSm && <MenuItem onClick={this.handleSettingsToggle}>
-            <ListItemIcon><SettingsIcon/></ListItemIcon>Настройки</MenuItem>}
-          {props.handlePrint && <MenuPrint
-            scheme={scheme}
-            handlePrint={props.handlePrint}
-          />}
-          {props.handleAttachments && <MenuItem onClick={props.handleAttachments}>
-            <ListItemIcon><AttachIcon/></ListItemIcon>Вложения</MenuItem>}
+          {(!widthUpSm || setting_in_menu) &&
+            <MenuItem onClick={this.handleSettingsToggle}><ListItemIcon><SettingsIcon/></ListItemIcon>Настройки</MenuItem>}
+
+          {props.handlePrint &&
+            <MenuPrint scheme={scheme} handlePrint={props.handlePrint} />}
+
+          {props.handleAttachments &&
+            <MenuItem onClick={props.handleAttachments}><ListItemIcon><AttachIcon/></ListItemIcon>Вложения</MenuItem>}
 
           {menu_items /* дополнительные пункты меню */}
         </Menu>
