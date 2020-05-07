@@ -44,7 +44,7 @@ class Meta extends MetaEventEmitter {
     super();
     Object.defineProperties(this, {
       _m: {value: {}},
-      $p: {value: $p},
+      $p: {get() {return $p}},
     });
     Meta._sys.forEach((patch) => utils._patch(this._m, patch));
     Meta._sys.length = 0;
@@ -71,15 +71,12 @@ class Meta extends MetaEventEmitter {
    * @return {Object}
    */
   get(type, field_name) {
-
     const np = type instanceof DataManager ? [type._owner.name, type.name] : type.split('.');
-
-    if(!this._m[np[0]]) {
+    const np0 = this._m[np[0]];
+    if(!np0) {
       return;
     }
-
-    const _meta = this._m[np[0]][np[1]];
-
+    const _meta = np0[np[1]];
     if(!field_name) {
       return _meta;
     }

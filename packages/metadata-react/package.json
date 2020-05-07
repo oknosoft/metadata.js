@@ -12,7 +12,7 @@
     "@material-ui/core": "^4.9",
     "@material-ui/icons": "^4.9",
     "classnames": "^2.2",
-    "downshift": "^5.1",
+    "downshift": "^5.2",
     "font-awesome": "^4.7.0",
     "marked": "^1.0",
     "metadata-abstract-ui": "^2.0.22-beta.6",
