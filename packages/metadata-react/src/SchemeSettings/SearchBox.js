@@ -88,7 +88,7 @@ class SearchBox extends React.Component {
   };
 
   render() {
-    const {classes, scheme, isWidthUp, ...other} = this.props;
+    const {classes, scheme, isWidthUp, handleFilterChange, ...other} = this.props;
 
     return (
       <div className={classes.wrapper}>

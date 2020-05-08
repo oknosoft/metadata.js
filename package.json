@@ -33,6 +33,7 @@
     "rc-calendar": "^9.15.10",
     "rc-cascader": "^1.0.1",
     "rc-time-picker": "^3.7.3",
+    "react-draggable": "^4.3.1",
     "superlogin-client": "^0.8.0",
     "uuid": "^7.0.3"
   },

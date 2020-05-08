@@ -20,6 +20,7 @@
     "rc-calendar": "^9.15",
     "rc-cascader": "^1.0",
     "rc-time-picker": "^3.7",
+    "react-draggable": "^4.3",
     "react-data-grid": "^6.1",
     "react-data-grid-addons": "^6.1",
     "react-fullscreenable": "^2.5.1-0",

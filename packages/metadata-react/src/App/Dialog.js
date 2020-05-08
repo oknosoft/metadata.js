@@ -4,8 +4,7 @@ import PropTypes from 'prop-types';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-//import withMobileDialog from '@material-ui/core/withMobileDialog';
+import Paper from '@material-ui/core/Paper';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import CloseIcon from '@material-ui/icons/Close';
@@ -14,6 +13,7 @@ import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
 import IconButton from '@material-ui/core/IconButton';
 import colors from '@material-ui/core/colors/common';
 import {withStyles} from '@material-ui/styles';
+import Draggable from 'react-draggable';
 import {compose} from 'redux';
 import cn from 'classnames';
 
@@ -63,6 +63,16 @@ class SimpleDialog extends React.Component {
   constructor(props, context) {
     super(props, context);
     this.state = {fullScreen: props.initFullScreen || false};
+    this._id = `draggable-title-${Date.now()}`;
+    this._listeners = new Set();
+  }
+
+  on(fn) {
+    this._listeners.add(fn);
+  }
+
+  off(fn) {
+    this._listeners.delete(fn);
   }
 
   getChildContext() {
@@ -84,14 +94,29 @@ class SimpleDialog extends React.Component {
 
   get frameRect() {
     const {content} = this;
-    return content ? {width: content.clientWidth, height: content.clientHeight} : {};
+    return content ? {content, width: content.clientWidth, height: content.clientHeight} : {};
   }
 
   toggleFullScreen = () => {
-    this.setState({fullScreen: !this.state.fullScreen}, () => {
-      this.props.toggleFullScreen && this.props.toggleFullScreen(this.state.fullScreen);
-    })
+    const {props, state} = this;
+    this.setState({fullScreen: !state.fullScreen}, () => {
+      props.toggleFullScreen && props.toggleFullScreen(state.fullScreen);
+      for(const fn of this._listeners) {
+        fn();
+      }
+    });
   }
+
+  PaperComponent = (props) => {
+    const {props: {fullScreen}, state} = this;
+    return <Draggable
+      handle={`#${this._id}`}
+      cancel={'[class*="MuiDialogContent-root"]'}
+      position={fullScreen || state.fullScreen ? {x: 0, y: 0} : null}
+    >
+      <Paper {...props} />
+    </Draggable>;
+  };
 
   render() {
     const {open, fullScreen, disablePortal, noSpace, title, actions, toolbtns, children, classes, onClose, minheight, large} = this.props;
@@ -102,8 +127,15 @@ class SimpleDialog extends React.Component {
       fullScreen={stateFullScreen}
       onClose={onClose}
       classes={{paper: cn(large ? classes.large : classes.paper, minheight && classes.minheight, !stateFullScreen && classes.maxwidth)}}
+      PaperComponent={this.PaperComponent}
+      aria-labelledby={this._id}
     >
-      <Toolbar disableGutters className={classes.toolbar}>
+      <Toolbar
+        disableGutters
+        className={classes.toolbar}
+        style={{ cursor: 'move' }}
+        id={this._id}
+      >
         <Typography className={classes.title} variant="h6" color="inherit" noWrap>{title}</Typography>
         {toolbtns}
         {
