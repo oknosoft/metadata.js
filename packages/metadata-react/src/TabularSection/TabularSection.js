@@ -164,12 +164,7 @@ class TabularSection extends MComponent {
   handleSchemeChange = (scheme) => {
 
     const {props: {_obj, read_only, columnsChange}, state} = this;
-    const _columns = scheme.rx_columns({
-      mode: 'ts',
-      fields: state._meta.fields,
-      _obj,
-      read_only,
-    });
+    const _columns = scheme.rx_columns({mode: 'tabular', fields: state._meta.fields, _obj, read_only});
 
     columnsChange && columnsChange({scheme, columns: _columns});
 

@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.22-beta.6, built:2020-04-28
+ metadata-abstract-ui v2.0.22-beta.6, built:2020-05-08
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1018,14 +1018,14 @@ function scheme_settings() {
         res = [];
       this.fields.find_rows({use: true}, (row) => {
         const fld_meta = _meta.fields[row.field] || _mgr.metadata(row.field);
-        res.push(new GridColumn(mode == 'ts' ?
+        res.push(new GridColumn(mode === 'ts' || mode === 'tabular' ?
           {
             key: row.field,
             name: row.caption,
             resizable: true,
             ctrl_type: row.ctrl_type,
             width: row.width,
-            sortable: this.sorting.find({field: row.field}),
+            sortable: mode === 'tabular' || this.sorting.find({field: row.field}),
           }
           :
           {

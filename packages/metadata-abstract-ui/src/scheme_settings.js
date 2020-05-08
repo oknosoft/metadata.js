@@ -1067,14 +1067,14 @@ export default function scheme_settings() {
 
         const fld_meta = _meta.fields[row.field] || _mgr.metadata(row.field);
 
-        res.push(new GridColumn(mode == 'ts' ?
+        res.push(new GridColumn(mode === 'ts' || mode === 'tabular' ?
           {
             key: row.field,
             name: row.caption,
             resizable: true,
             ctrl_type: row.ctrl_type,
             width: row.width,
-            sortable: this.sorting.find({field: row.field}),
+            sortable: mode === 'tabular' || this.sorting.find({field: row.field}),
           }
           :
           {
