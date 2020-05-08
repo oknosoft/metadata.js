@@ -20,6 +20,7 @@ import IconSettingsCancel from '@material-ui/icons/HighlightOff';
 import IconSettingsDone from '@material-ui/icons/Done';
 
 import withStyles from '../Header/toolbar';
+import SearchBox from '../SchemeSettings/SearchBox';
 import {export_handlers} from '../plugin';
 
 const cmpType = PropTypes.oneOfType([PropTypes.object, PropTypes.array]);
@@ -57,7 +58,8 @@ class TabularSectionToolbar extends Component {
   render() {
 
     const {props, state} = this;
-    const {handleUp, handleDown, denyAddDel, denyReorder, classes, width, settings_open, btns, end_btns, menu_items} = props;
+    const {handleUp, handleDown, denyAddDel, denyReorder, classes, width, settings_open, btns, end_btns, menu_items, scheme} = props;
+    const widthUpSm = width > 600;
 
     return (
       <Toolbar disableGutters className={classes.toolbar} style={{width: width || '100%'}}>
@@ -76,6 +78,13 @@ class TabularSectionToolbar extends Component {
 
           // дополнительные кнопки
           end_btns,
+
+          !settings_open && <SearchBox
+            key="search"
+            scheme={scheme}
+            handleFilterChange={props.handleFilterChange}
+            isWidthUp={widthUpSm}
+          />,
 
           !settings_open && <IconButton key="more" onClick={this.handleMenuOpen} title="Дополнительно">
             <MoreVertIcon/>

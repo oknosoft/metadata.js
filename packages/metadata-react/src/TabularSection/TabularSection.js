@@ -43,11 +43,15 @@ class TabularSection extends MComponent {
       settings_open: false,
     };
 
+    this.cache_actual = false;
+
     if(init){
       this.state = state;
+      this._rows = [];
     }
     else{
       this.setState(state);
+      this._rows.length = 0;
     }
 
     if(props.scheme) {
@@ -59,20 +63,35 @@ class TabularSection extends MComponent {
   }
 
   getRows() {
-    const {props: {filter}, state: {scheme, _tabular}} = this;
-    const rows = typeof filter === 'function' ? filter(_tabular) : (scheme ? scheme.filter(_tabular) : []);
-    return this.searchFilter(rows);
+    const {props: {filter}, state: {scheme, _tabular}, cache_actual} = this;
+    if(!cache_actual) {
+      this._rows = this.searchFilter(
+        typeof filter === 'function' ? filter(_tabular) : (scheme ? scheme.filter(_tabular) : [])
+      );
+      this.cache_actual = true;
+    }
+    return this._rows;
   }
 
   searchFilter(rows) {
-    return rows;
-  }
-
-  handleFilterChange = (scheme, columns) => {
-    return Promise.resolve().then(() => {
-      const {_grid} = this;
-      _grid && _grid.forceUpdate();
-    });
+    const {scheme, _columns} = this.state;
+    if(!scheme || !scheme._search) {
+      return rows;
+    }
+    const res = [];
+    const selection = {
+      _search: {
+        fields: _columns.map((column) => column.key),
+        value: scheme._search.trim().replace(/\s\s/g, ' ').split(' ').filter(v => v),
+      }
+    };
+    const {_selection} = $p.utils;
+    for(const row of rows) {
+      if(_selection(row, selection)) {
+        res.push(row);
+      }
+    }
+    return res;
   }
 
   rowsCount() {
@@ -83,11 +102,16 @@ class TabularSection extends MComponent {
     return this.getRows()[i];
   };
 
+  handleFilterChange = () => {
+    this.cache_actual = false;
+    this.forceUpdate();
+  };
+
   handleRemove = () => {
     const {_tabular, selected} = this.state;
     if(selected && selected.hasOwnProperty('rowIdx')) {
       _tabular.del(this.rowGetter(selected.rowIdx));
-      this.forceUpdate();
+      this.handleFilterChange();
     }
   };
 
@@ -96,7 +120,7 @@ class TabularSection extends MComponent {
     if(_tabular) {
       const rows = this.getRows();
       _tabular.clear({row: {in: rows.map((v) => v.row)}});
-      this.forceUpdate();
+      this.handleFilterChange();
     }
   };
 
@@ -104,7 +128,7 @@ class TabularSection extends MComponent {
     const {_tabular} = this.state;
     if(_tabular) {
       _tabular.add();
-      this.forceUpdate();
+      this.handleFilterChange();
     }
   };
 
@@ -274,6 +298,7 @@ class TabularSection extends MComponent {
                 handleClear={this.handleClear}
                 handleUp={this.handleUp}
                 handleDown={this.handleDown}
+                handleFilterChange={this.handleFilterChange}
                 handleCustom={props.handleCustom}
               />,
 

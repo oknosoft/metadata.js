@@ -88,7 +88,7 @@ class SearchBox extends React.Component {
   };
 
   render() {
-    const {classes, scheme, isWidthUp} = this.props;
+    const {classes, scheme, isWidthUp, ...other} = this.props;
 
     return (
       <div className={classes.wrapper}>
@@ -99,6 +99,7 @@ class SearchBox extends React.Component {
           onChange={this.handleChange}
           onKeyDown={this.handleKeyDown}
           type={isWidthUp ? 'search' : 'text'}
+          {...other}
         />
         <div className={classes.search}>
           <SearchIcon/>

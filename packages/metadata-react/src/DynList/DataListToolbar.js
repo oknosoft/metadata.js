@@ -135,7 +135,7 @@ class DataListToolbar extends Component {
         <SearchBox
           scheme={scheme}
           handleFilterChange={props.handleFilterChange}
-          isWidthUp={isWidthUp}
+          isWidthUp={widthUpSm}
         />
       </Toolbar>
     ];
