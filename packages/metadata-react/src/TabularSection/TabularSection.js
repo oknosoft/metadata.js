@@ -205,6 +205,7 @@ class TabularSection extends MComponent {
     scheme.first_sorting(sortColumn, sortDirection);
     if(sortDirection && sortDirection !== 'NONE') {
       _tabular.sort(`${sortColumn} ${sortDirection.toLowerCase()}`);
+      this.cache_actual = false;
       this.setState({selected: {rowIdx: 0}});
     }
   };
