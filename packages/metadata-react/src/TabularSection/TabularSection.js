@@ -60,10 +60,19 @@ class TabularSection extends MComponent {
 
   getRows() {
     const {props: {filter}, state: {scheme, _tabular}} = this;
-    if(typeof filter === 'function') {
-      return filter(_tabular);
-    }
-    return scheme ? scheme.filter(_tabular) : [];
+    const rows = typeof filter === 'function' ? filter(_tabular) : (scheme ? scheme.filter(_tabular) : []);
+    return this.searchFilter(rows);
+  }
+
+  searchFilter(rows) {
+    return rows;
+  }
+
+  handleFilterChange = (scheme, columns) => {
+    return Promise.resolve().then(() => {
+      const {_grid} = this;
+      _grid && _grid.forceUpdate();
+    });
   }
 
   rowsCount() {
@@ -139,7 +148,8 @@ class TabularSection extends MComponent {
     }
     // const selectedIds = this.state.selectedIds.slice();
     // this.setState({selectedIds});
-    Promise.resolve().then(() => this._grid && this._grid.forceUpdate());
+    this.handleFilterChange();
+
   }
 
   handleSettingsOpen = () => {
@@ -168,6 +178,15 @@ class TabularSection extends MComponent {
     }
     else {
       Object.assign(state, {scheme, _columns});
+    }
+  };
+
+  handleSort = (sortColumn, sortDirection) => {
+    const {_tabular, scheme} = this.state;
+    scheme.first_sorting(sortColumn, sortDirection);
+    if(sortDirection && sortDirection !== 'NONE') {
+      _tabular.sort(`${sortColumn} ${sortDirection.toLowerCase()}`);
+      this.setState({selected: {rowIdx: 0}});
     }
   };
 
@@ -211,7 +230,7 @@ class TabularSection extends MComponent {
   };
 
   render() {
-    const {props, state, rowGetter, onRowsSelected, onRowsDeselected, handleRowsUpdated} = this;
+    const {props, state, rowGetter, onRowsSelected, onRowsDeselected} = this;
     const {_tabular, _columns, scheme, selectedIds, settings_open} = state;
     const {_obj, rowSelection, minHeight, hideToolbar, denyAddDel, denyReorder, btns, end_btns, menu_items} = props;
     const Toolbar = props.Toolbar || TabularSectionToolbar;
@@ -283,7 +302,8 @@ class TabularSection extends MComponent {
                 rowSelection={rowSelection}
                 onCellDeSelected={this.onCellDeSelected}
                 onCellSelected={this.onCellSelected}
-                onGridRowsUpdated={handleRowsUpdated}
+                onGridRowsUpdated={this.handleRowsUpdated}
+                onGridSort={this.handleSort}
                 editorPortalTarget={props.portalTarget || this.portalTarget}
                 hideHeader={props.hideHeader}
               />

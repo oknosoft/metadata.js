@@ -77,8 +77,8 @@ class FieldSelect extends AbstractField {
 
   render() {
 
-    const {props, _meta, isTabular, onChange} = this;
-    const {_obj, _fld, classes, extClasses, fullWidth} = props;
+    const {props, _meta, onChange} = this;
+    const {_obj, _fld, classes, extClasses, fullWidth, read_only, disabled, isTabular, ...other} = props;
     const value = _obj[_fld];
     const attr = {
       title: _meta.tooltip || _meta.synonym,
@@ -86,12 +86,16 @@ class FieldSelect extends AbstractField {
     if(_meta.mandatory) {
       attr.required = true;
     }
+    if(read_only || disabled) {
+      other.disabled = true;
+    }
 
-    return isTabular ?
+    return this.isTabular ?
       <select
         value={value && value.valueOf()}
         onChange={onChange}
         {...attr}
+        {...other}
       >
         {this.renderOptions()}
       </select>
@@ -111,6 +115,7 @@ class FieldSelect extends AbstractField {
             Object.assign(
               {input: cn(classes.input, attr.required && (!value || value.empty()) && classes.required)}, extClasses && extClasses.input)
           }/>}
+          {...other}
         >
           {this.renderOptions()}
         </Select>

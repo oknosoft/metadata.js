@@ -58,8 +58,8 @@ class FieldNumber extends AbstractField {
 
   render() {
 
-    const {state, props, _meta, isTabular} = this;
-    const {_obj, _fld, classes, extClasses, className, read_only, label_position, fullWidth} = props;
+    const {state, props, _meta} = this;
+    const {_obj, _fld, classes, extClasses, className, read_only, disabled, label_position, fullWidth, isTabular, ...other} = props;
     const inputProps={readOnly: Boolean(read_only)};
     let endAdornment;
     if(navigator.userAgent.match(/android|ios|iphone/i)) {
@@ -74,6 +74,15 @@ class FieldNumber extends AbstractField {
     const attr = {
       title: _meta.tooltip || _meta.synonym,
     }
+    if(_meta.mandatory) {
+      attr.required = true;
+    }
+    if(disabled) {
+      attr.disabled = true;
+    }
+    if(read_only) {
+      other.readOnly = true;
+    }
     const v = state.focused && !read_only ? state.value : _obj[_fld];
 
     // Render plain html input in cell of table.
@@ -87,12 +96,13 @@ class FieldNumber extends AbstractField {
           onChange={(value) => this.onChange({target: {value}})}
           onClose={this.handleCalculatorClose}/>
 
-        {isTabular ?
+        {this.isTabular ?
           <input
             type="text"
             value={state.value}
             onChange={this.onChange}
             onClick={this.handleInputClick}
+            {...other}
           />
           :
           <FormControl
@@ -115,6 +125,7 @@ class FieldNumber extends AbstractField {
               classes={
                 Object.assign({input: cn(classes.input, attr.required && !v && classes.required)}, extClasses && extClasses.input)
               }
+              {...other}
             />
           </FormControl>
         }
