@@ -67,11 +67,15 @@ class SimpleDialog extends React.Component {
     this._listeners = new Set();
   }
 
-  on(fn) {
+  componentWillUnmount() {
+    this._listeners.clear();
+  }
+
+  onFullScreen(fn) {
     this._listeners.add(fn);
   }
 
-  off(fn) {
+  offFullScreen(fn) {
     this._listeners.delete(fn);
   }
 
@@ -98,12 +102,15 @@ class SimpleDialog extends React.Component {
   }
 
   toggleFullScreen = () => {
-    const {props, state} = this;
-    this.setState({fullScreen: !state.fullScreen}, () => {
+    this.setState({fullScreen: !this.state.fullScreen}, () => {
+      const {props, state} = this;
       props.toggleFullScreen && props.toggleFullScreen(state.fullScreen);
-      for(const fn of this._listeners) {
-        fn();
-      }
+      Promise.resolve().then(() => {
+        for(const fn of this._listeners) {
+          fn();
+        }
+      });
+      //setTimeout(, 100);
     });
   }
 
