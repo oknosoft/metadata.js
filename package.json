@@ -14,7 +14,7 @@
   "dependencies": {
     "@material-ui/core": "^4.9.13",
     "@material-ui/icons": "^4.9.1",
-    "alasql": "^0.5.9",
+    "alasql": "^0.6.0",
     "cron": "^1.8.2",
     "dataframe": "^2.0",
     "downshift": "^5.2.7",
@@ -35,7 +35,7 @@
     "rc-time-picker": "^3.7.3",
     "react-draggable": "^4.3.1",
     "superlogin-client": "^0.8.0",
-    "uuid": "^7.0.3"
+    "uuid": "^8.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
