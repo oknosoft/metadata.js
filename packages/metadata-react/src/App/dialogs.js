@@ -17,18 +17,12 @@ export default {
    * Сюда передаём метод управления состоянием
    * @param handleIfaceState
    */
-  init ({handleIfaceState, DataList, lazy}) {
-    this._handleIfaceState = handleIfaceState;
-    if(DataList) {
-      this.DataList = DataList;
-    }
-    else if(lazy) {
-      this.lazy = lazy;
-    }
+  init ({handleIfaceState, handleNavigate, DataList, lazy}) {
+    Object.assign(this, {handleIfaceState, handleNavigate, DataList, lazy});
   },
 
   close_confirm(name = 'confirm') {
-    this._handleIfaceState({
+    this.handleIfaceState({
       component: '',
       name,
       value: {open: false}
@@ -55,7 +49,7 @@ export default {
                 initialValue
   }) {
 
-    if(!this._handleIfaceState) {
+    if(!this.handleIfaceState) {
       return Promise.reject('init');
     }
     if(this._confirm) {
@@ -164,7 +158,7 @@ export default {
         />;
       }
 
-      this._handleIfaceState(iface_state);
+      this.handleIfaceState(iface_state);
 
     });
   },
@@ -177,7 +171,7 @@ export default {
    * @return {Promise}
    */
   confirm({title = 'Внимание', text, html, initFullScreen, timeout = 60000}) {
-    if(!this._handleIfaceState) {
+    if(!this.handleIfaceState) {
       return Promise.reject('init');
     }
     if(this._confirm) {
@@ -206,7 +200,7 @@ export default {
 
       let timer = setTimeout(reject_confirm, timeout);
 
-      this._handleIfaceState({
+      this.handleIfaceState({
         component: '',
         name: 'confirm',
         value: {open: true, title, text, html, initFullScreen, handleOk: close_confirm, handleCancel: reject_confirm}
@@ -223,7 +217,7 @@ export default {
    * @return {Promise}
    */
   alert({title = 'Внимание', text, html, initFullScreen, timeout = 60000}) {
-    if(!this._handleIfaceState) {
+    if(!this.handleIfaceState) {
       return Promise.reject('init');
     }
     if(this._confirm) {
@@ -243,7 +237,7 @@ export default {
 
       let timer = setTimeout(close_confirm, timeout);
 
-      this._handleIfaceState({
+      this.handleIfaceState({
         component: '',
         name: 'alert',
         value: {open: true, title, text, html, initFullScreen, handleOk: close_confirm}
@@ -258,7 +252,7 @@ export default {
    */
   snack({message, timeout = 10000}) {
 
-    if(this._handleIfaceState) {
+    if(this.handleIfaceState) {
       const close_confirm = () => {
         this.close_confirm('snack');
         if(timer) {
@@ -267,7 +261,7 @@ export default {
         }
       }
       let timer = setTimeout(close_confirm, timeout);
-      this._handleIfaceState({
+      this.handleIfaceState({
         component: '',
         name: 'snack',
         value: {open: true, message, button: 'OK', handleClose: close_confirm}
@@ -276,8 +270,8 @@ export default {
   },
 
   window({Component, obj, title, attr, print}) {
-    if(this._handleIfaceState) {
-      this._handleIfaceState({
+    if(this.handleIfaceState) {
+      this.handleIfaceState({
         component: '',
         name: 'wnd_portal',
         value: {open: true, Component, obj, title, attr, print, handleClose: this.close_confirm.bind(this, 'wnd_portal')}

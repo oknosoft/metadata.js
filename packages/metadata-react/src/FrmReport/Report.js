@@ -42,7 +42,10 @@ class Report extends MDNRComponent {
       if(_obj.scheme !== scheme){
         _obj.scheme = scheme;
       }
-      return _obj.calculate().then(() => this._result.expandRoot());
+      return _obj.calculate().then(() => {
+        const {_result} = this;
+        _result && _result.expandRoot && _result.expandRoot();
+      });
     }
     else{
       return Promise.reject(new Error('Пустая схема компоновки'));
