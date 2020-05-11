@@ -323,7 +323,7 @@ export class DataManager extends MetaEventEmitter{
       });
     }
 
-    if(t.cachable.endsWith('ram') || (selection && selection._local)) {
+    if(t.cachable.endsWith('ram') || t._direct_ram || (selection && selection._local)) {
       t.find_rows(selection._mango ? selection.selector : selection, push);
       return Promise.resolve(l);
     }

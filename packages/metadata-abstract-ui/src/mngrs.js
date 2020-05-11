@@ -62,7 +62,7 @@ export default function mngrs() {
           }
         }
 
-        if(/ram$/.test(cachable) || this._direct_loaded) {
+        if(/ram$/.test(cachable) || this._direct_ram || this._direct_loaded) {
 
           select._top = top;
           select._skip = skip;

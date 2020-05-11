@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.22-beta.7, built:2020-05-10
+ metadata-abstract-ui v2.0.22-beta.7, built:2020-05-11
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1236,7 +1236,7 @@ function mngrs() {
             select.is_folder = false;
           }
         }
-        if(/ram$/.test(cachable) || this._direct_loaded) {
+        if(/ram$/.test(cachable) || this._direct_ram || this._direct_loaded) {
           select._top = top;
           select._skip = skip;
           if(sorting) {

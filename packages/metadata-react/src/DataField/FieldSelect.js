@@ -22,9 +22,20 @@ class FieldSelect extends AbstractField {
 
   constructor(props, context) {
     super(props, context);
-    const {_obj, _fld} = props;
-    Object.assign(this.state, {options: [_obj[_fld]]});
-    this.loadOptions(_obj);
+    this.state.options = [this.typedValue(props)];
+    this.loadOptions(props._obj);
+  }
+
+  typedValue({_obj, _fld}) {
+    let v;
+    const {is_ref, types} = this._meta.type;
+    if(is_ref && types.length === 1) {
+      v = $p.md.mgr_by_class_name(types[0]).get((_obj._obj || _obj)[_fld]);
+    }
+    else {
+      v = _obj[_fld];
+    }
+    return v;
   }
 
   shouldComponentUpdate({_obj}) {
@@ -37,8 +48,11 @@ class FieldSelect extends AbstractField {
 
   loadOptions(_obj) {
 
-    const {_meta, props, state} = this;
-    const _manager = _obj[props._fld] && _obj[props._fld]._manager || _meta.type._mgr;
+    const {_meta, props: {_fld}, state} = this;
+    const {is_ref, types} = _meta.type;
+    const v = this.typedValue({_obj, _fld});
+    const _manager = v && v._manager || _meta.type._mgr;
+
     const select = _manager ? _manager.get_search_selector({_obj, _meta, top: 999, skip: 0}) : {};
 
     if(_meta.list) {
@@ -59,6 +73,9 @@ class FieldSelect extends AbstractField {
 
     _manager.get_option_list(select)
       .then((options) => {
+        if(!options.includes(v)) {
+          options.unshift(v);
+        }
         if(this._mounted) {
           this.setState({options});
         }
@@ -78,8 +95,8 @@ class FieldSelect extends AbstractField {
   render() {
 
     const {props, _meta, onChange} = this;
-    const {_obj, _fld, classes, extClasses, fullWidth, read_only, disabled, isTabular, ...other} = props;
-    const value = _obj[_fld];
+    const {classes, extClasses, fullWidth, read_only, disabled, isTabular, ...other} = props;
+    const value = this.typedValue(props);
     const attr = {
       title: _meta.tooltip || _meta.synonym,
     }
