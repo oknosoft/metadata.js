@@ -227,12 +227,13 @@ export default ($p) => {
         }
 
         // запрос к alasql
+        attr.params = [];
         if(attr.action == 'get_tree') {
-          return option_list.then(() => wsql.alasql.promise(mgr.get_sql_struct(attr), []))
+          return option_list.then(() => wsql.alasql.promise(mgr.get_sql_struct(attr), attr.params))
             .then(iface.data_to_tree);
         }
         else if(attr.action == 'get_selection') {
-          return option_list.then(() => wsql.alasql.promise(mgr.get_sql_struct(attr), []))
+          return option_list.then(() => wsql.alasql.promise(mgr.get_sql_struct(attr), attr.params))
             .then(data => iface.data_to_grid.call(mgr, data, attr));
         }
       }

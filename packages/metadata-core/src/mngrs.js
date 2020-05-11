@@ -966,13 +966,19 @@ export class RefDataManager extends DataManager{
                     s += and + "(not _t_." + key + " = '" + val + "') ";
                   }
                   else if(keys[0] == "in"){
-                    s += and +  "(_t_." + key + " in (" + (Array.isArray(val) ? val : [val]).reduce((sum, val) => {
-                      if(sum){
-                        sum+=",";
-                      }
-                      sum+= typeof val == "number" ? val.toString() : "'" + val + "'";
-                      return  sum;
-                    }, "") + ")) ";
+                    if(Array.isArray(attr.params)) {
+                      s += and +  "(_t_." + key + " in @(?))";
+                      attr.params.push(Array.isArray(val) ? val : [val]);
+                    }
+                    else {
+                      s += and +  "(_t_." + key + " in (" + (Array.isArray(val) ? val : [val]).reduce((sum, val) => {
+                        if(sum){
+                          sum+=",";
+                        }
+                        sum+= typeof val == "number" ? val.toString() : "'" + val + "'";
+                        return  sum;
+                      }, "") + ")) ";
+                    }
                   }
                   else if(keys[0] == "nin"){
                     s += and +  "(_t_." + key + " not in (" + (Array.isArray(val) ? val : [val]).reduce((sum, val) => {

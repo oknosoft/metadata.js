@@ -252,11 +252,15 @@ DataManager.prototype.form_selection = function(pwnd, attr){
                     return;
                   }
                   o.is_folder && set.add(o);
-                  for (const elm of o._parents()) {
-                    set.add(elm);
+                  if(o.parent && !set.has(o.parent)) {
+                    for (const elm of o._parents()) {
+                      set.add(elm);
+                    }
                   }
-                  for (const elm of o._children(true)) {
-                    set.add(elm);
+                  if(cmp === 'inh' || o.is_folder) {
+                    for (const elm of o._children(true)) {
+                      set.add(elm);
+                    }
                   }
                 });
               }

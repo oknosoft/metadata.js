@@ -227,12 +227,13 @@ export default ($p) => {
         }
 
         // запрос к alasql
+        attr.params = [];
         if(attr.action == 'get_tree') {
-          return option_list.then(() => wsql.alasql.promise(mgr.get_sql_struct(attr), []))
+          return option_list.then(() => wsql.alasql.promise(mgr.get_sql_struct(attr), attr.params))
             .then(iface.data_to_tree);
         }
         else if(attr.action == 'get_selection') {
-          return option_list.then(() => wsql.alasql.promise(mgr.get_sql_struct(attr), []))
+          return option_list.then(() => wsql.alasql.promise(mgr.get_sql_struct(attr), attr.params))
             .then(data => iface.data_to_grid.call(mgr, data, attr));
         }
       }
@@ -4527,11 +4528,15 @@ DataManager.prototype.form_selection = function(pwnd, attr){
                     return;
                   }
                   o.is_folder && set.add(o);
-                  for (const elm of o._parents()) {
-                    set.add(elm);
+                  if(o.parent && !set.has(o.parent)) {
+                    for (const elm of o._parents()) {
+                      set.add(elm);
+                    }
                   }
-                  for (const elm of o._children(true)) {
-                    set.add(elm);
+                  if(cmp === 'inh' || o.is_folder) {
+                    for (const elm of o._children(true)) {
+                      set.add(elm);
+                    }
                   }
                 });
               }
@@ -5500,16 +5505,16 @@ SpreadsheetDocument.prototype.__define({
         const doc = this,
           // вызываем для заполнения _blob
           url = this.blankURL;
-
+    
         // отзываем объект
         URL.revokeObjectURL(url);
-
+    
         const reader = new FileReader();
-
+    
         // срабатывает после как blob будет загружен
         reader.addEventListener('loadend', e => {
           const document = new DOMParser().parseFromString(e.srcElement.result, 'text/html');
-
+    
           // копируем элементы из head
           for (let i = 0; i < doc.head.children.length; i++) {
             document.head.appendChild(doc.copy_element(doc.head.children[i]));
@@ -5525,15 +5530,15 @@ SpreadsheetDocument.prototype.__define({
           if (doc.title) {
             document.title = doc.title;
           }
-
+    
           resolve(document.firstElementChild.outerHTML);
         });
-
+    
         // срабатывает при ошибке в процессе загрузки blob
         reader.addEventListener('error', e => {
           reject(e);
         });
-
+    
         // читаем blob как текст
         reader.readAsText(this._blob);
       });

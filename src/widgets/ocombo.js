@@ -374,7 +374,7 @@ function OCombo(attr){
       _meta = attr.metadata;
     }
     else if(_property) {
-      _meta = (typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field])._clone();
+      _meta = $p.utils._clone(typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field]);
       _meta.type = _property.type;
       if(_obj.inset && _obj.inset.product_params) {
         const drow = _obj.inset.product_params.find({param: _property});
