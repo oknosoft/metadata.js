@@ -254,6 +254,13 @@ export default function scheme_settings() {
         })
     }
 
+    save(post, operational, attachments, attr = {}) {
+      if(!attr.db) {
+        attr.db = this._manager.adapter.db({cachable: 'doc'});
+      }
+      super.save(post, operational, attachments, attr);
+    }
+
     set_standard_period(once) {
       const {_data, standard_period} = this;
       if(standard_period.empty() || (once && _data._standard_period_setted)) {

@@ -9,8 +9,6 @@ import LoadingMessage from '../DumbLoader/LoadingMessage';
 import ReactDataGrid from 'react-data-grid';
 import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
 
-const cmpType = PropTypes.oneOfType([PropTypes.object, PropTypes.array]);
-
 class TabularSection extends MComponent {
 
   constructor(props, context) {
@@ -347,8 +345,8 @@ TabularSection.propTypes = {
   denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
   denyReorder: PropTypes.bool,          // Запрет изменения порядка строк
   minHeight: PropTypes.number,
-  btns: cmpType,                        // дополнительные кнопки
-  menu_items: cmpType,                  // дополнительные пункты меню
+  btns: PropTypes.node,                 // дополнительные кнопки
+  menu_items: PropTypes.node,           // дополнительные пункты меню
 
   handleValueChange: PropTypes.func,    // Обработчик изменения значения в ячейке
   handleRowChange: PropTypes.func,      // При окончании редактирования строки
