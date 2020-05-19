@@ -216,7 +216,7 @@ export default {
    * @param timeout
    * @return {Promise}
    */
-  alert({title = 'Внимание', text, html, initFullScreen, timeout = 60000}) {
+  alert({title = 'Внимание', text, html, initFullScreen, Component, props, timeout = 60000, ...other}) {
     if(!this.handleIfaceState) {
       return Promise.reject('init');
     }
@@ -235,12 +235,12 @@ export default {
         resolve();
       };
 
-      let timer = setTimeout(close_confirm, timeout);
+      let timer = timeout && setTimeout(close_confirm, timeout);
 
       this.handleIfaceState({
         component: '',
         name: 'alert',
-        value: {open: true, title, text, html, initFullScreen, handleOk: close_confirm}
+        value: {open: true, title, text, html, initFullScreen, Component, props, handleOk: close_confirm, ...other}
       });
 
     });
@@ -269,6 +269,14 @@ export default {
     }
   },
 
+  /**
+   * Рендерит компонент в отдельное окно
+   * @param Component
+   * @param obj
+   * @param title
+   * @param attr
+   * @param print
+   */
   window({Component, obj, title, attr, print}) {
     if(this.handleIfaceState) {
       this.handleIfaceState({
@@ -277,6 +285,6 @@ export default {
         value: {open: true, Component, obj, title, attr, print, handleClose: this.close_confirm.bind(this, 'wnd_portal')}
       });
     }
-  }
+  },
 
 };
