@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.22-beta.7, built:2020-05-11
+ metadata-core v2.0.22-beta.7, built:2020-05-22
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1677,7 +1677,7 @@ class DataManager extends MetaEventEmitter{
 	}
 	obj_constructor(ts_name = "", mode) {
 		if(!this.constructor_names[ts_name]){
-			var parts = this.class_name.split("."),
+			const parts = this.class_name.split("."),
 				fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1);
 			this.constructor_names[ts_name] = ts_name ? fn_name + ts_name.charAt(0).toUpperCase() + ts_name.substr(1) + "Row" : fn_name;
 		}
@@ -1805,7 +1805,7 @@ class DataManager extends MetaEventEmitter{
 				return property._manager;
 			}
 			else if (utils.is_guid(property) && property != utils.blank.guid) {
-				for (var i in rt) {
+				for (let i in rt) {
 					mgr = rt[i];
 					if (mgr.by_ref[property]){
 						return mgr;
@@ -2052,10 +2052,9 @@ class RefDataManager extends DataManager{
 		return res;
 	}
 	first_folder(owner){
-		for(var i in this.by_ref){
-			var o = this.by_ref[i];
-			if(o.is_folder && (!owner || utils.is_equal(owner, o.owner)))
-				return o;
+		for(let i in this.by_ref){
+			const o = this.by_ref[i];
+			if(o.is_folder && (!owner || utils.is_equal(owner, o.owner))) return o;
 		}
 		return this.get();
 	}
@@ -2197,7 +2196,7 @@ class RefDataManager extends DataManager{
                   if(mf && mf.type.is_ref){
                     vmgr = t.value_mgr({}, key, mf.type, true, val);
                   }
-                  if(keys[0] == "not"){
+                  if(['not', 'ne', '$ne'].includes(keys[0])){
                     s += and + "(not _t_." + key + " = '" + val + "') ";
                   }
                   else if(keys[0] == "in"){
@@ -2694,7 +2693,8 @@ class RegisterManager extends DataManager{
 				}
 				s += ")";
 				if(attr.selection){
-					if(typeof attr.selection == "function");else
+					if(typeof attr.selection == "function");
+					else
 						attr.selection.forEach(sel => {
 							for(var key in sel){
 								if(typeof sel[key] == "function"){
@@ -2705,22 +2705,18 @@ class RegisterManager extends DataManager{
 									else if(sel[key] === false)
 										s += "\n AND (not _t_." + key + ") ";
 									else if(typeof sel[key] == "object"){
-										if(utils.is_data_obj(sel[key]))
-											s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
-										else {
-											var keys = Object.keys(sel[key]),
-												val = sel[key][keys[0]],
-												mf = cmd.fields[key],
-												vmgr;
-											if(mf && mf.type.is_ref){
-												vmgr = t.value_mgr({}, key, mf.type, true, val);
-											}
-											if(keys[0] == "not")
-												s += "\n AND (not _t_." + key + " = '" + val + "') ";
+                    if(utils.is_data_obj(sel[key])) {
+                      s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
+                    }
+                    else {
+											const keys = Object.keys(sel[key]), val = sel[key][keys[0]];
+											if(['not', 'ne', '$ne'].includes(keys[0]))
+												s += "\n AND (not _t_." + key + " = '" + val.valueOf() + "') ";
 											else
-												s += "\n AND (_t_." + key + " = '" + val + "') ";
+												s += "\n AND (_t_." + key + " = '" + val.valueOf() + "') ";
 										}
-									}else if(typeof sel[key] == "string")
+									}
+									else if(typeof sel[key] == "string")
 										s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
 									else
 										s += "\n AND (_t_." + key + " = " + sel[key] + ") ";
@@ -3003,13 +2999,13 @@ Date.prototype.toJSON = Date.prototype.toISOString = function () {
 };
 if (!Number.prototype.round) {
 	Number.prototype.round = function (places) {
-		var multiplier = Math.pow(10, places || 0);
+		const multiplier = Math.pow(10, places || 0);
 		return (Math.round(this * multiplier) / multiplier);
 	};
 }
 if (!Number.prototype.pad) {
 	Number.prototype.pad = function (size) {
-		var s = String(this);
+		let s = String(this);
 		while (s.length < (size || 2)) {
 			s = '0' + s;
 		}
@@ -3226,21 +3222,19 @@ const utils = {
     });
 	},
 	get_and_show_blob(url, post_data, method) {
-		var params = 'menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes',
-			req;
 		function show_blob(req) {
 			url = window.URL.createObjectURL(req.response);
-			var wnd_print = window.open(url, 'wnd_print', params);
+			const wnd_print = window.open(url, 'wnd_print', 'menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes');
 			wnd_print.onload = (e) => window.URL.revokeObjectURL(url);
 			return wnd_print;
 		}
-		if (!method || (typeof method == 'string' && method.toLowerCase().indexOf('post') != -1))
-			req = this.post_ex(url,
-				typeof post_data == 'object' ? JSON.stringify(post_data) : post_data,
-				true,
-				xhr => xhr.responseType = 'blob');
-		else
-			req = this.get_ex(url, true, xhr => xhr.responseType = 'blob');
+		const req = (!method || (typeof method == 'string' && method.toLowerCase().indexOf('post') != -1)) ?
+      this.post_ex(url,
+        typeof post_data == 'object' ? JSON.stringify(post_data) : post_data,
+        true,
+        xhr => xhr.responseType = 'blob')
+      :
+      this.get_ex(url, true, xhr => xhr.responseType = 'blob');
 		return show_blob(req);
 	},
 	get_and_save_blob(url, post_data, file_name) {
@@ -3390,7 +3384,13 @@ const utils = {
   },
 	_selection(o, selection) {
 		let ok = true;
-		if (selection) {
+    let prop;
+    function cprop(name) {
+      if(this.hasOwnProperty(name)) {
+        prop = name;
+        return true;
+      }
+    }		if (selection) {
 			if (typeof selection == 'function') {
 				ok = selection.call(this, o);
 			}
@@ -3432,58 +3432,58 @@ const utils = {
               break;
             }
           }
-					else if (is_obj && sel.hasOwnProperty('like')) {
+          else if(is_obj && sel.hasOwnProperty('like')) {
 						if (!utils._like(o[j], sel.like)) {
 							ok = false;
 							break;
 						}
 					}
-          else if (is_obj && sel.hasOwnProperty('lke')) {
+          else if(is_obj && sel.hasOwnProperty('lke')) {
             if (!utils._like(o[j], sel.lke)) {
               ok = false;
               break;
             }
           }
-          else if (is_obj && sel.hasOwnProperty('nlk')) {
+          else if(is_obj && sel.hasOwnProperty('nlk')) {
             if (utils._like(o[j], sel.nlk)) {
               ok = false;
               break;
             }
           }
-					else if (is_obj && (sel.hasOwnProperty('not') || sel.hasOwnProperty('$ne'))) {
-					  const not = sel.hasOwnProperty('not') ? sel.not : sel.$ne;
+          else if(is_obj && ['not', 'ne', '$ne'].some(cprop.bind(sel))) {
+					  const not = sel[prop];
 						if (utils.is_equal(o[j], not)) {
 							ok = false;
 							break;
 						}
 					}
-					else if (is_obj && (sel.hasOwnProperty('in') || sel.hasOwnProperty('$in'))) {
-					  const arr = sel.in || sel.$in;
+          else if(is_obj && ['in', '$in'].some(cprop.bind(sel))) {
+					  const arr = sel[prop];
 						ok = arr.some((el) => utils.is_equal(el, o[j]));
             if(!ok) {
               break;
             }
           }
-          else if (is_obj && (sel.hasOwnProperty('nin') || sel.hasOwnProperty('$nin'))) {
+          else if(is_obj && ['nin', '$nin'].some(cprop.bind(sel))) {
             const arr = sel.nin || sel.$nin;
             ok = arr.every((el) => !utils.is_equal(el, o[j]));
             if(!ok) {
               break;
             }
           }
-          else if (is_obj && sel.hasOwnProperty('inh')) {
+          else if(is_obj && sel.hasOwnProperty('inh')) {
             ok = j === 'ref' ? o._hierarchy && o._hierarchy(sel.inh) : o[j]._hierarchy && o[j]._hierarchy(sel.inh);
             if(!ok) {
               break;
             }
           }
-          else if (is_obj && sel.hasOwnProperty('ninh')) {
-            ok = !(j === 'ref' ? o._hierarchy && o._hierarchy(sel.inh) : o[j]._hierarchy && o[j]._hierarchy(sel.inh));
+          else if(is_obj && sel.hasOwnProperty('ninh')) {
+            ok = !(j === 'ref' ? o._hierarchy && o._hierarchy(sel.ninh) : o[j]._hierarchy && o[j]._hierarchy(sel.ninh));
             if(!ok) {
               break;
             }
           }
-					else if (is_obj && sel.hasOwnProperty('lt')) {
+          else if(is_obj && sel.hasOwnProperty('lt')) {
 						ok = o[j] < sel.lt;
             if(!ok) {
               break;
@@ -3496,10 +3496,11 @@ const utils = {
             }
           }
 					else if (is_obj && sel.hasOwnProperty('between')) {
-						var tmp = o[j];
-						if (typeof tmp != 'number')
-							tmp = utils.fix_date(o[j]);
-						ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);
+						let tmp = o[j];
+            if(typeof tmp != 'number') {
+              tmp = utils.fix_date(o[j]);
+            }
+            ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);
             if(!ok) {
               break;
             }

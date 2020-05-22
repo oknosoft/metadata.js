@@ -256,7 +256,7 @@ export class DataManager extends MetaEventEmitter{
 	obj_constructor(ts_name = "", mode) {
 
 		if(!this.constructor_names[ts_name]){
-			var parts = this.class_name.split("."),
+			const parts = this.class_name.split("."),
 				fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1);
 			this.constructor_names[ts_name] = ts_name ? fn_name + ts_name.charAt(0).toUpperCase() + ts_name.substr(1) + "Row" : fn_name;
 		}
@@ -426,7 +426,7 @@ export class DataManager extends MetaEventEmitter{
 				return property._manager;
 			}
 			else if (utils.is_guid(property) && property != utils.blank.guid) {
-				for (var i in rt) {
+				for (let i in rt) {
 					mgr = rt[i];
 					if (mgr.by_ref[property]){
 						return mgr;
@@ -786,10 +786,9 @@ export class RefDataManager extends DataManager{
 	 * @return {DataObj} - ссылка найденной папки или пустая ссылка
 	 */
 	first_folder(owner){
-		for(var i in this.by_ref){
-			var o = this.by_ref[i];
-			if(o.is_folder && (!owner || utils.is_equal(owner, o.owner)))
-				return o;
+		for(let i in this.by_ref){
+			const o = this.by_ref[i];
+			if(o.is_folder && (!owner || utils.is_equal(owner, o.owner))) return o;
 		}
 		return this.get();
 	}
@@ -962,7 +961,7 @@ export class RefDataManager extends DataManager{
                     vmgr = t.value_mgr({}, key, mf.type, true, val);
                   }
 
-                  if(keys[0] == "not"){
+                  if(['not', 'ne', '$ne'].includes(keys[0])){
                     s += and + "(not _t_." + key + " = '" + val + "') ";
                   }
                   else if(keys[0] == "in"){
@@ -1710,7 +1709,8 @@ export class RegisterManager extends DataManager{
 				if(attr.selection){
 					if(typeof attr.selection == "function"){
 
-					}else
+					}
+					else
 						attr.selection.forEach(sel => {
 							for(var key in sel){
 
@@ -1726,27 +1726,21 @@ export class RegisterManager extends DataManager{
 
 									else if(typeof sel[key] == "object"){
 
-										if(utils.is_data_obj(sel[key]))
-											s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
+                    if(utils.is_data_obj(sel[key])) {
+                      s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
+                    }
+                    else {
+											const keys = Object.keys(sel[key]), val = sel[key][keys[0]];
 
-										else{
-											var keys = Object.keys(sel[key]),
-												val = sel[key][keys[0]],
-												mf = cmd.fields[key],
-												vmgr;
-
-											if(mf && mf.type.is_ref){
-												vmgr = t.value_mgr({}, key, mf.type, true, val);
-											}
-
-											if(keys[0] == "not")
-												s += "\n AND (not _t_." + key + " = '" + val + "') ";
+											if(['not', 'ne', '$ne'].includes(keys[0]))
+												s += "\n AND (not _t_." + key + " = '" + val.valueOf() + "') ";
 
 											else
-												s += "\n AND (_t_." + key + " = '" + val + "') ";
+												s += "\n AND (_t_." + key + " = '" + val.valueOf() + "') ";
 										}
 
-									}else if(typeof sel[key] == "string")
+									}
+									else if(typeof sel[key] == "string")
 										s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
 
 									else

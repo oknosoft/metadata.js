@@ -41,7 +41,7 @@ Date.prototype.toJSON = Date.prototype.toISOString = function () {
  */
 if (!Number.prototype.round) {
 	Number.prototype.round = function (places) {
-		var multiplier = Math.pow(10, places || 0);
+		const multiplier = Math.pow(10, places || 0);
 		return (Math.round(this * multiplier) / multiplier);
 	};
 }
@@ -56,7 +56,7 @@ if (!Number.prototype.round) {
  */
 if (!Number.prototype.pad) {
 	Number.prototype.pad = function (size) {
-		var s = String(this);
+		let s = String(this);
 		while (s.length < (size || 2)) {
 			s = '0' + s;
 		}
@@ -478,23 +478,20 @@ const utils = {
 	 */
 	get_and_show_blob(url, post_data, method) {
 
-		var params = 'menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes',
-			req;
-
 		function show_blob(req) {
 			url = window.URL.createObjectURL(req.response);
-			var wnd_print = window.open(url, 'wnd_print', params);
+			const wnd_print = window.open(url, 'wnd_print', 'menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes');
 			wnd_print.onload = (e) => window.URL.revokeObjectURL(url);
 			return wnd_print;
 		}
 
-		if (!method || (typeof method == 'string' && method.toLowerCase().indexOf('post') != -1))
-			req = this.post_ex(url,
-				typeof post_data == 'object' ? JSON.stringify(post_data) : post_data,
-				true,
-				xhr => xhr.responseType = 'blob');
-		else
-			req = this.get_ex(url, true, xhr => xhr.responseType = 'blob');
+		const req = (!method || (typeof method == 'string' && method.toLowerCase().indexOf('post') != -1)) ?
+      this.post_ex(url,
+        typeof post_data == 'object' ? JSON.stringify(post_data) : post_data,
+        true,
+        xhr => xhr.responseType = 'blob')
+      :
+      this.get_ex(url, true, xhr => xhr.responseType = 'blob');
 
 		return show_blob(req);
 	},
@@ -725,6 +722,13 @@ const utils = {
 	_selection(o, selection) {
 
 		let ok = true;
+    let prop;
+    function cprop(name) {
+      if(this.hasOwnProperty(name)) {
+        prop = name;
+        return true;
+      }
+    };
 
 		if (selection) {
 			// если отбор является функцией, выполняем её, передав контекст
@@ -737,6 +741,7 @@ const utils = {
 
 					const sel = selection[j];
 					const is_obj = sel && typeof(sel) === 'object';
+
 
 					// пропускаем служебные свойства
 					if (j.substr(0, 1) == '_') {
@@ -777,44 +782,44 @@ const utils = {
             }
           }
 					// если свойство отбора является объектом `like`, сравниваем подстроку
-					else if (is_obj && sel.hasOwnProperty('like')) {
+          else if(is_obj && sel.hasOwnProperty('like')) {
 						if (!utils._like(o[j], sel.like)) {
 							ok = false;
 							break;
 						}
 					}
 					// это синоним `like`
-          else if (is_obj && sel.hasOwnProperty('lke')) {
+          else if(is_obj && sel.hasOwnProperty('lke')) {
             if (!utils._like(o[j], sel.lke)) {
               ok = false;
               break;
             }
           }
           // это вид сравнения `не содержит`
-          else if (is_obj && sel.hasOwnProperty('nlk')) {
+          else if(is_obj && sel.hasOwnProperty('nlk')) {
             if (utils._like(o[j], sel.nlk)) {
               ok = false;
               break;
             }
           }
 					// если свойство отбора является объектом `not`, сравниваем на неравенство
-					else if (is_obj && (sel.hasOwnProperty('not') || sel.hasOwnProperty('$ne'))) {
-					  const not = sel.hasOwnProperty('not') ? sel.not : sel.$ne;
+          else if(is_obj && ['not', 'ne', '$ne'].some(cprop.bind(sel))) {
+					  const not = sel[prop];
 						if (utils.is_equal(o[j], not)) {
 							ok = false;
 							break;
 						}
 					}
 					// если свойство отбора является объектом `in`, выполняем Array.some()
-					else if (is_obj && (sel.hasOwnProperty('in') || sel.hasOwnProperty('$in'))) {
-					  const arr = sel.in || sel.$in;
+          else if(is_obj && ['in', '$in'].some(cprop.bind(sel))) {
+					  const arr = sel[prop];
 						ok = arr.some((el) => utils.is_equal(el, o[j]));
             if(!ok) {
               break;
             }
           }
           // если свойство отбора является объектом `nin`, выполняем Array.every(!=)
-          else if (is_obj && (sel.hasOwnProperty('nin') || sel.hasOwnProperty('$nin'))) {
+          else if(is_obj && ['nin', '$nin'].some(cprop.bind(sel))) {
             const arr = sel.nin || sel.$nin;
             ok = arr.every((el) => !utils.is_equal(el, o[j]));
             if(!ok) {
@@ -822,21 +827,21 @@ const utils = {
             }
           }
           // если свойство отбора является объектом `inh`, вычисляем иерархию
-          else if (is_obj && sel.hasOwnProperty('inh')) {
+          else if(is_obj && sel.hasOwnProperty('inh')) {
             ok = j === 'ref' ? o._hierarchy && o._hierarchy(sel.inh) : o[j]._hierarchy && o[j]._hierarchy(sel.inh);
             if(!ok) {
               break;
             }
           }
           // если свойство отбора является объектом `ninh`, вычисляем иерархию
-          else if (is_obj && sel.hasOwnProperty('ninh')) {
-            ok = !(j === 'ref' ? o._hierarchy && o._hierarchy(sel.inh) : o[j]._hierarchy && o[j]._hierarchy(sel.inh));
+          else if(is_obj && sel.hasOwnProperty('ninh')) {
+            ok = !(j === 'ref' ? o._hierarchy && o._hierarchy(sel.ninh) : o[j]._hierarchy && o[j]._hierarchy(sel.ninh));
             if(!ok) {
               break;
             }
           }
 					// если свойство отбора является объектом `lt`, сравниваем на _меньше_
-					else if (is_obj && sel.hasOwnProperty('lt')) {
+          else if(is_obj && sel.hasOwnProperty('lt')) {
 						ok = o[j] < sel.lt;
             if(!ok) {
               break;
@@ -851,10 +856,11 @@ const utils = {
           }
 					// если свойство отбора является объектом `between`, сравниваем на _вхождение_
 					else if (is_obj && sel.hasOwnProperty('between')) {
-						var tmp = o[j];
-						if (typeof tmp != 'number')
-							tmp = utils.fix_date(o[j]);
-						ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);
+						let tmp = o[j];
+            if(typeof tmp != 'number') {
+              tmp = utils.fix_date(o[j]);
+            }
+            ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);
             if(!ok) {
               break;
             }
