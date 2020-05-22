@@ -1708,6 +1708,12 @@ function adapter({AbstracrAdapter}) {
         }
       });
 
+      const cpi = res.indexOf('cat.choice_params');
+      if(cpi >= 0) {
+        res.splice(cpi, 1);
+        res.push('cat.choice_params');
+      }
+
       return res.reduce((acc, name) => {
         return acc.then(() => {
           const opt = {
