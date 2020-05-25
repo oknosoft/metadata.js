@@ -29,8 +29,8 @@ class FieldSelect extends AbstractField {
   typedValue({_obj, _fld}) {
     let v;
     const {is_ref, types} = this._meta.type;
-    if(is_ref && types.length === 1) {
-      v = $p.md.mgr_by_class_name(types[0]).get((_obj._obj || _obj)[_fld]);
+    if(is_ref && types.length === 1 && _obj._obj && _obj._obj.hasOwnProperty(_fld)) {
+      v = $p.md.mgr_by_class_name(types[0]).get(_obj._obj[_fld]);
     }
     else {
       v = _obj[_fld];
