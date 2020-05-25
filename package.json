@@ -12,14 +12,14 @@
     "doc": "doc"
   },
   "dependencies": {
-    "@material-ui/core": "^4.9.14",
+    "@material-ui/core": "^4.10.0",
     "@material-ui/icons": "^4.9.1",
-    "alasql": "^0.6.0",
+    "alasql": "^0.6.1",
     "cron": "^1.8.2",
     "dataframe": "^2.0",
-    "downshift": "^5.4.0",
+    "downshift": "^5.4.2",
     "marked": "^1.1.0",
-    "moment": "^2.25.3",
+    "moment": "^2.26.0",
     "pg": "^8.2.1",
     "pouchdb-adapter-http": "7.2",
     "pouchdb-adapter-idb": "7.2",
@@ -35,7 +35,7 @@
     "rc-time-picker": "^3.7.3",
     "react-draggable": "^4.4.2",
     "superlogin-client": "^0.8.0",
-    "uuid": "^8.0"
+    "uuid": "^8.1.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
