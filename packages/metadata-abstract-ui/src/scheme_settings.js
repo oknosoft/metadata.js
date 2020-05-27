@@ -54,7 +54,22 @@ export default function scheme_settings() {
     find_schemas(class_name) {
       if(this.cachable === 'ram') {
         return Promise.resolve(
-          this.find_rows({obj: class_name}).sort((a,b) => a.user > b.user)
+          this.find_rows({obj: class_name})
+            .sort((a, b) => {
+              if(a.user > b.user) {
+                return 1;
+              }
+              if (a.user < b.user) {
+                return -1;
+              }
+              if (a.name.endsWith('main') && !b.name.endsWith('main')) {
+                return -1;
+              }
+              if (b.name.endsWith('main') && !a.name.endsWith('main')) {
+                return 1;
+              }
+              return a.name > b.name;
+            })
         );
       }
 
