@@ -59,7 +59,7 @@ class DataListToolbar extends Component {
   render() {
 
     const {props, state} = this;
-    const {classes, scheme, width, btns, end_btns, menu_items, toolbar2row, flat, show_flat, setting_in_menu} = props;
+    const {classes, scheme, width, btns, end_btns, alter_end_btns, menu_items, toolbar2row, flat, show_flat, setting_in_menu} = props;
     const widthUpSm = isWidthUp('sm', width);
 
     return [
@@ -72,15 +72,21 @@ class DataListToolbar extends Component {
           variant="outlined"
           className={classes.spaceLeft}
           onClick={props.handleSelect}>Выбрать</Button>}
+
         {!props.denyAddDel && <IconButton key="create" title="Создать объект" onClick={props.handleAdd}><AddIcon/></IconButton>}
-        <IconButton key="edit" title="Открыть форму объекта" onClick={props.handleEdit}><EditIcon/></IconButton>
-        {!props.denyAddDel && !props.denyDel && <IconButton key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}
+
+        {props.handleEdit && <IconButton key="edit" title="Открыть форму объекта" onClick={props.handleEdit}><EditIcon/></IconButton>}
+
+        {!props.denyAddDel && !props.denyDel && <IconButton
+          key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}
+
         {show_flat && <IconButton
           key="flat"
           title={flat ? 'Включить иерархию' : 'Включить плоский список'}
           onClick={props.flatChange}>{flat ? <ListIcon/> : <TreeIcon/>}</IconButton>}
 
         {!scheme.standard_period.empty() && widthUpSm && <IconButton disabled>|</IconButton>}
+
         {!scheme.standard_period.empty() && widthUpSm && <DateRange
           _obj={scheme}
           _fld={'date'}
@@ -106,25 +112,29 @@ class DataListToolbar extends Component {
           hide_btn={!widthUpSm || setting_in_menu}
         />
 
-        {(!toolbar2row || widthUpSm) && end_btns /* дополнительные кнопки */}
+        {(!toolbar2row || widthUpSm) && !alter_end_btns && end_btns /* дополнительные кнопки */}
 
-        <IconButton onClick={this.handleClick} title="Дополнительно"><MoreVertIcon/></IconButton>
-        <Menu
+        {alter_end_btns /* дополнительные кнопки */}
+
+        {!alter_end_btns && <IconButton onClick={this.handleClick} title="Дополнительно"><MoreVertIcon/></IconButton>}
+        {!alter_end_btns &&
+          <Menu
           anchorEl={state.anchorEl}
           open={state.open}
           onClose={this.handleRequestClose}
-        >
+          >
           {(!widthUpSm || setting_in_menu) &&
-            <MenuItem onClick={this.handleSettingsToggle}><ListItemIcon><SettingsIcon/></ListItemIcon>Настройки</MenuItem>}
+          <MenuItem onClick={this.handleSettingsToggle}><ListItemIcon><SettingsIcon/></ListItemIcon>Настройки</MenuItem>}
 
           {props.handlePrint &&
-            <MenuPrint scheme={scheme} handlePrint={props.handlePrint} />}
+          <MenuPrint scheme={scheme} handlePrint={props.handlePrint} />}
 
           {props.handleAttachments &&
-            <MenuItem onClick={props.handleAttachments}><ListItemIcon><AttachIcon/></ListItemIcon>Вложения</MenuItem>}
+          <MenuItem onClick={props.handleAttachments}><ListItemIcon><AttachIcon/></ListItemIcon>Вложения</MenuItem>}
 
           {menu_items /* дополнительные пункты меню */}
-        </Menu>
+          </Menu>
+        }
 
       </Toolbar>,
 
@@ -154,6 +164,10 @@ DataListToolbar.propTypes = {
   handleRemove: PropTypes.func,                   // обработчик удаления строки
   handlePrint: PropTypes.func,                    // обработчик открытия диалога печати
   handleAttachments: PropTypes.func,              // обработчик открытия диалога присоединенных файлов
+
+  end_btns: PropTypes.node,
+  alter_end_btns: PropTypes.node,
+  menu_items: PropTypes.node,
 };
 
 DataListToolbar.defaultProps = {
