@@ -61,6 +61,8 @@ class RootView extends Component {
       }
     }
 
+    const _dumb = show_dumb && ((React.isValidElement(DumbScreen) ? DumbScreen : <DumbScreen {...props} />));
+
     return <ThemeProvider theme={theme}>
       {
         second_instance ?
@@ -70,14 +72,9 @@ class RootView extends Component {
           :
           (
             state.browser_compatible ?
-              (show_dumb ?
-                <DumbScreen {...props} />
-                :
-                <Router history={history}>
-                  <Route component={AppView}/>
-                </Router>)
+              (show_dumb ? _dumb : <Router history={history}><Route component={AppView}/></Router>)
               :
-              (<BrowserCompatibility/>)
+              <BrowserCompatibility/>
           )
       }
     </ThemeProvider>;
@@ -86,7 +83,7 @@ class RootView extends Component {
 }
 
 RootView.propTypes = {
-  DumbScreen: PropTypes.func,
+  DumbScreen: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
   AppView: PropTypes.oneOfType([PropTypes.object, PropTypes.node, PropTypes.func]).isRequired,
   history: PropTypes.object.isRequired,
   item_props: PropTypes.func.isRequired,

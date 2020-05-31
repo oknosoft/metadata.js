@@ -60,14 +60,9 @@ module.exports = {
     es: {
       plugins: [
         //'transform-react-constant-elements',
+        'transform-react-remove-prop-types',
         //'transform-dev-warning',
         //['react-remove-properties', { properties: ['data-mui-test'] }],
-        [
-          'transform-react-remove-prop-types',
-          {
-            mode: 'wrap',
-          },
-        ],
       ],
       // It's most likely a babel bug.
       // We are using this ignore option in the CLI command but that has no effect.
@@ -76,14 +71,9 @@ module.exports = {
     production: {
       plugins: [
         'transform-react-constant-elements',
+        'transform-react-remove-prop-types',
         'transform-dev-warning',
         ['react-remove-properties', { properties: ['data-mui-test'] }],
-        [
-          'transform-react-remove-prop-types',
-          {
-            mode: 'wrap',
-          },
-        ],
       ],
       // It's most likely a babel bug.
       // We are using this ignore option in the CLI command but that has no effect.
