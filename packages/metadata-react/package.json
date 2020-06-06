@@ -18,7 +18,7 @@
     "metadata-abstract-ui": "^2.0.22-beta.7",
     "metadata-redux": "^2.0.22-beta.7",
     "rc-calendar": "^9.15",
-    "rc-cascader": "^1.2",
+    "rc-cascader": "^1.3",
     "rc-time-picker": "^3.7",
     "react-data-grid": "^6.1",
     "react-data-grid-addons": "^6.1",
