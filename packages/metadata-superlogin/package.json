@@ -4,18 +4,18 @@
   "version": "2.0.22-beta.7",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "engines": {
-    "node": "^8.8",
-    "npm": "^6.0"
+    "node": "^8.15",
+    "npm": "^6.12"
   },
   "dependencies": {
-    "body-parser": "^1.18.2",
+    "body-parser": "^1.19",
     "metadata-redux": "^2.0.22-beta.7",
     "passport-facebook": "^3.0",
     "passport-github": "^1.1",
-    "passport-google-oauth": "^1.0",
+    "passport-google-oauth": "^2.0",
     "passport-vkontakte": "^0.3",
-    "passport-yandex": "0.0.3",
-    "superlogin": "github:unpete/superlogin",
+    "passport-yandex": "0.0.5",
+    "superlogin": "github:unpete/superlogin#625c554d6996504f8d1bdee541e3804b46de6f14",
     "superlogin-client": "^0.8.0",
     "yamljs": "^0.3.0"
   },

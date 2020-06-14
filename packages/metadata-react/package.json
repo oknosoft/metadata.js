@@ -5,8 +5,8 @@
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
-    "node": "^8.8",
-    "npm": "^6.0"
+    "node": "^8.15",
+    "npm": "^6.12"
   },
   "dependencies": {
     "@material-ui/core": "^4.10",
@@ -24,7 +24,7 @@
     "react-data-grid-addons": "^6.1",
     "react-draggable": "^4.4",
     "react-fullscreenable": "^2.5.1-0",
-    "react-helmet": "^6.0",
+    "react-helmet": "^6.1",
     "react-onclickoutside": "^6.9",
     "react-swipeable": "^5.5",
     "react-virtualized": "^9.21",

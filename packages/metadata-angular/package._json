@@ -5,8 +5,8 @@
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
-    "node": "^8.8",
-    "npm": "^6.0"
+    "node": "^8.15",
+    "npm": "^6.12"
   },
   "main": "./index.js",
   "repository": {

@@ -5,13 +5,13 @@
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
-    "node": "^8.8",
-    "npm": "^6.0"
+    "node": "^8.15",
+    "npm": "^6.12"
   },
   "dependencies": {
     "alasql": "^0.6",
     "debug": "^4.1",
-    "moment": "^2.25",
+    "moment": "^2.26",
     "uuid": "^8.1"
   },
   "repository": {
