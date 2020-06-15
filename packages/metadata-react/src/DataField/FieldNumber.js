@@ -59,7 +59,7 @@ class FieldNumber extends AbstractField {
   render() {
 
     const {state, props, _meta} = this;
-    const {_obj, _fld, classes, extClasses, className, read_only, disabled, label_position, fullWidth, isTabular, ...other} = props;
+    const {_obj, _fld, classes, extClasses, className, read_only, disabled, label_position, fullWidth, isTabular, handleValueChange, ...other} = props;
     const inputProps={readOnly: Boolean(read_only)};
     let endAdornment;
     if(navigator.userAgent.match(/android|ios|iphone/i)) {
