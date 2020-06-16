@@ -322,6 +322,7 @@ class TabularSection extends MComponent {
                 onCellDeSelected={this.onCellDeSelected}
                 onCellSelected={this.onCellSelected}
                 onGridRowsUpdated={this.handleRowsUpdated}
+                onRowDoubleClick={props.onRowDoubleClick}
                 onGridSort={this.handleSort}
                 editorPortalTarget={props.portalTarget || this.portalTarget}
                 hideHeader={props.hideHeader}
@@ -356,6 +357,7 @@ TabularSection.propTypes = {
   selectedIds: PropTypes.array,
 
   onCellSelected: PropTypes.func,
+  onRowDoubleClick: PropTypes.func,
   onRowUpdated: PropTypes.func,
   columnsChange: PropTypes.func,
 };
