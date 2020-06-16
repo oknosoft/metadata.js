@@ -117,7 +117,13 @@ if (!Object.prototype.__define) {
 	});
 }
 
-const date_frmts = ['DD-MM-YYYY', 'DD-MM-YYYY HH:mm', 'DD-MM-YYYY HH:mm:ss', 'DD-MM-YY HH:mm', 'YYYYDDMMHHmmss', moment.ISO_8601];
+const date_frmts = ['DD-MM-YYYY', 'DD.MM.YYYY',
+  'DD-MM-YYYY HH:mm', 'DD.MM.YYYY HH:mm',
+  'DD-MM-YYYY HH:mm:ss', 'DD.MM.YYYY HH:mm:ss',
+  'DD-MM-YY HH:mm', 'DD.MM.YY HH:mm',
+  'YYYYDDMMHHmmss',
+  moment.ISO_8601
+];
 const rxref = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 /**
@@ -1064,4 +1070,3 @@ utils.__define('blank', {
 });
 
 export default utils;
-
