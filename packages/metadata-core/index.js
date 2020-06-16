@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.22-beta.7, built:2020-06-06
+ metadata-core v2.0.22-beta.7, built:2020-06-16
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3040,20 +3040,23 @@ if (!Object.prototype.__define) {
 		},
 	});
 }
-const date_frmts = ['DD-MM-YYYY', 'DD-MM-YYYY HH:mm', 'DD-MM-YYYY HH:mm:ss', 'DD-MM-YY HH:mm', 'YYYYDDMMHHmmss', moment$1.ISO_8601];
+const date_frmts = ['DD-MM-YYYY', 'DD-MM-YYYY HH:mm', 'DD-MM-YYYY HH:mm:ss', 'DD-MM-YY HH:mm', 'YYYYDDMMHHmmss', moment$1.ISO_8601,
+   'DD.MM.YYYY', 'DD.MM.YYYY HH:mm', 'DD.MM.YYYY HH:mm:ss', 'DD.MM.YY HH:mm'];
 const rxref = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 const utils = {
 	moment: moment$1,
   load_script(src, type, callback) {
     return new Promise((resolve, reject) => {
+      const r = setTimeout(reject, 20000);
       const s = document.createElement(type);
-      if (type == 'script') {
+      if (type === 'script') {
         s.type = 'text/javascript';
         s.src = src;
         s.async = true;
         const listener = () => {
           s.removeEventListener('load', listener);
           callback && callback();
+          clearTimeout(r);
           resolve();
         };
         s.addEventListener('load', listener, false);
@@ -3064,7 +3067,10 @@ const utils = {
         s.href = src;
       }
       document.head.appendChild(s);
-      (type != 'script') && resolve();
+      if(type !== 'script') {
+        clearTimeout(r);
+        resolve();
+      }
     });
   },
 	fix_date(str, strict) {
@@ -3119,7 +3125,7 @@ const utils = {
 	},
 	fix_boolean(str) {
 		if (typeof str === 'string') {
-			return !(!str || str.toLowerCase() == 'false');
+			return !(!str || str.toLowerCase() === 'false');
 		}
 		return !!str;
 	},
@@ -3131,7 +3137,7 @@ const utils = {
       type = type.type;
     }
 		if (type.is_ref) {
-      if(type.types && type.types.some((type) => type.indexOf('enm') == 0 || type.indexOf('string') == 0)){
+      if(type.types && type.types.some((type) => type.startsWith('enm') || type.startsWith('string'))){
         return str;
       }
 			return this.fix_guid(str);
@@ -3142,7 +3148,7 @@ const utils = {
 		if (type['digits']) {
 			return this.fix_number(str, true);
 		}
-		if (type.types && type.types[0] == 'boolean') {
+		if (type.types && type.types[0] === 'boolean') {
 			return this.fix_boolean(str);
 		}
 		return str;
@@ -3167,7 +3173,7 @@ const utils = {
 		}
 		else if (v.length > 36) {
 			const parts = v.split('|');
-			v = parts.length == 2 ? parts[1] : v.substr(0, 36);
+			v = parts.length === 2 ? parts[1] : v.substr(0, 36);
 		}
 		return rxref.test(v);
 	},
@@ -3207,7 +3213,7 @@ const utils = {
 	blob_as_text(blob, type) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = (event) => resolve(reader.result);
+      reader.onload = () => resolve(reader.result);
       reader.onerror = (err) => reject(err);
       switch (type) {
         case "array" :
@@ -3225,7 +3231,7 @@ const utils = {
 		function show_blob(req) {
 			url = window.URL.createObjectURL(req.response);
 			const wnd_print = window.open(url, 'wnd_print', 'menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes');
-			wnd_print.onload = (e) => window.URL.revokeObjectURL(url);
+			wnd_print.onload = () => window.URL.revokeObjectURL(url);
 			return wnd_print;
 		}
 		const req = (!method || (typeof method == 'string' && method.toLowerCase().indexOf('post') != -1)) ?
@@ -3390,7 +3396,8 @@ const utils = {
         prop = name;
         return true;
       }
-    }		if (selection) {
+    }
+		if (selection) {
 			if (typeof selection == 'function') {
 				ok = selection.call(this, o);
 			}
@@ -3407,7 +3414,7 @@ const utils = {
             }
 						continue;
 					}
-					else if (typeof sel == 'function') {
+					if (typeof sel == 'function') {
 						ok = sel.call(this, o, j);
             if(!ok) {
               break;
