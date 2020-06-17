@@ -133,7 +133,7 @@ export default function log_manager() {
         dfrom = this._stamp;
         if(!pouch.remote.log) {
           const {__opts} = (pouch.remote.doc || pouch.remote.ram || pouch.remote.remote || {});
-          pouch.remote.log = new classes.PouchDB(__opts.name.replace(/(ram|remote|doc)$/, 'log'), {
+          pouch.remote.log = new classes.PouchDB(__opts.name.replace(/(ram|remote|doc|doc\w\w\w\w\w)$/, 'log'), {
             skip_setup: true,
             adapter: 'http',
             owner: pouch,

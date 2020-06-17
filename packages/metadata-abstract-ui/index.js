@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.22-beta.7, built:2020-06-06
+ metadata-abstract-ui v2.0.22-beta.7, built:2020-06-17
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -110,7 +110,7 @@ function log_manager() {
         dfrom = this._stamp;
         if(!pouch.remote.log) {
           const {__opts} = (pouch.remote.doc || pouch.remote.ram || pouch.remote.remote || {});
-          pouch.remote.log = new classes.PouchDB(__opts.name.replace(/(ram|remote|doc)$/, 'log'), {
+          pouch.remote.log = new classes.PouchDB(__opts.name.replace(/(ram|remote|doc|doc\w\w\w\w\w)$/, 'log'), {
             skip_setup: true,
             adapter: 'http',
             owner: pouch,
