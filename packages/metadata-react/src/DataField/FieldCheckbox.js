@@ -25,7 +25,7 @@ class FieldCheckbox extends AbstractField {
   };
 
   render() {
-    const {props: {read_only, _fld, classes, extClasses, fullWidth}, state: {value}, _meta, isTabular, handleChange} = this;
+    const {props: {read_only, _fld, classes, extClasses, fullWidth, label, bar}, state: {value}, _meta, isTabular, handleChange} = this;
     const attr = {
       title: _meta.tooltip || _meta.synonym,
     };
@@ -43,12 +43,12 @@ class FieldCheckbox extends AbstractField {
         />
         :
         <FormControl
-          className={extClasses && extClasses.control ? '' : cn(classes.formControl, props.bar && classes.barInput)}
+          className={extClasses && extClasses.control ? '' : cn(classes.formControl, bar && classes.barInput)}
           classes={extClasses && extClasses.control}
           fullWidth={fullWidth}
           {...attr}
         >
-          <InputLabel classes={extClasses && extClasses.label}>{_meta.synonym}</InputLabel>
+          <InputLabel classes={extClasses && extClasses.label}>{label || _meta.synonym}</InputLabel>
           <Checkbox
             checked = {value}
             disabled = {read_only}
