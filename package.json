@@ -81,7 +81,7 @@
     "gulp-umd": "^2.0",
     "gulp-util": "^3.0.8",
     "gulp-wrap": "^0.15.0",
-    "history": "^5.0",
+    "history": "^4.10",
     "md5-file": "^5.0",
     "react-data-grid": "^6.1.0",
     "react-data-grid-addons": "^6.1.0",
