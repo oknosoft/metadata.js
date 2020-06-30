@@ -42,6 +42,9 @@ const style = theme => ({
       minWidth: 480,
     },
   },
+  top: {
+    alignItems: 'flex-start',
+  },
   maxwidth: {
     [theme.breakpoints.up('md')]: {
       maxWidth: 'calc(100vw - 80px)',
@@ -126,14 +129,17 @@ class SimpleDialog extends React.Component {
   };
 
   render() {
-    const {open, fullScreen, disablePortal, noSpace, title, actions, toolbtns, children, classes, onClose, minheight, large} = this.props;
+    const {open, fullScreen, top, disablePortal, noSpace, title, actions, toolbtns, children, classes, onClose, minheight, large} = this.props;
     const stateFullScreen = fullScreen || this.state.fullScreen;
     return <Dialog
       disablePortal={disablePortal}
       open={open}
       fullScreen={stateFullScreen}
       onClose={onClose}
-      classes={{paper: cn(large ? classes.large : classes.paper, minheight && classes.minheight, !stateFullScreen && classes.maxwidth)}}
+      classes={{
+        paper: cn(large ? classes.large : classes.paper, minheight && classes.minheight, !stateFullScreen && classes.maxwidth),
+        scrollPaper: top ? classes.top : null,
+      }}
       PaperComponent={this.PaperComponent}
       aria-labelledby={this._id}
     >

@@ -43,7 +43,7 @@ export default {
   input_value({
                 title = 'Ввод значения',
                 text,
-                timeout = 60000,
+                timeout = 30000,
                 type,
                 list,
                 initialValue
@@ -170,7 +170,7 @@ export default {
    * @param timeout
    * @return {Promise}
    */
-  confirm({title = 'Внимание', text, html, initFullScreen, timeout = 60000}) {
+  confirm({title = 'Внимание', text, html, initFullScreen, timeout = 30000, ...other}) {
     if(!this.handleIfaceState) {
       return Promise.reject('init');
     }
@@ -203,7 +203,7 @@ export default {
       this.handleIfaceState({
         component: '',
         name: 'confirm',
-        value: {open: true, title, text, html, initFullScreen, handleOk: close_confirm, handleCancel: reject_confirm}
+        value: {open: true, title, text, html, initFullScreen, handleOk: close_confirm, handleCancel: reject_confirm, ...other}
       });
 
     });
@@ -216,7 +216,7 @@ export default {
    * @param timeout
    * @return {Promise}
    */
-  alert({title = 'Внимание', text, html, initFullScreen, Component, props, timeout = 60000, ...other}) {
+  alert({title = 'Внимание', text, html, initFullScreen, Component, props, timeout = 30000, ...other}) {
     if(!this.handleIfaceState) {
       return Promise.reject('init');
     }
