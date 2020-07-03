@@ -95,12 +95,20 @@ export default ($p) => {
 						mf = {synonym: pref.presentation, type: pref.type};
 						row_id = tabular + '|' + pref.ref;
 						by_type(pval);
-						if (ft == 'edn')
-							ft = 'calck';
+            if(f._list) {
+              ft = 'ocombo';
+              if(pval === -1) {
+                txt = 'Авто';
+              }
+            }
+            else if(ft == 'edn') {
+              ft = 'calck';
+            }
 
-						if (pref.mandatory)
-							ft += '" class="cell_mandatory';
-					}
+            if(pref.mandatory) {
+              ft += '" class="cell_mandatory';
+            }
+          }
 				}
 				else if (typeof f === 'object') {
 					row_id = f.id;
@@ -1563,15 +1571,34 @@ function OCombo(attr){
     }
 
     t.clearAll();
-		_mgr = _md.value_mgr(_obj, _field, _meta.type);
 
-		if(_mgr || attr.get_option_list){
+		_mgr = _md.value_mgr(_obj, _field, _meta.type);
+    if(Array.isArray(_obj._list)) {
+      const _list = _obj._list.map((v) => {
+        if(_mgr) {
+          v = _mgr.get(v);
+        }
+        const item = {
+          text: v.toString(),
+          value: v.valueOf(),
+          selected: v == _obj[_field],
+        }
+        if(v === -1) {
+          item.text = 'Авто';
+        }
+        return item;
+      });
+      if(t.addOption){
+        t.addOption(_list);
+        set_value(_obj[_field]);
+      }
+    }
+    else if(_mgr || attr.get_option_list){
 			// загружаем список в 30 строк
 			(attr.get_option_list || _mgr.get_option_list).call(_mgr, get_filter(), _obj[_field])
 				.then(function (l) {
 					if(t.addOption){
 						t.addOption(l);
-						// если поле имеет значение - устанавливаем
 						set_value(_obj[_field]);
 					}
 				});

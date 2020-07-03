@@ -95,12 +95,20 @@ export default ($p) => {
 						mf = {synonym: pref.presentation, type: pref.type};
 						row_id = tabular + '|' + pref.ref;
 						by_type(pval);
-						if (ft == 'edn')
-							ft = 'calck';
+            if(f._list) {
+              ft = 'ocombo';
+              if(pval === -1) {
+                txt = 'Авто';
+              }
+            }
+            else if(ft == 'edn') {
+              ft = 'calck';
+            }
 
-						if (pref.mandatory)
-							ft += '" class="cell_mandatory';
-					}
+            if(pref.mandatory) {
+              ft += '" class="cell_mandatory';
+            }
+          }
 				}
 				else if (typeof f === 'object') {
 					row_id = f.id;
