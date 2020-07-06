@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.23-beta.2, built:2020-06-23
+ metadata-core v2.0.23-beta.2, built:2020-07-06
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -4261,8 +4261,10 @@ class Meta extends MetaEventEmitter {
       }
     }
     function iteration() {
-      var data = data_names[cstep - 1];
-      create += data['class'][data.name].get_sql_struct(attr) + '; ';
+      const data = data_names[cstep - 1];
+      if(data.class[data.name]) {
+        create += data.class[data.name].get_sql_struct(attr) + '; ';
+      }
       on_table_created();
     }
     for (let mgr of 'enm,cch,cacc,cat,bp,tsk,doc,ireg,areg'.split(',')) {
