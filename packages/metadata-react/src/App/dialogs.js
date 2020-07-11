@@ -46,7 +46,8 @@ export default {
                 timeout = 30000,
                 type,
                 list,
-                initialValue
+                initialValue,
+                ...other
   }) {
 
     if(!this.handleIfaceState) {
@@ -99,6 +100,7 @@ export default {
           children: [],
           handleOk: close_confirm,
           handleCancel: reject_confirm,
+          ...other,
         }
       }
 
