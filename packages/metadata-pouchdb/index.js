@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.23-beta.2, built:2020-06-23
+ metadata-pouchdb v2.0.23-beta.2, built:2020-07-23
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2082,15 +2082,21 @@ function adapter({AbstracrAdapter}) {
       if(!opts.headers) {
         opts.headers = new Headers();
       }
-      if(authorized && !props.user_node) {
-        for(const name in remote) {
-          const db = remote[name];
-          const {auth} = db.__opts;
-          if(auth) {
-            const {Authorization} = db.getBasicAuthHeaders({prefix: this.auth_prefix(), ...auth});
-            opts.headers.set('Authorization', Authorization);
-            break;
+      if(authorized) {
+        if(!props.user_node) {
+          for(const name in remote) {
+            const db = remote[name];
+            const {auth} = db.__opts;
+            if(auth) {
+              const {Authorization} = db.getBasicAuthHeaders({prefix: this.auth_prefix(), ...auth});
+              opts.headers.set('Authorization', Authorization);
+              break;
+            }
           }
+        }
+        else if(!opts.headers.has('Authorization')) {
+          const str = props.user_node.username + ':' + props.user_node.password;
+          opts.headers.set('Authorization', `Basic ${new Buffer(str, 'utf8').toString('base64')}`);
         }
       }
       if(props.branch) {

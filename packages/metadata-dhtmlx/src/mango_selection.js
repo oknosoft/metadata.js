@@ -24,7 +24,7 @@ class MangoSelection {
           for(const fld in srt) {
             srt[fld] = this._direction;
           }
-        };
+        }
         return _sort;
       }
     });
@@ -456,6 +456,7 @@ class MangoSelection {
   toolbar_click(btn_id) {
 
     const {_attr, wnd, _mgr} = this;
+    const {job_prm, iface, msg} = $p;
 
     // если внешний обработчик вернул false - выходим
     if(_attr.toolbar_click && _attr.toolbar_click(btn_id, wnd, _mgr) === false) {
@@ -473,12 +474,12 @@ class MangoSelection {
           if(_attr.on_new) {
             _attr.on_new(o, wnd);
           }
-          else if($p.job_prm.keep_hash) {
+          else if(job_prm.keep_hash) {
             o.form_obj(wnd);
           }
           else {
             o._set_loaded(o.ref);
-            $p.iface.set_hash(_mgr.class_name, o.ref);
+            iface.set_hash(_mgr.class_name, o.ref);
           }
         });
       break;
@@ -489,18 +490,18 @@ class MangoSelection {
         if(_attr.on_edit) {
           _attr.on_edit(_mgr, rId, wnd);
         }
-        else if($p.job_prm.keep_hash) {
+        else if(job_prm.keep_hash) {
           _mgr.form_obj(wnd, {ref: rId});
         }
         else {
-          $p.iface.set_hash(_mgr.class_name, rId);
+          iface.set_hash(_mgr.class_name, rId);
         }
       }
       else {
-        $p.msg.show_msg({
+        msg.show_msg({
           type: 'alert-warning',
-          text: $p.msg.no_selected_row.replace('%1', ''),
-          title: $p.msg.main_title
+          text: msg.no_selected_row.replace('%1', ''),
+          title: msg.main_title
         });
       }
       break;
@@ -522,7 +523,7 @@ class MangoSelection {
       break;
 
     default:
-      btn_id.substr(0, 4) == 'prn_' && this.print(btn_id);
+      btn_id.startsWith('prn_') && this.print(btn_id);
 
     }
   }
@@ -693,7 +694,7 @@ class MangoSelection {
     return true;
   }
 
-};
+}
 
 /**
  * Форма выбора объекта данных
