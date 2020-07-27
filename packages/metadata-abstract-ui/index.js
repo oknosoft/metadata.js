@@ -1242,7 +1242,7 @@ function mngrs() {
         const {cachable, _owner, adapter} = this;
         const {md, utils, classes} = _owner.$p;
         const select = {};
-        const {input_by_string, has_owners, hierarchical, group_hierarchy} = this.metadata();
+        const {input_by_string, has_owners, hierarchical, group_hierarchy, fields} = this.metadata();
         if(hierarchical) {
           if((group_hierarchy && _fld === 'parent') || (_meta && _meta.choice_groups_elm === 'grp')) {
             select.is_folder = true;
@@ -1261,6 +1261,9 @@ function mngrs() {
               }
               select._sort.push({field, direction: direction.valueOf()});
             });
+          }
+          if(!input_by_string.includes('note') && fields.hasOwnProperty('note')) {
+            input_by_string.push('note');
           }
           if(search && input_by_string) {
             select._search = {
