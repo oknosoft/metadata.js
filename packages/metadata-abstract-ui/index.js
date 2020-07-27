@@ -1262,7 +1262,7 @@ function mngrs() {
               select._sort.push({field, direction: direction.valueOf()});
             });
           }
-          if(!input_by_string.includes('note') && fields.hasOwnProperty('note')) {
+          if(!input_by_string.includes('note') && fields && fields.hasOwnProperty('note')) {
             input_by_string.push('note');
           }
           if(search && input_by_string) {
