@@ -4,8 +4,12 @@ const package_data = require('./package.json');
 const RELEASE = true;
 
 function getPlugins() {
-  var pluginsBase =  [
-    new webpack.DefinePlugin({'process.env.NODE_ENV': '"production"', 'global': 'window', PACKAGE_VERSION: `"${package_data.version}"`}),
+  const pluginsBase = [
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': '"production"',
+      'global': 'window',
+      PACKAGE_VERSION: `"${package_data.version}"`
+    }),
   ];
 
   if (RELEASE) {
