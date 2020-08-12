@@ -4,6 +4,8 @@ tmp
 localstorage
 zarchive/
 
+doc/out
+
 # npm files
 node_modules
 package-lock.json

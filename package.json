@@ -106,7 +106,8 @@
     "webpack": "^4.44.1",
     "unzip-stream": "^0.3.0",
     "yargs": "^15.4.1",
-    "yuidocjs": "^0.10"
+    "yuidoc-bootstrap-theme": "^1.0.6",
+    "yuidocjs": "^0.10.2"
   },
   "peerDependecies": {
     "jasmine": "^2.6",
@@ -121,7 +122,8 @@
     "build:adapter-pouchdb": "node ./packages/metadata-pouchdb/build.js",
     "build:adapter-postgres": "node ./packages/metadata-postgres/build.js",
     "build:redux": "node ./packages/metadata-redux/build.js",
-    "build:superlogin": "node ./packages/metadata-superlogin/build.js"
+    "build:superlogin": "node ./packages/metadata-superlogin/build.js",
+    "build:docs": "yuidoc -c doc/yuidoc.json src"
   },
   "bin": {
     "metadata": "./bin/metadata-cli.js"
