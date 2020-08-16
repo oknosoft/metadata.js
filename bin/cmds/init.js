@@ -24,23 +24,24 @@
 exports.command = 'init [dir]';
 exports.desc = 'Create an empty repo';
 exports.builder = {
-	dir: {
-		default: '.'
-	}
+  dir: {
+    default: '.'
+  }
 };
 exports.handler = function (argv) {
 
-	var fs = require('fs');
-	var path = require('path');
-	const decompress = require('decompress');
+  const https = require('http');
 
-	console.log('init called for dir', argv.dir);
-	decompress(path.join(__dirname, 'helloworld.zip'), argv.dir)
-		.then(function (files) {
-			console.log('done');
-		})
-		.catch(function (err) {
-			console.log(err);
-		});
+  const zipUrl = "https://codeload.github.com/oknosoft/helloworld/zip/v2";
+  const request = https.get(zipUrl);
 
-};
+  request.on('response', (response) => {
+    response.pipe(unzip.Extract({path: argv.dir})).on('close', function () {
+      console.log('done');
+    })
+      .on('error', function (err) {
+        console.error('An error occurred:', err);
+        process.exitCode = 1;
+      });
+  });
+}
