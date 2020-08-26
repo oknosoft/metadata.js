@@ -90,7 +90,7 @@ export class DataManager extends MetaEventEmitter{
 	metadata(field_name) {
 	  const {md} = this._owner.$p;
 	  const _meta = md.get(this) || {};
-		if(field_name){
+		if(field_name) {
 			return _meta.fields && _meta.fields[field_name] || md.get(this, field_name);
 		}
 		else{
@@ -152,7 +152,7 @@ export class DataManager extends MetaEventEmitter{
     const _meta = this.metadata();
 
     // перечисления кешируются всегда
-    if(class_name.indexOf('enm.') != -1) {
+    if(class_name.indexOf('enm.') !== -1) {
       return 'ram';
     }
 
@@ -162,7 +162,7 @@ export class DataManager extends MetaEventEmitter{
     }
 
     // документы, отчеты и обработки по умолчанию кешируем в idb, но в память не загружаем
-    if(class_name.indexOf('doc.') != -1 || class_name.indexOf('dp.') != -1 || class_name.indexOf('rep.') != -1) {
+    if(class_name.indexOf('doc.') !== -1 || class_name.indexOf('dp.') !== -1 || class_name.indexOf('rep.') !== -1) {
       return 'doc';
     }
 
@@ -255,7 +255,7 @@ export class DataManager extends MetaEventEmitter{
 	 */
 	obj_constructor(ts_name = "", mode) {
 
-		if(!this.constructor_names[ts_name]){
+		if(!this.constructor_names[ts_name]) {
 			const parts = this.class_name.split("."),
 				fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1);
 			this.constructor_names[ts_name] = ts_name ? fn_name + ts_name.charAt(0).toUpperCase() + ts_name.substr(1) + "Row" : fn_name;
@@ -264,16 +264,16 @@ export class DataManager extends MetaEventEmitter{
 		ts_name = this.constructor_names[ts_name];
 
 		// если режим не указан, возвращаем имя функции - конструктора
-		if(!mode){
+		if(!mode) {
 			return ts_name;
 		}
 		// если булево - возвращаем саму функцию - конструктор
 		const constructor = this._owner.$p[ts_name];
-		if(mode === true ){
+		if(mode === true ) {
 			return constructor;
 		}
 		// если массив - создаём объект с параметрами, указанными в массиве
-		if(Array.isArray(mode)){
+		if(Array.isArray(mode)) {
 			return new constructor(...mode);
 		}
 		// иначе - создаём объект и передаём в конструктор единственный параметр
@@ -286,33 +286,34 @@ export class DataManager extends MetaEventEmitter{
 	 * @for DataManager
 	 * @param [selection] {Object} - отбор, который будет наложен на список
 	 * @param [selection._top] {Number} - ограничивает длину возвращаемого массива
+   * @param [val] -
 	 * @return {Promise.<Array>}
 	 */
-	get_option_list(selection = {}, val){
+	get_option_list(selection = {}, val) {
 
 		let t = this, l = [], input_by_string, text;
 
     function push(v){
-      if(selection._dhtmlx){
+      if(selection?._dhtmlx) {
         const opt = {
           text: v.presentation,
           value: v.ref
         }
-        if(utils.is_equal(opt.value, val)){
+        if(utils.is_equal(opt.value, val)) {
           opt.selected = true;
         }
-        if(v.class_name == 'cat.property_values' && v.css) {
+        if(v.class_name === 'cat.property_values' && v.css) {
           opt.css = v.css;
         }
         l.push(opt);
       }
-      else if(!v.empty()){
+      else if(!v.empty()) {
         l.push(v);
       }
     }
 
     // поиск по строке
-    if(selection.presentation && (input_by_string = t.metadata().input_by_string)) {
+    if(selection?.presentation && (input_by_string = t.metadata().input_by_string)) {
       text = selection.presentation.like;
       delete selection.presentation;
       selection.or = [];
@@ -323,12 +324,12 @@ export class DataManager extends MetaEventEmitter{
       });
     }
 
-    if(t.cachable.endsWith('ram') || t._direct_ram || (selection && selection._local)) {
-      t.find_rows(selection._mango ? selection.selector : selection, push);
+    if(t.cachable.endsWith('ram') || t?._direct_ram || (selection && selection?._local)) {
+      t.find_rows(selection?._mango ? selection.selector : selection, push);
       return Promise.resolve(l);
     }
-    else if(t.cachable != 'e1cib') {
-      if(selection._mango){
+    else if(t.cachable !== 'e1cib') {
+      if(selection?._mango) {
         if(selection.selector.hasOwnProperty('$and')) {
           selection.selector.push({class_name: t.class_name})
         }
@@ -340,7 +341,7 @@ export class DataManager extends MetaEventEmitter{
         .then((data) => {
           for (const v of data) {
             push(v);
-          };
+          }
           return l;
         });
     }
@@ -384,18 +385,18 @@ export class DataManager extends MetaEventEmitter{
 
 		let property, oproperty, tnames, rt, mgr;
 
-		if (mf._mgr){
+		if (mf._mgr) {
 			return mf._mgr;
 		}
 
 		function mf_mgr(mgr) {
-			if (mgr && mf.types.length == 1){
+			if (mgr && mf.types.length === 1) {
 				mf._mgr = mgr;
 			}
 			return mgr;
 		}
 
-		if (mf.types.length == 1) {
+		if (mf.types.length === 1) {
 			tnames = mf.types[0].split(".");
 			if (tnames.length > 1 && $p[tnames[0]])
 				return mf_mgr($p[tnames[0]][tnames[1]]);
@@ -406,29 +407,30 @@ export class DataManager extends MetaEventEmitter{
 				return mf_mgr($p[tnames[0]][tnames[1]]);
 		}
 
-		property = row.property || row.param;
-		if (f != "value" || !property) {
+		property = row?.property || row.param;
+		if (f !== "value" || !property) {
 
 			rt = [];
 			mf.types.forEach(function (v) {
 				tnames = v.split(".");
-				if (tnames.length > 1 && $p[tnames[0]][tnames[1]]){
+				if (tnames.length > 1 && $p[tnames[0]][tnames[1]]) {
 					rt.push($p[tnames[0]][tnames[1]]);
 				}
 			});
-			if (rt.length == 1 || row[f] == utils.blank.guid){
+
+			if (rt.length === 1 || row[f] === utils.blank.guid) {
 				return mf_mgr(rt[0]);
 			}
-			else if (array_enabled){
+			else if (array_enabled) {
 				return rt;
 			}
-			else if ((property = row[f]) instanceof DataObj){
+			else if ((property = row[f]) instanceof DataObj) {
 				return property._manager;
 			}
-			else if (utils.is_guid(property) && property != utils.blank.guid) {
+			else if (utils.is_guid(property) && property !== utils.blank.guid) {
 				for (let i in rt) {
 					mgr = rt[i];
-					if (mgr.by_ref[property]){
+					if (mgr.by_ref[property]) {
 						return mgr;
 					}
 				}
@@ -436,10 +438,10 @@ export class DataManager extends MetaEventEmitter{
 		} else {
 
 			// Получаем объект свойства
-			if (utils.is_data_obj(property)){
+			if (utils.is_data_obj(property)) {
 				oproperty = property;
 			}
-			else if (utils.is_guid(property)){
+			else if (utils.is_guid(property)) {
 				oproperty = $p.cch.properties.get(property);
 			}
 			else{
@@ -456,27 +458,28 @@ export class DataManager extends MetaEventEmitter{
 				rt = [];
 				oproperty.type.types.some((v) => {
 					tnames = v.split(".");
-					if(tnames.length > 1 && $p[tnames[0]][tnames[1]]){
+					if(tnames.length > 1 && $p[tnames[0]][tnames[1]]) {
 						rt.push($p[tnames[0]][tnames[1]]);
 					}
-					else if(v == "boolean"){
+					else if(v === "boolean") {
 						rt.push({types: ["boolean"]});
 						return true
 					}
 				});
-				if(rt.length == 1 || row[f] == utils.blank.guid){
+
+				if(rt.length === 1 || row[f] === utils.blank.guid) {
 					return mf_mgr(rt[0]);
 				}
-				else if(array_enabled){
+				else if(array_enabled) {
 					return rt;
 				}
-				else if((property = row[f]) instanceof DataObj){
+				else if((property = row[f]) instanceof DataObj) {
 					return property._manager;
 				}
-				else if(utils.is_guid(property) && property != utils.blank.guid){
+				else if(utils.is_guid(property) && property !== utils.blank.guid) {
 					for(let i in rt){
 						mgr = rt[i];
-						if(mgr.by_ref[property]){
+						if(mgr.by_ref[property]) {
 							return mgr;
 						}
 					}
@@ -493,13 +496,13 @@ export class DataManager extends MetaEventEmitter{
 		const rattr = {};
 		const {ajax} = this._owner.$p;
 
-		if(!this._printing_plates){
-			if(this.metadata().printing_plates){
+		if(!this._printing_plates) {
+			if(this.metadata().printing_plates) {
         this._printing_plates = this.metadata().printing_plates;
 			}
 			else {
 			  const {cachable} = this.metadata();
-        if(cachable && (cachable.indexOf('doc') == 0 || cachable.indexOf('ram') == 0)){
+        if(cachable && (cachable.indexOf('doc') === 0 || cachable.indexOf('ram') === 0)) {
           this._printing_plates = {};
         }
       }
@@ -507,7 +510,7 @@ export class DataManager extends MetaEventEmitter{
 
 		// атавизм совместимости с 1С
     if(!this._printing_plates && ajax.authorized) {
-      ajax.default_attr(rattr, job_prm.irest_url());
+      ajax.default_attr(rattr, job_prm?.irest_url());
       rattr.url += this.rest_name + '/Print()';
       return ajax.get_ex(rattr.url, rattr)
         .then((req) => {
@@ -519,7 +522,6 @@ export class DataManager extends MetaEventEmitter{
     }
 
 		return Promise.resolve(this._printing_plates);
-
 	}
 
   /**
@@ -530,7 +532,7 @@ export class DataManager extends MetaEventEmitter{
   unload_obj(ref) {
     delete this.by_ref[ref];
     this.alatable.some((o, i, a) => {
-      if(o.ref == ref){
+      if(o.ref === ref) {
         if(o.id && this._by_id[o.id]) {
           delete this._by_id[o.id];
         }
@@ -569,7 +571,7 @@ export class RefDataManager extends DataManager{
 	 * @param [new_ref] {String} - новое значение ссылки объекта
 	 */
 	push(o, new_ref){
-		if(new_ref && (new_ref != o.ref)){
+		if(new_ref && (new_ref !== o.ref)) {
 			delete this.by_ref[o.ref];
 			this.by_ref[new_ref] = o;
 		}else
@@ -602,22 +604,22 @@ export class RefDataManager extends DataManager{
 	get(ref, do_not_create){
 
 		const rp = 'promise';
-		if(!ref || typeof ref !== 'string'){
+		if(!ref || typeof ref !== 'string') {
       ref = utils.fix_guid(ref);
     }
 		let o = this.by_ref[ref];
 
-		if(arguments.length == 3){
+		if(arguments.length === 3) {
 			if(do_not_create){
 				do_not_create = rp;
 			}
-			else{
+			else {
 				do_not_create = arguments[2];
 			}
 		}
 		let created;
 		if(!o){
-			if(do_not_create && do_not_create != rp){
+			if(do_not_create && do_not_create !== rp) {
 				return;
 			}
 			else{
@@ -626,24 +628,24 @@ export class RefDataManager extends DataManager{
 			}
 		}
 
-		if(ref === utils.blank.guid){
-			return do_not_create == rp ? Promise.resolve(o) : o;
+		if(ref === utils.blank.guid) {
+			return do_not_create === rp ? Promise.resolve(o) : o;
 		}
 
-		if(o.is_new()){
-			if(do_not_create == rp){
+		if(o.is_new()) {
+			if(do_not_create === rp) {
         // читаем из 1С или иного сервера
 				return o.load()
           .then(() => {
             return o.is_new() ? o.after_create() : o;
           });
 			}
-			else{
+			else {
         created && arguments.length !== 3 && o.after_create();
 				return o;
 			}
-		}else{
-			return do_not_create == rp ? Promise.resolve(o) : o;
+		} else {
+			return do_not_create === rp ? Promise.resolve(o) : o;
 		}
 	}
 
@@ -657,42 +659,42 @@ export class RefDataManager extends DataManager{
 	 * @param [do_after_create] {Boolean} - признак, надо ли заполнять (инициализировать) создаваемый объект значениями полей по умолчанию
 	 * @return {Promise.<*>}
 	 */
-	create(attr, do_after_create, force_obj){
+	create(attr, do_after_create, force_obj) {
 
-		if(!attr || typeof attr !== "object"){
+		if(!attr || typeof attr !== "object") {
 			attr = {};
 		}
-		else if(utils.is_data_obj(attr)){
+		else if(utils.is_data_obj(attr)) {
 			return Promise.resolve(attr);
 		}
 
-		if(!attr.ref || !utils.is_guid(attr.ref) || utils.is_empty_guid(attr.ref)){
+		if(!attr.ref || !utils.is_guid(attr.ref) || utils.is_empty_guid(attr.ref)) {
 			attr.ref = utils.generate_guid();
 		}
 
 		let o = this.by_ref[attr.ref];
 
-		if(!o){
+		if(!o) {
 
 			o = this.obj_constructor('', [attr, this]);
 
       // Триггер после создания
       const after_create_res = do_after_create === false ? false : o.after_create();
 
-      if(o instanceof DocObj && o.date == utils.blank.date){
+      if(o instanceof DocObj && o.date === utils.blank.date) {
         o.date = new Date();
       }
 
-      if(force_obj){
+      if(force_obj) {
         return o;
       }
 
       // Если новый код или номер не были назначены в триггере - устанавливаем стандартное значение
       let call_new_number_doc;
-      if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
+      if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)) {
         call_new_number_doc = !o.number_doc;
       }
-      else{
+      else {
         call_new_number_doc = !o.id;
       }
 
@@ -700,10 +702,10 @@ export class RefDataManager extends DataManager{
         .then(() => {
 
           // выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
-          if(this.cachable == 'e1cib' && do_after_create) {
+          if(this.cachable === 'e1cib' && do_after_create) {
             const {ajax} = this._owner.$p;
             const rattr = {};
-            ajax.default_attr(rattr, job_prm.irest_url());
+            ajax.default_attr(rattr, job_prm?.irest_url());
             rattr.url += this.rest_name + '/Create()';
             return ajax.get_ex(rattr.url, rattr)
               .then(function (req) {
@@ -749,14 +751,14 @@ export class RefDataManager extends DataManager{
 		    continue;
       }
 			let obj = this.by_ref[utils.fix_guid(attr)];
-			if(!obj){
+			if(!obj) {
         if(forse === 'update_only') {
 					continue;
 				}
 				obj = this.obj_constructor('', [attr, this, true]);
 				obj.is_new() && obj._set_loaded();
 			}
-			else if(obj.is_new() || forse){
+			else if(obj.is_new() || forse) {
 			  if(obj.is_new() || forse !== 'update_only') {
           obj._data._loading = true;
         }
@@ -802,31 +804,31 @@ export class RefDataManager extends DataManager{
 	 */
 	get_sql_struct(attr){
 		const {sql_mask, sql_type} = this._owner.$p.md;
-		var t = this,
-			cmd = t.metadata(),
-			res = {}, f, f0, trunc_index = 0,
-			action = attr && attr.action ? attr.action : "create_table";
+    let t = this,
+      cmd = t.metadata(),
+      res = {}, f, f0, trunc_index = 0,
+      action = attr && attr.action ? attr.action : "create_table";
 
 
-		function sql_selection(){
+    function sql_selection(){
 
-			let ignore_parent = !attr.parent,
+			let ignore_parent = !attr?.parent,
 				parent = attr.parent || utils.blank.guid,
 				owner,
-				initial_value = attr.initial_value || utils.blank.guid,
-				filter = attr.filter || "",
+				initial_value = attr?.initial_value || utils.blank.guid,
+				filter = attr?.filter || "",
 				set_parent = utils.blank.guid;
       const and = '\n AND ';
 
 			function list_flds(){
-				var flds = [], s = "_t_.ref, _t_.`_deleted`";
+        let flds = [], s = "_t_.ref, _t_.`_deleted`";
 
-				if(cmd.form && cmd.form.selection){
+        if(cmd.form && cmd.form.selection) {
 					cmd.form.selection.fields.forEach(function (fld) {
 						flds.push(fld);
 					});
 				}
-				else if(t instanceof DocManager){
+				else if(t instanceof DocManager) {
 					flds.push("posted");
 					flds.push("date");
 					flds.push("number_doc");
@@ -865,7 +867,7 @@ export class RefDataManager extends DataManager{
         }
 
 				flds.forEach(fld => {
-					if(fld.indexOf(" as ") != -1)
+					if(fld.indexOf(" as ") !== -1)
 						s += ", " + fld;
 					else
 						s += sql_mask(fld, true);
@@ -876,15 +878,15 @@ export class RefDataManager extends DataManager{
 
 			function join_flds(){
 
-				var s = "", parts;
+        let s = "", parts;
 
-				if(cmd.form && cmd.form.selection){
-					for(var i in cmd.form.selection.fields){
-						if(cmd.form.selection.fields[i].indexOf(" as ") == -1 || cmd.form.selection.fields[i].indexOf("_t_.") != -1)
+        if(cmd.form && cmd.form.selection) {
+					for(const i in cmd.form.selection.fields){
+						if(cmd.form.selection.fields[i].indexOf(" as ") === -1 || cmd.form.selection.fields[i].indexOf("_t_.") !== -1)
 							continue;
 						parts = cmd.form.selection.fields[i].split(" as ");
 						parts[0] = parts[0].split(".");
-						if(parts[0].length > 1){
+						if(parts[0].length > 1) {
 							if(s)
 								s+= "\n";
 							s+= "left outer join " + parts[0][0] + " on " + parts[0][0] + ".ref = _t_." + parts[1];
@@ -894,31 +896,31 @@ export class RefDataManager extends DataManager{
 				return s;
 			}
 
-			function where_flds(){
+			function where_flds() {
 
-				var s;
+        let s;
 
-				if(t instanceof ChartOfAccountManager){
+        if(t instanceof ChartOfAccountManager) {
 					s = " WHERE (" + (filter ? 0 : 1);
 				}
-				else if(cmd["hierarchical"]){
+				else if(cmd["hierarchical"]) {
 					if(cmd.has_owners)
 						s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" +
-							(owner == utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
+							(owner === utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 					else
 						s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" + (filter ? 0 : 1);
 				}
 				else{
 					if(cmd.has_owners)
-						s = " WHERE (" + (owner == utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
+						s = " WHERE (" + (owner === utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 					else
 						s = " WHERE (" + (filter ? 0 : 1);
 				}
 
-				if(t.sql_selection_where_flds){
-					s += t.sql_selection_where_flds(filter);
+				if(t?.sql_selection_where_flds) {
+					s += t?.sql_selection_where_flds(filter);
 				}
-				else if(t instanceof DocManager){
+				else if(t instanceof DocManager) {
           s += " OR _t_.number_doc LIKE '" + filter + "'";
         }
 				else{
@@ -934,44 +936,44 @@ export class RefDataManager extends DataManager{
 				// добавляет условие
 				const sel_el = (sel) => {
           for(let key in sel){
-            if(typeof sel[key] == "function"){
+            if(typeof sel[key] == "function") {
               s += and + sel[key](t, key) + " ";
             }
             else if(Array.isArray(sel[key])) {
               sel[key].forEach((el) => sel_el({[key]: el}));
             }
-            else if(cmd.fields.hasOwnProperty(key) || key === "ref"){
+            else if(cmd.fields.hasOwnProperty(key) || key === "ref") {
               if(sel[key] === true){
                 s += and + "_t_." + key + " ";
               }
-              else if(sel[key] === false){
+              else if(sel[key] === false) {
                 s += and + "(not _t_." + key + ") ";
               }
-              else if(typeof sel[key] == "object"){
-                if(utils.is_data_obj(sel[key]) || utils.is_guid(sel[key])){
+              else if(typeof sel[key] == "object") {
+                if(utils.is_data_obj(sel[key]) || utils.is_guid(sel[key])) {
                   s += and + "(_t_." + key + " = '" + sel[key] + "') ";
                 }
-                else{
-                  var keys = Object.keys(sel[key]),
+                else {
+                  let keys = Object.keys(sel[key]),
                     val = sel[key][keys[0]],
                     mf = cmd.fields[key] || t.metadata(key),
                     vmgr;
 
-                  if(mf && mf.type.is_ref){
+                  if(mf && mf.type.is_ref) {
                     vmgr = t.value_mgr({}, key, mf.type, true, val);
                   }
 
-                  if(['not', 'ne', '$ne'].includes(keys[0])){
+                  if(['not', 'ne', '$ne'].includes(keys[0])) {
                     s += and + "(not _t_." + key + " = '" + val + "') ";
                   }
-                  else if(keys[0] == "in"){
-                    if(Array.isArray(attr.params)) {
+                  else if(keys[0] === "in") {
+                    if(Array.isArray(attr?.params)) {
                       s += and +  "(_t_." + key + " in @(?))";
-                      attr.params.push(Array.isArray(val) ? val : [val]);
+                      attr?.params.push(Array.isArray(val) ? val : [val]);
                     }
                     else {
                       s += and +  "(_t_." + key + " in (" + (Array.isArray(val) ? val : [val]).reduce((sum, val) => {
-                        if(sum){
+                        if(sum) {
                           sum+=",";
                         }
                         sum+= typeof val == "number" ? val.toString() : "'" + val + "'";
@@ -979,29 +981,29 @@ export class RefDataManager extends DataManager{
                       }, "") + ")) ";
                     }
                   }
-                  else if(keys[0] == "nin"){
+                  else if(keys[0] === "nin") {
                     s += and +  "(_t_." + key + " not in (" + (Array.isArray(val) ? val : [val]).reduce((sum, val) => {
-                      if(sum){
+                      if(sum) {
                         sum+=",";
                       }
                       sum+= typeof val == "number" ? val.toString() : "'" + val + "'";
                       return  sum;
                     }, "") + ")) ";
                   }
-                  else if(keys[0] == "inh"){
+                  else if(keys[0] === "inh") {
                     // получаем массив папок в иерархии текущих
                     const folders = [];
                     (Array.isArray(val) ? val : [val]).forEach((val) => {
                       const folder = vmgr.get(val, true);
                       if(folder) {
-                        if(folders.indexOf(folder) === -1){
+                        if(folders.indexOf(folder) === -1) {
                           folders.push(folder);
                           folder.is_folder && folder._children().forEach((child) => folders.indexOf(child) === -1 && folders.push(child));
                         }
                       }
                     });
                     s += and +  "(_t_." + key + " in (" + folders.reduce((sum, val) => {
-                      if(sum){
+                      if(sum) {
                         sum+=",";
                       }
                       sum+= "'" + val.ref + "'";
@@ -1013,14 +1015,14 @@ export class RefDataManager extends DataManager{
                   }
                 }
 
-              }else if(typeof sel[key] == "string")
+              } else if(typeof sel[key] == "string")
                 s += and + "(_t_." + key + " = '" + sel[key] + "') ";
 
               else
                 s += and + "(_t_." + key + " = " + sel[key] + ") ";
 
             }
-            else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
+            else if(key==="is_folder" && cmd.hierarchical && cmd.group_hierarchy) {
               //if(sel[key])
               //	s += and + "_t_." + key + " ";
               //else
@@ -1031,11 +1033,11 @@ export class RefDataManager extends DataManager{
 
 
 				// допфильтры форм и связей параметров выбора
-				if(attr.selection){
-					if(typeof attr.selection === "function"){
+				if(attr?.selection) {
+					if(typeof attr.selection === "function") {
             attr.selection(s);
 					}
-					else{
+					else {
             attr.selection.forEach(sel_el);
           }
 				}
@@ -1043,45 +1045,43 @@ export class RefDataManager extends DataManager{
 				return s;
 			}
 
-			function order_flds(){
+			function order_flds() {
 
-				if(t instanceof ChartOfAccountManager){
+				if(t instanceof ChartOfAccountManager) {
 					return "ORDER BY id";
 
-				}else if(cmd["hierarchical"]){
+				} else if(cmd["hierarchical"]) {
 					if(cmd["group_hierarchy"])
 						return "ORDER BY _t_.is_folder desc, is_initial_value, presentation";
 					else
 						return "ORDER BY _t_.parent desc, is_initial_value, presentation";
-				}else
-					return "ORDER BY is_initial_value, presentation";
+				} else
+					  return "ORDER BY is_initial_value, presentation";
 			}
 
-			function selection_prms(){
+			function selection_prms() {
 
 				// т.к. в процессе установки может потребоваться получение объектов, код асинхронный
-				function on_parent(o){
+				function on_parent(o) {
 
 					// ссылка родителя для иерархических справочников
-					if(o){
-						set_parent = (attr.set_parent = o.parent.ref);
+					if(o) {
+						set_parent = (attr?.set_parent = o.parent.ref);
 						parent = set_parent;
 						ignore_parent = false;
-
 					}
 
 					// строка фильтра
-					if(filter && filter.indexOf("%") == -1)
+					if(filter && filter.indexOf("%") === -1)
 						filter = "%" + filter + "%";
-
 				}
 
 				// установим владельца
-				if(cmd.has_owners){
-					owner = attr.owner;
-					if(attr.selection && typeof attr.selection != "function"){
+				if(cmd.has_owners) {
+					owner = attr?.owner;
+					if(attr?.selection && typeof attr.selection != "function") {
 						attr.selection.forEach(sel => {
-							if(sel.owner){
+							if(sel.owner) {
 								owner = typeof sel.owner == "object" ?  sel.owner.valueOf() : sel.owner;
 								delete sel.owner;
 							}
@@ -1092,19 +1092,19 @@ export class RefDataManager extends DataManager{
 				}
 
 				// ссылка родителя во взаимосвязи с начальным значением выбора
-				if(initial_value !=  utils.blank.guid && ignore_parent){
-					if(cmd["hierarchical"]){
+				if(initial_value !==  utils.blank.guid && ignore_parent) {
+					if(cmd["hierarchical"]) {
 						on_parent(t.get(initial_value))
-					}else
-						on_parent();
-				}else
-					on_parent();
+					} else
+						  on_parent();
+				} else
+					  on_parent();
 
 			}
 
 			selection_prms();
 
-			const sql = t.sql_selection_list_flds ? t.sql_selection_list_flds(initial_value) :
+			const sql = t?.sql_selection_list_flds ? t.sql_selection_list_flds(initial_value) :
         `SELECT ${list_flds()}, case when _t_.ref = '${initial_value}' then 0 else 1 end as is_initial_value
 				 FROM ${t.table_name} AS _t_ ${join_flds()} %3 %4 LIMIT 300`;
 
@@ -1114,9 +1114,9 @@ export class RefDataManager extends DataManager{
 
 		function sql_create(){
 
-			var sql = "CREATE TABLE IF NOT EXISTS ";
+      let sql = "CREATE TABLE IF NOT EXISTS ";
 
-			if(attr && attr.postgres){
+      if(attr && attr.postgres) {
 				sql += t.table_name+" (ref uuid PRIMARY KEY NOT NULL, _deleted boolean";
 
 				if(t instanceof DocManager)
@@ -1124,20 +1124,20 @@ export class RefDataManager extends DataManager{
 				else{
 					if(cmd.code_length)
 						sql += ", id character("+cmd.code_length+")";
-					sql += ", name character varying(50), is_folder boolean";
+					  sql += ", name character varying(50), is_folder boolean";
 				}
 
-				for(f in cmd.fields){
-					if(f.length > 30){
+				for(f in cmd.fields) {
+					if(f.length > 30) {
 						if(cmd.fields[f].short_name)
 							f0 = cmd.fields[f].short_name;
-						else{
+						else {
 							trunc_index++;
 							f0 = f[0] + trunc_index + f.substr(f.length-27);
 						}
-					}else
-						f0 = f;
-					sql += ", " + f0 + sql_type(t, f, cmd.fields[f].type, true);
+					} else
+						  f0 = f;
+					    sql += ", " + f0 + sql_type(t, f, cmd.fields[f].type, true);
 				}
 
 				for(f in cmd["tabular_sections"])
@@ -1165,35 +1165,39 @@ export class RefDataManager extends DataManager{
 
 		function sql_update(){
 			// "INSERT OR REPLACE INTO user_params (prm_name, prm_value) VALUES (?, ?);
-			var fields = ["ref", "_deleted"],
-				sql = "INSERT INTO `"+t.table_name+"` (ref, `_deleted`",
-				values = "(?";
+      let fields = ["ref", "_deleted"],
+        sql = "INSERT INTO `" + t.table_name + "` (ref, `_deleted`",
+        values = "(?";
 
-			if(t.class_name.substr(0, 3)=="cat"){
+      if(t.class_name.substr(0, 3)==="cat") {
 				sql += ", id, name, is_folder";
 				fields.push("id");
 				fields.push("name");
 				fields.push("is_folder");
-
-			}else if(t.class_name.substr(0, 3)=="doc"){
+			}
+      else if(t.class_name.substr(0, 3)==="doc") {
 				sql += ", posted, date, number_doc";
 				fields.push("posted");
 				fields.push("date");
 				fields.push("number_doc");
-
 			}
-			for(f in cmd.fields){
+
+			for(f in cmd.fields) {
 				sql += sql_mask(f);
 				fields.push(f);
 			}
-			for(f in cmd["tabular_sections"]){
+
+			for(f in cmd["tabular_sections"]) {
 				sql += ", `ts_" + f + "`";
 				fields.push("ts_" + f);
 			}
+
 			sql += ") VALUES ";
-			for(f = 1; f<fields.length; f++){
+
+			for(f = 1; f<fields.length; f++) {
 				values += ", ?";
 			}
+
 			values += ")";
 			sql += values;
 
@@ -1201,29 +1205,29 @@ export class RefDataManager extends DataManager{
 		}
 
 
-    if(action == 'create_table') {
+    if(action === 'create_table') {
       res = sql_create();
     }
-    else if(['insert', 'update', 'replace'].indexOf(action) != -1) {
+    else if(['insert', 'update', 'replace'].indexOf(action) !== -1) {
       res[t.table_name] = sql_update();
     }
-    else if(action == 'select') {
+    else if(action === 'select') {
       res = 'SELECT * FROM `' + t.table_name + '` WHERE ref = ?';
     }
-    else if(action == 'select_all') {
+    else if(action === 'select_all') {
       res = 'SELECT * FROM `' + t.table_name + '`';
     }
-    else if(action == 'delete') {
+    else if(action === 'delete') {
       res = 'DELETE FROM `' + t.table_name + '` WHERE ref = ?';
     }
-    else if(action == 'drop') {
+    else if(action === 'drop') {
       res = 'DROP TABLE IF EXISTS `' + t.table_name + '`';
     }
-    else if(action == 'get_tree') {
+    else if(action === 'get_tree') {
       res = 'SELECT ref, parent, name as presentation FROM `' + t.table_name + '`';
       if(!attr.filter || attr.filter.is_folder) {
         res += ' WHERE is_folder ';
-        if(attr.filter && attr.filter.ref) {
+        if(attr?.filter && attr.filter.ref) {
           res += `and ref in (${attr.filter.ref.in.map(v => `"${v.ref}"`).join(',')})`;
         }
       }
@@ -1234,7 +1238,7 @@ export class RefDataManager extends DataManager{
       }
       res += ' order by parent, name';
     }
-    else if(action == 'get_selection') {
+    else if(action === 'get_selection') {
       res = sql_selection();
     }
 
@@ -1247,14 +1251,14 @@ export class RefDataManager extends DataManager{
 	 * @param name {String} - имя предопределенного
 	 * @return {DataObj}
 	 */
-	predefined(name){
-		if(!this._predefined){
+	predefined(name) {
+		if(!this._predefined) {
       this._predefined = {};
       this.find_rows({predefined_name: {not: ''}}, (el) => {
         this._predefined[el.predefined_name] = el;
       });
     }
-		else if(!this._predefined[name]){
+		else if(!this._predefined[name]) {
       this.find_rows({predefined_name: name}, (el) => {
         this._predefined[name] = el;
       });
@@ -1342,13 +1346,13 @@ export class DataProcessorsManager extends DataManager{
 	 * @method get
 	 * @return {DataProcessorObj}
 	 */
-	get(ref){
-		if(ref){
-			if(!this.by_ref[ref]){
+	get(ref) {
+		if(ref) {
+			if(!this.by_ref[ref]) {
 				this.by_ref[ref] = this.create()
 			}
 			return this.by_ref[ref];
-		}else
+		} else
 			return this.create();
 	}
 
@@ -1384,7 +1388,7 @@ export class EnumManager extends RefDataManager{
    */
   metadata(field_name) {
 	  const res = super.metadata(field_name);
-	  if(!res.input_by_string){
+	  if(!res.input_by_string) {
       res.input_by_string = ['ref', 'synonym'];
     }
     return res;
@@ -1392,11 +1396,11 @@ export class EnumManager extends RefDataManager{
 
 	get(ref, do_not_create){
 
-		if(ref instanceof EnumObj){
+		if(ref instanceof EnumObj) {
       return ref;
     }
 
-		else if(!ref || ref == utils.blank.guid){
+		else if(!ref || ref === utils.blank.guid) {
       ref = "_";
     }
 
@@ -1410,7 +1414,7 @@ export class EnumManager extends RefDataManager{
 
 	each(fn) {
 		this.alatable.forEach(v => {
-			if(v.ref && v.ref != "_" && v.ref != utils.blank.guid)
+			if(v.ref && v.ref !== "_" && v.ref !== utils.blank.guid)
 				fn.call(this[v.ref]);
 		});
 	}
@@ -1423,14 +1427,14 @@ export class EnumManager extends RefDataManager{
 	 */
 	get_sql_struct(attr){
 
-		var res = "CREATE TABLE IF NOT EXISTS ",
-			action = attr && attr.action ? attr.action : "create_table";
+    let res = "CREATE TABLE IF NOT EXISTS ",
+      action = attr && attr?.action ? attr.action : "create_table";
 
-		if(attr && attr.postgres){
-			if(action == "create_table")
+    if(attr && attr?.postgres) {
+			if(action === "create_table")
 				res += this.table_name+
 					" (ref character varying(255) PRIMARY KEY NOT NULL, sequence INT, synonym character varying(255))";
-			else if(["insert", "update", "replace"].indexOf(action) != -1){
+			else if(["insert", "update", "replace"].indexOf(action) !== -1) {
 				res = {};
 				res[this.table_name] = {
 					sql: "INSERT INTO "+this.table_name+" (ref, sequence, synonym) VALUES ($1, $2, $3)",
@@ -1438,15 +1442,15 @@ export class EnumManager extends RefDataManager{
 					values: "($1, $2, $3)"
 				};
 
-			}else if(action == "delete")
+			} else if(action === "delete")
 				res = "DELETE FROM "+this.table_name+" WHERE ref = $1";
 
-		}else {
-			if(action == "create_table")
+		} else {
+			if(action === "create_table")
 				res += "`"+this.table_name+
 					"` (ref CHAR PRIMARY KEY NOT NULL, sequence INT, synonym CHAR)";
 
-			else if(["insert", "update", "replace"].indexOf(action) != -1){
+			else if(["insert", "update", "replace"].indexOf(action) !== -1) {
 				res = {};
 				res[this.table_name] = {
 					sql: "INSERT INTO `"+this.table_name+"` (ref, sequence, synonym) VALUES (?, ?, ?)",
@@ -1454,14 +1458,11 @@ export class EnumManager extends RefDataManager{
 					values: "(?, ?, ?)"
 				};
 
-			}else if(action == "delete")
+			} else if(action === "delete")
 				res = "DELETE FROM `"+this.table_name+"` WHERE ref = ?";
 		}
 
-
-
 		return res;
-
 	}
 
 	/**
@@ -1469,30 +1470,31 @@ export class EnumManager extends RefDataManager{
 	 * @method get_option_list
 	 * @param [selection] {Object}
 	 * @param [selection._top] {Number}
+   * @param [val]
 	 * @return {Promise.<Array>}
 	 */
-	get_option_list(selection = {}, val){
+	get_option_list(selection = {}, val) {
 		let l = [], synonym = "", sref;
 
-    function push(v){
-      if(selection._dhtmlx){
+    function push(v) {
+      if(selection?._dhtmlx){
         v = {
           text: v.presentation,
           value: v.ref
         }
-        if(utils.is_equal(v.value, val)){
+        if(utils.is_equal(v.value, val)) {
           v.selected = true;
         }
         l.push(v);
       }
-      else if(!v.empty()){
+      else if(!v.empty()) {
         l.push(v);
       }
     }
 
-    for(const i in selection){
-      if(i.substr(0,1)!="_"){
-        if(i == "ref"){
+    for(const i in selection) {
+      if(i.substr(0,1)!=="_") {
+        if(i === "ref") {
           sref = selection[i].hasOwnProperty("in") ? selection[i].in : selection[i];
         }
         else
@@ -1500,27 +1502,27 @@ export class EnumManager extends RefDataManager{
       }
     }
 
-		if(!selection._dhtmlx){
+		if(!selection._dhtmlx) {
       l.push(this.get());
 		}
 
-		if(typeof synonym == "object"){
-      synonym = synonym.like ? synonym.like : '';
+		if(typeof synonym == "object") {
+      synonym = synonym?.like ? synonym.like : '';
 		}
 		synonym = synonym.toLowerCase();
 
 		this.alatable.forEach(v => {
-			if(synonym){
-				if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) == -1){
+			if(synonym) {
+				if(!v.synonym || v.synonym.toLowerCase().indexOf(synonym) === -1) {
           return;
         }
 			}
-			if(sref){
-				if(Array.isArray(sref)){
-					if(!sref.some(sv => sv.name == v.ref || sv.ref == v.ref || sv == v.ref))
+			if(sref) {
+				if(Array.isArray(sref)) {
+					if(!sref.some(sv => sv.name === v.ref || sv.ref === v.ref || sv === v.ref))
 						return;
-				}else{
-					if(sref.name != v.ref && sref.ref != v.ref && sref != v.ref)
+				} else {
+					if(sref.name !== v.ref && sref.ref !== v.ref && sref !== v.ref)
 						return;
 				}
 			}
@@ -1549,7 +1551,7 @@ export class RegisterManager extends DataManager{
 	 * @param [new_ref] {String} - новое значение ссылки объекта
 	 */
 	push(o, new_ref) {
-		if (new_ref && (new_ref != o.ref)) {
+		if (new_ref && (new_ref !== o.ref)) {
 			delete this.by_ref[o.ref];
 			this.by_ref[new_ref] = o;
 		} else
@@ -1577,7 +1579,7 @@ export class RegisterManager extends DataManager{
 		attr.action = "select";
 
 		const {alasql} = this._owner.$p.wsql;
-		const arr = wsql.alasql(this.get_sql_struct(attr), attr._values);
+		const arr = wsql?.alasql(this.get_sql_struct(attr), attr._values);
 
 		let res;
 
@@ -1589,7 +1591,7 @@ export class RegisterManager extends DataManager{
 				res = this.by_ref[this.get_ref(arr[0])];
 			else {
 				res = [];
-				for (var i in arr)
+				for (const i in arr)
 					res.push(this.by_ref[this.get_ref(arr[i])]);
 			}
 		}
@@ -1631,7 +1633,7 @@ export class RegisterManager extends DataManager{
 	}
 
 	/**
-	 * Возаращает запросов для создания таблиц или извлечения данных
+	 * Возврщает запросов для создания таблиц или извлечения данных
 	 * @method get_sql_struct
 	 * @for RegisterManager
 	 * @param attr {Object}
@@ -1640,29 +1642,43 @@ export class RegisterManager extends DataManager{
 	 */
 	get_sql_struct(attr) {
 		const {sql_mask, sql_type} = this._owner.$p.md;
-		var t = this,
-			cmd = t.metadata(),
-			res = {}, f,
-			action = attr && attr.action ? attr.action : "create_table";
+    let t = this,
+      cmd = t.metadata(),
+      res = {}, f,
+      action = attr?.action ?? "create_table";
 
-		function sql_selection(){
+    /**
+     * Выполняет перебор элементов локальной коллекции
+     * @method each
+     * @param fn {Function} - функция, вызываемая для каждого элемента локальной коллекции
+     */
+    each(fn)
+    {
+      for (const i in this.by_ref) {
+        if(fn.call(this, this.by_ref[i]) === true) {
+          break;
+        }
+      }
+    }
 
-			var filter = attr.filter || "";
+    function sql_selection(){
 
-			function list_flds(){
-				var flds = [], s = "_t_.ref";
+      let filter = attr?.filter ?? "";
+
+      function list_flds(){
+        let flds = [], s = "_t_.ref";
 
         if(cmd.form && cmd.form.selection) {
           cmd.form.selection.fields.forEach(fld => flds.push(fld));
         }
         else {
-          for (var f in cmd.dimensions) {
+          for (const f in cmd.dimensions) {
             flds.push(f);
           }
         }
 
         flds.forEach(fld => {
-          if(fld.indexOf(' as ') != -1) {
+          if(fld.indexOf(' as ') !== -1) {
             s += ', ' + fld;
           }
           else {
@@ -1670,339 +1686,319 @@ export class RegisterManager extends DataManager{
           }
         });
         return s;
-
 			}
 
-			function join_flds(){
+      function join_flds(){
 
-				var s = "", parts;
+        let s = "", parts;
 
-				if(cmd.form && cmd.form.selection){
-					for(var i in cmd.form.selection.fields){
-						if(cmd.form.selection.fields[i].indexOf(" as ") == -1 || cmd.form.selection.fields[i].indexOf("_t_.") != -1)
-							continue;
-						parts = cmd.form.selection.fields[i].split(" as ");
-						parts[0] = parts[0].split(".");
-						if(parts[0].length > 1){
-							if(s)
-								s+= "\n";
-							s+= "left outer join " + parts[0][0] + " on " + parts[0][0] + ".ref = _t_." + parts[1];
-						}
-					}
-				}
-				return s;
-			}
+        if(cmd.form && cmd.form.selection) {
+          for(const i in cmd.form.selection.fields) {
+            if(cmd.form.selection.fields[i].indexOf(" as ") === -1 || cmd.form.selection.fields[i].indexOf("_t_.") !== -1)
+              continue;
+            parts = cmd.form.selection.fields[i].split(" as ");
+            parts[0] = parts[0].split(".");
+            if(parts[0].length > 1) {
+              if(s)
+                s+= "\n";
+              s+= "left outer join " + parts[0][0] + " on " + parts[0][0] + ".ref = _t_." + parts[1];
+            }
+          }
+        }
+        return s;
+      }
 
-			function where_flds(){
+      function where_flds() {
 
-				var s = " WHERE (" + (filter ? 0 : 1);
+        let s = " WHERE (" + (filter ? 0 : 1);
 
-				if(t.sql_selection_where_flds){
-					s += t.sql_selection_where_flds(filter);
+        if(t.sql_selection_where_flds) {
+          s += t.sql_selection_where_flds(filter);
+        }
 
-				}
+        s += ")";
 
-				s += ")";
+        // допфильтры форм и связей параметров выбора
+        if(attr?.selection) {
+          if(typeof attr.selection !== "function") {
+            attr.selection.forEach(sel => {
+              for(const key in sel){
 
+                if(typeof sel[key] == "function") {
+                  s += "\n AND " + sel[key](t, key) + " ";
 
-				// допфильтры форм и связей параметров выбора
-				if(attr.selection){
-					if(typeof attr.selection == "function"){
+                } else if(cmd.fields.hasOwnProperty(key)) {
+                  if(sel[key] === true)
+                    s += "\n AND _t_." + key + " ";
 
-					}
-					else
-						attr.selection.forEach(sel => {
-							for(var key in sel){
+                  else if(sel[key] === false)
+                    s += "\n AND (not _t_." + key + ") ";
 
-								if(typeof sel[key] == "function"){
-									s += "\n AND " + sel[key](t, key) + " ";
-
-								}else if(cmd.fields.hasOwnProperty(key)){
-									if(sel[key] === true)
-										s += "\n AND _t_." + key + " ";
-
-									else if(sel[key] === false)
-										s += "\n AND (not _t_." + key + ") ";
-
-									else if(typeof sel[key] == "object"){
+                  else if(typeof sel[key] == "object") {
 
                     if(utils.is_data_obj(sel[key])) {
                       s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
                     }
                     else {
-											const keys = Object.keys(sel[key]), val = sel[key][keys[0]];
+                      const keys = Object.keys(sel[key]), val = sel[key][keys[0]];
 
-											if(['not', 'ne', '$ne'].includes(keys[0]))
-												s += "\n AND (not _t_." + key + " = '" + val.valueOf() + "') ";
+                      if(['not', 'ne', '$ne'].includes(keys[0]))
+                        s += "\n AND (not _t_." + key + " = '" + val.valueOf() + "') ";
 
-											else
-												s += "\n AND (_t_." + key + " = '" + val.valueOf() + "') ";
-										}
+                      else
+                        s += "\n AND (_t_." + key + " = '" + val.valueOf() + "') ";
+                    }
+                  }
+                  else if(typeof sel[key] == "string")
+                    s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
 
-									}
-									else if(typeof sel[key] == "string")
-										s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
+                  else
+                    s += "\n AND (_t_." + key + " = " + sel[key] + ") ";
 
-									else
-										s += "\n AND (_t_." + key + " = " + sel[key] + ") ";
+                } else if(key==="is_folder" && cmd.hierarchical && cmd.group_hierarchy) {
+                  //if(sel[key])
+                  //	s += "\n AND _t_." + key + " ";
+                  //else
+                  //	s += "\n AND (not _t_." + key + ") ";
+                }
+              }
+            });
+          }
 
-								} else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
-									//if(sel[key])
-									//	s += "\n AND _t_." + key + " ";
-									//else
-									//	s += "\n AND (not _t_." + key + ") ";
-								}
-							}
-						});
-				}
+          return s;
+        }
 
-				return s;
-			}
+        function order_flds() {
+          return "";
+        }
 
-			function order_flds(){
+        // строка фильтра
+        if(filter && filter.indexOf("%") === -1)
+          filter = "%" + filter + "%";
 
-				return "";
-			}
+        var sql;
+        if(t.sql_selection_list_flds)
+          sql = t.sql_selection_list_flds();
+        else
+          sql = ("SELECT %2 FROM `" + t.table_name + "` AS _t_ %j %3 %4 LIMIT 300")
+            .replace("%2", list_flds())
+            .replace("%j", join_flds())
+          ;
 
-			// строка фильтра
-			if(filter && filter.indexOf("%") == -1)
-				filter = "%" + filter + "%";
+        return sql.replace("%3", where_flds()).replace("%4", order_flds());
 
-			var sql;
-			if(t.sql_selection_list_flds)
-				sql = t.sql_selection_list_flds();
-			else
-				sql = ("SELECT %2 FROM `" + t.table_name + "` AS _t_ %j %3 %4 LIMIT 300")
-					.replace("%2", list_flds())
-					.replace("%j", join_flds())
-				;
+      }
 
-			return sql.replace("%3", where_flds()).replace("%4", order_flds());
+      function sql_create(){
 
-		}
+        let sql = "CREATE TABLE IF NOT EXISTS ",
+          first_field = true;
 
-		function sql_create(){
+        if(attr && attr.postgres) {
+          sql += t.table_name+" (";
 
-			var sql = "CREATE TABLE IF NOT EXISTS ",
-				first_field = true;
+          if(cmd.splitted) {
+            sql += "zone integer";
+            first_field = false;
+          }
 
-			if(attr && attr.postgres){
-				sql += t.table_name+" (";
+          for(f in cmd.dimensions) {
+            if(first_field) {
+              sql += f;
+              first_field = false;
+            } else
+              sql += ", " + f;
+            sql += sql_type(t, f, cmd.dimensions[f].type, true);
+          }
 
-				if(cmd.splitted){
-					sql += "zone integer";
-					first_field = false;
-				}
+          for(f in cmd.resources)
+            sql += ", " + f + sql_type(t, f, cmd.resources[f].type, true);
 
-				for(f in cmd.dimensions){
-					if(first_field){
-						sql += f;
-						first_field = false;
-					}else
-						sql += ", " + f;
-					sql += sql_type(t, f, cmd.dimensions[f].type, true);
-				}
+          for(f in cmd.attributes)
+            sql += ", " + f + sql_type(t, f, cmd.attributes[f].type, true);
 
-				for(f in cmd.resources)
-					sql += ", " + f + sql_type(t, f, cmd.resources[f].type, true);
+          sql += ", PRIMARY KEY (";
+          first_field = true;
+          if(cmd.splitted) {
+            sql += "zone";
+            first_field = false;
+          }
+          for(f in cmd["dimensions"]) {
+            if(first_field) {
+              sql += f;
+              first_field = false;
+            } else
+              sql += ", " + f;
+          }
 
-				for(f in cmd.attributes)
-					sql += ", " + f + sql_type(t, f, cmd.attributes[f].type, true);
+        } else {
+          sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `_deleted` BOOLEAN";
 
-				sql += ", PRIMARY KEY (";
-				first_field = true;
-				if(cmd.splitted){
-					sql += "zone";
-					first_field = false;
-				}
-				for(f in cmd["dimensions"]){
-					if(first_field){
-						sql += f;
-						first_field = false;
-					}else
-						sql += ", " + f;
-				}
+          //sql += md.sql_mask(f) + md.sql_type(t, f, cmd.dimensions[f].type);
 
-			}else{
-				sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `_deleted` BOOLEAN";
+          for(f in cmd.dimensions)
+            sql += sql_mask(f) + sql_type(t, f, cmd.dimensions[f].type);
 
-				//sql += md.sql_mask(f) + md.sql_type(t, f, cmd.dimensions[f].type);
+          for(f in cmd.resources)
+            sql += sql_mask(f) + sql_type(t, f, cmd.resources[f].type);
 
-				for(f in cmd.dimensions)
-					sql += sql_mask(f) + sql_type(t, f, cmd.dimensions[f].type);
+          for(f in cmd.attributes)
+            sql += sql_mask(f) + sql_type(t, f, cmd.attributes[f].type);
 
-				for(f in cmd.resources)
-					sql += sql_mask(f) + sql_type(t, f, cmd.resources[f].type);
+          // sql += ", PRIMARY KEY (";
+          // first_field = true;
+          // for(f in cmd["dimensions"]){
+          // 	if(first_field){
+          // 		sql += "`" + f + "`";
+          // 		first_field = false;
+          // 	}else
+          // 		sql += md.sql_mask(f);
+          // }
+        }
 
-				for(f in cmd.attributes)
-					sql += sql_mask(f) + sql_type(t, f, cmd.attributes[f].type);
+        sql += ")";
 
-				// sql += ", PRIMARY KEY (";
-				// first_field = true;
-				// for(f in cmd["dimensions"]){
-				// 	if(first_field){
-				// 		sql += "`" + f + "`";
-				// 		first_field = false;
-				// 	}else
-				// 		sql += md.sql_mask(f);
-				// }
-			}
+        return sql;
+      }
 
-			sql += ")";
+      function sql_update(){
+        // "INSERT OR REPLACE INTO user_params (prm_name, prm_value) VALUES (?, ?);
+        let sql = "INSERT OR REPLACE INTO `" + t.table_name + "` (",
+          fields = [],
+          first_field = true;
 
-			return sql;
-		}
+        for(f in cmd.dimensions) {
+          if (first_field) {
+            sql += f;
+            first_field = false;
+          } else
+            sql += ", " + f;
+          fields.push(f);
+        }
 
-		function sql_update(){
-			// "INSERT OR REPLACE INTO user_params (prm_name, prm_value) VALUES (?, ?);
-			var sql = "INSERT OR REPLACE INTO `"+t.table_name+"` (",
-				fields = [],
-				first_field = true;
+        for(f in cmd.resources) {
+          sql += ", " + f;
+          fields.push(f);
+        }
 
-			for(f in cmd.dimensions){
-				if(first_field){
-					sql += f;
-					first_field = false;
-				}else
-					sql += ", " + f;
-				fields.push(f);
-			}
-			for(f in cmd.resources){
-				sql += ", " + f;
-				fields.push(f);
-			}
-			for(f in cmd.attributes){
-				sql += ", " + f;
-				fields.push(f);
-			}
+        for(f in cmd.attributes) {
+          sql += ", " + f;
+          fields.push(f);
+        }
 
-			sql += ") VALUES (?";
-			for(f = 1; f<fields.length; f++){
-				sql += ", ?";
-			}
-			sql += ")";
+        sql += ") VALUES (?";
+        for(f = 1; f<fields.length; f++) {
+          sql += ", ?";
+        }
+        sql += ")";
 
-			return {sql: sql, fields: fields};
-		}
+        return {sql: sql, fields: fields};
+      }
 
-		function sql_select(){
-			var sql = "SELECT * FROM `"+t.table_name+"` WHERE ",
-				first_field = true;
-			attr._values = [];
+      function sql_select(){
+        let sql = "SELECT * FROM `" + t.table_name + "` WHERE ",
+          first_field = true;
+        attr?._values = [];
 
-			for(var f in cmd["dimensions"]){
+        for(const f in cmd["dimensions"]) {
 
-				if(first_field)
-					first_field = false;
-				else
-					sql += " and ";
+          if(first_field)
+            first_field = false;
+          else
+            sql += " and ";
 
-				sql += "`" + f + "`" + "=?";
-				attr._values.push(attr[f]);
-			}
+          sql += "`" + f + "`" + "=?";
+          attr?._values.push(attr[f]);
+        }
 
-			if(first_field)
-				sql += "1";
+        if(first_field)
+          sql += "1";
 
-			return sql;
-		}
+        return sql;
+      }
 
 
-		if(action == "create_table")
-			res = sql_create();
+      if(action === "create_table")
+        res = sql_create();
 
-		else if(action in {insert:"", update:"", replace:""})
-			res[t.table_name] = sql_update();
+      else if(action in {insert:"", update:"", replace:""})
+        res[t.table_name] = sql_update();
 
-		else if(action == "select")
-			res = sql_select();
+      else if(action === "select")
+        res = sql_select();
 
-		else if(action == "select_all")
-			res = sql_select();
+      else if(action === "select_all")
+        res = sql_select();
 
-		else if(action == "delete")
-			res = "DELETE FROM `"+t.table_name+"` WHERE ref = ?";
+      else if(action === "delete")
+        res = "DELETE FROM `"+t.table_name+"` WHERE ref = ?";
 
-		else if(action == "drop")
-			res = "DROP TABLE IF EXISTS `"+t.table_name+"`";
+      else if(action === "drop")
+        res = "DROP TABLE IF EXISTS `"+t.table_name+"`";
 
-		else if(action == "get_selection")
-			res = sql_selection();
+      else if(action === "get_selection")
+        res = sql_selection();
 
-		return res;
-	}
-
-	get_ref(attr){
-
-		if(attr instanceof RegisterRow)
-			attr = attr._obj;
-
-		if(attr.ref)
-			return attr.ref;
-
-		var key = "",
-			dimensions = this.metadata().dimensions;
-
-		for(var j in dimensions){
-			key += (key ? "¶" : "");
-			if(dimensions[j].type.is_ref)
-				key += utils.fix_guid(attr[j]);
-
-			else if(!attr[j] && dimensions[j].type.digits)
-				key += "0";
-
-			else if(dimensions[j].date_part)
-				key += moment(attr[j] || utils.blank.date).format(moment.defaultFormatUtc);
-
-			else if(attr[j]!=undefined)
-				key += String(attr[j]);
-
-			else
-				key += "$";
-		}
-		return key;
-	}
-
-  create(attr) {
-
-    if(!attr || typeof attr != 'object') {
-      attr = {};
+      return res;
     }
 
-    let o = this.by_ref[attr.ref];
-    if(!o) {
+    get_ref(attr) {
 
-      o = this.obj_constructor('', [attr, this]);
+      if(attr instanceof RegisterRow)
+        attr = attr._obj;
 
-      // Триггер после создания
-      let after_create_res = {};
-      this.emit('after_create', o, after_create_res);
+      if(attr.ref)
+        return attr.ref;
 
-      if(after_create_res === false) {
-        return Promise.resolve(o);
+        let key = "",
+          dimensions = this.metadata().dimensions;
+
+        for(const j in dimensions){
+        key += (key ? "¶" : "");
+        if(dimensions[j].type.is_ref)
+          key += utils.fix_guid(attr[j]);
+
+        else if(!attr[j] && dimensions[j].type.digits)
+          key += "0";
+
+        else if(dimensions[j].date_part)
+          key += moment(attr[j] || utils.blank.date).format(moment.defaultFormatUtc);
+
+        else if(attr[j]!==undefined)
+          key += String(attr[j]);
+
+        else
+          key += "$";
       }
-      else if(typeof after_create_res === 'object' && after_create_res.then) {
-        return after_create_res;
-      }
+      return key;
     }
 
-    return Promise.resolve(o);
-  }
+    create(attr)
+    {
+      if(!attr || typeof attr != 'object') {
+        attr = {};
+    }
 
-  /**
-   * Выполняет перебор элементов локальной коллекции
-   * @method each
-   * @param fn {Function} - функция, вызываемая для каждого элемента локальной коллекции
-   */
-  each(fn) {
-    for (const i in this.by_ref) {
-      if(fn.call(this, this.by_ref[i]) === true) {
-        break;
+      let o = this.by_ref[attr.ref];
+      if(!o) {
+
+        o = this.obj_constructor('', [attr, this]);
+
+        // Триггер после создания
+        let after_create_res = {};
+        this.emit('after_create', o, after_create_res);
+
+        if(after_create_res === false) {
+          return Promise.resolve(o);
+        }
+        else if(typeof after_create_res === 'object' && after_create_res.then) {
+          return after_create_res;
+        }
       }
+
+      return Promise.resolve(o);
     }
   }
-
-}
 
 /**
  * ### Абстрактный менеджер регистра сведений
@@ -2022,7 +2018,7 @@ export class InfoRegManager extends RegisterManager{
 	 * @for InfoRegManager
 	 * @param filter {Object} - отбор + период
 	 */
-	slice_first(filter){
+	slice_first(filter) {
 
 	}
 
@@ -2032,7 +2028,7 @@ export class InfoRegManager extends RegisterManager{
 	 * @for InfoRegManager
 	 * @param filter {Object} - отбор + период
 	 */
-	slice_last(filter){
+	slice_last(filter) {
 
 	}
 }
@@ -2047,7 +2043,7 @@ export class InfoRegManager extends RegisterManager{
  * @constructor
  * @param class_name {string} - имя типа менеджера объекта. например, "areg.goods_on_stores"
  */
-export class AccumRegManager extends RegisterManager{
+export class AccumRegManager extends RegisterManager {
 
 }
 
@@ -2061,7 +2057,7 @@ export class AccumRegManager extends RegisterManager{
  * @constructor
  * @param class_name {string}
  */
-export class CatManager extends RefDataManager{
+export class CatManager extends RefDataManager {
 
 	constructor(owner, class_name) {
 
@@ -2126,9 +2122,9 @@ export class CatManager extends RefDataManager{
 	 * @return {string} - строка пути элемента
 	 */
 	path(ref) {
-		var res = [], tobj;
+    let res = [], tobj;
 
-		if (ref instanceof DataObj)
+    if (ref instanceof DataObj)
 			tobj = ref;
 		else
 			tobj = this.get(ref, true);
@@ -2160,7 +2156,7 @@ export class CatManager extends RefDataManager{
  * @constructor
  * @param class_name {string}
  */
-export class ChartOfCharacteristicManager extends CatManager{
+export class ChartOfCharacteristicManager extends CatManager {
 
 }
 
@@ -2174,7 +2170,7 @@ export class ChartOfCharacteristicManager extends CatManager{
  * @constructor
  * @param class_name {string}
  */
-export class ChartOfAccountManager extends CatManager{
+export class ChartOfAccountManager extends CatManager {
 
 }
 
@@ -2188,7 +2184,7 @@ export class ChartOfAccountManager extends CatManager{
  * @constructor
  * @param class_name {string}
  */
-export class DocManager extends RefDataManager{
+export class DocManager extends RefDataManager {
 
 }
 
@@ -2202,7 +2198,7 @@ export class DocManager extends RefDataManager{
  * @constructor
  * @param class_name {string}
  */
-export class TaskManager extends CatManager{
+export class TaskManager extends CatManager {
 
 }
 
@@ -2216,7 +2212,7 @@ export class TaskManager extends CatManager{
  * @constructor
  * @param class_name {string}
  */
-export class BusinessProcessManager extends CatManager{
+export class BusinessProcessManager extends CatManager {
 
 }
 

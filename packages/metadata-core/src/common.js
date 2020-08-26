@@ -104,7 +104,7 @@ class MetaEngine {
       //window.addEventListener('unhandledRejection', this.record_log, false);
     }
 
-    // при налчии расширений, выполняем их методы инициализации
+    // при наличии расширений, выполняем их методы инициализации
     MetaEngine._plugins.forEach((plugin) => plugin.call(this));
     MetaEngine._plugins.length = 0;
 
@@ -133,6 +133,7 @@ class MetaEngine {
    *
    * @method record_log
    * @param err
+   * @param promise
    */
   record_log(err, promise) {
     this && this.ireg && this.ireg.log && this.ireg.log.record(err);
@@ -175,7 +176,7 @@ class MetaEngine {
        * @returns {Boolean}
        */
       CatUsers.prototype.role_available = function (name) {
-        return this.acl_objs ? this.acl_objs._obj.some((row) => row.type == name) : true;
+        return this.acl_objs ? this.acl_objs._obj.some((row) => row.type === name) : true;
       };
 
       /**
