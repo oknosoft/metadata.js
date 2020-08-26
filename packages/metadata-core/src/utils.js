@@ -199,10 +199,10 @@ const utils = {
 	 *
 	 * @method fix_guid
 	 * @param ref {*} - значение, из которого надо извлечь идентификатор
-	 * @param generate {Boolean} - указывает, генерировать ли новый guid для пустого значения
+	 * @param {Boolean} [generate=false] - указывает, генерировать ли новый guid для пустого значения, по умолчанию нет
 	 * @return {String}
 	 */
-	fix_guid(ref, generate) {
+	fix_guid(ref, generate=false) {
 
 		if (ref && typeof ref == 'string') {
 

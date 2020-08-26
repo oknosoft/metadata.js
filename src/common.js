@@ -1004,8 +1004,8 @@ function Utils() {
 	 *
 	 * @method fix_guid
 	 * @param ref {*} - значение, из которого надо извлечь идентификатор
-	 * @param generate {Boolean} - указывает, генерировать ли новый guid для пустого значения
-	 * @return {String}
+   * @param {Boolean} [generate=false] - указывает, генерировать ли новый guid для пустого значения, по умолчанию нет
+   * @return {String}
 	 */
 	this.fix_guid = function(ref, generate){
 
