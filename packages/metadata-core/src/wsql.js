@@ -64,8 +64,8 @@ export default class WSQL {
 	 * @type Number
 	 */
 	get time_diff(){
-		var diff = this.get_user_param("time_diff", "number");
-		return (!diff || isNaN(diff) || diff < 62135571600000 || diff > 62135622000000) ? this.js_time_diff : diff;
+    const diff = this.get_user_param("time_diff", "number");
+    return (!diff || isNaN(diff) || diff < 62135571600000 || diff > 62135622000000) ? this.js_time_diff : diff;
 	}
 
 	/**
@@ -112,7 +112,7 @@ export default class WSQL {
     ];
 
 		// подмешиваем к базовым параметрам настройки приложения
-		Array.isArray(job_prm.additional_params) && job_prm.additional_params.forEach((v) => nesessery_params.push(v));
+		Array.isArray(job_prm?.additional_params) && job_prm?.additional_params.forEach((v) => nesessery_params.push(v));
 
 		// если зона не указана, устанавливаем "1"
     let zone;
@@ -124,9 +124,9 @@ export default class WSQL {
     }
 
     // для гостевой зоны, couch_direct по умолчанию сброшен
-    if(zone == job_prm.zone_demo){
+    if(zone === job_prm.zone_demo){
       nesessery_params.some((prm) => {
-        if(prm.p == 'couch_direct'){
+        if(prm.p === 'couch_direct'){
           prm.v = false;
           return true;
         }
@@ -140,7 +140,7 @@ export default class WSQL {
       }
 		  else if (prm.ls && this.prm_is_set(prm.p)){
 		    const v = this.get_user_param(prm.p, prm.t);
-		    if(job_prm[prm.p] != v) {
+		    if(job_prm[prm.p] !== v) {
           job_prm[prm.p] = v;
         }
 		  }
@@ -152,7 +152,7 @@ export default class WSQL {
 		// инициализируем метаданные
     if(meta) {
       meta(this.$p);
-      // сообщяем адаптерам пути и префиксы
+      // сообщаем адаптерам пути и префиксы
       for(let i in adapters){
         adapters[i].init(this, job_prm);
       }
@@ -184,7 +184,7 @@ export default class WSQL {
 
 		const {$p, _params, _ls} = this;
 
-		if(typeof prm_value == "object"){
+		if(typeof prm_value === "object"){
 			_params[prm_name] = prm_value;
 			prm_value = JSON.stringify(prm_value);
 		}
@@ -256,7 +256,7 @@ export default class WSQL {
 	 * @returns {*}
 	 */
 	fetch_type(prm, type){
-		if(type == "object"){
+		if(type === "object"){
 			try{
 				prm = JSON.parse(prm);
 			}catch(e){
@@ -264,16 +264,16 @@ export default class WSQL {
 			}
 			return prm;
 		}
-		else if(type == "number"){
+		else if(type === "number"){
 			return utils.fix_number(prm, true);
 		}
-		else if(type == "date"){
+		else if(type === "date"){
 			return utils.fix_date(prm, true);
 		}
-		else if(type == "boolean"){
+		else if(type === "boolean"){
 			return utils.fix_boolean(prm);
 		}
-    else if(type == "string"){
+    else if(type === "string"){
       return prm ? prm.toString() : '';
     }
 		return prm;
