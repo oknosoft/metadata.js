@@ -252,7 +252,7 @@ export default {
    * Всплывающтй snackbar оповещений пользователя
    * @param text
    */
-  snack({message, timeout = 10000}) {
+  snack({timeout = 10000, ...other}) {
 
     if(this.handleIfaceState) {
       const close_confirm = () => {
@@ -266,7 +266,11 @@ export default {
       this.handleIfaceState({
         component: '',
         name: 'snack',
-        value: {open: true, message, button: 'OK', handleClose: close_confirm}
+        value: {
+          open: true,
+          button: other.reset ? 'Сброс' : 'OK',
+          handleClose: other.reset ? null : close_confirm,
+          ...other}
       });
     }
   },
