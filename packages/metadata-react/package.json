@@ -15,7 +15,7 @@
     "classnames": "^2.2.6",
     "downshift": "^3.2",
     "font-awesome": "^4.7.0",
-    "marked": "^0.6",
+    "marked": "^1.1",
     "metadata-abstract-ui": "^2.0.18-beta.4",
     "metadata-external": "^2.0.18-beta.4",
     "metadata-redux": "^2.0.18-beta.4",
