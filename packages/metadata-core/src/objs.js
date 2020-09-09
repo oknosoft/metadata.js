@@ -74,10 +74,10 @@ export class BaseDataObj {
     const {_obj} = this;
     const res = _obj ? _obj[f] : '';
 
-    if(f == 'type' && typeof res == 'object') {
+    if(f === 'type' && typeof res === 'object') {
       return res;
     }
-    else if(f == 'ref') {
+    else if(f === 'ref') {
       return res;
     }
     else if(mf.is_ref) {
@@ -114,7 +114,7 @@ export class BaseDataObj {
     else if(mf.digits) {
       return utils.fix_number(_obj[f], !mf.hasOwnProperty('str_len'));
     }
-    else if(mf.types[0] == 'boolean') {
+    else if(mf.types[0] === 'boolean') {
       return utils.fix_boolean(_obj[f]);
     }
     else {
@@ -161,7 +161,7 @@ export class BaseDataObj {
       if(mf.digits && typeof v === 'number' || mf.hasOwnProperty('str_len') && typeof v === 'string' && !utils.is_guid(v)) {
         _obj[f] = v;
       }
-      else if(typeof v === 'boolean' && mf.types.indexOf('boolean') != -1) {
+      else if(typeof v === 'boolean' && mf.types.indexOf('boolean') !== -1) {
         _obj[f] = v;
       }
       else if(mf.date_part && v instanceof Date) {
@@ -170,7 +170,7 @@ export class BaseDataObj {
       else {
         _obj[f] = utils.fix_guid(v);
 
-        if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1) {
+        if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) !== -1) {
 
         }
         else {
@@ -212,7 +212,7 @@ export class BaseDataObj {
     else if(mf.digits) {
       _obj[f] = utils.fix_number(v, !mf.hasOwnProperty('str_len'));
     }
-    else if(mf.types[0] == 'boolean') {
+    else if(mf.types[0] === 'boolean') {
       _obj[f] = utils.fix_boolean(v);
     }
     else {
@@ -236,7 +236,7 @@ export class BaseDataObj {
    * @private
    */
   _setter(f, v) {
-    if(this._obj[f] != v) {
+    if(this._obj[f] !== v) {
       this.__notify(f);
       this.__setter(f, v);
     }

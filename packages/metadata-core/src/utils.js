@@ -310,6 +310,7 @@ const utils = {
 	 * @method date_add_day
 	 * @param date {Date} - исходная дата
 	 * @param days {Number} - число дней, добавляемых к дате (может быть отрицательным)
+   * @param reset_time {boolean} - сбросить время в рамках дня на начало суток
 	 * @return {Date}
 	 */
 	date_add_day(date, days, reset_time) {
@@ -339,7 +340,7 @@ const utils = {
 	 *
 	 * @method is_guid
 	 * @param v {*} - проверяемое значение
-	 * @return {Boolean} - true, если значение соответствует регурярному выражению guid
+	 * @return {Boolean} - true, если значение соответствует регулярному выражению guid
 	 */
 	is_guid(v) {
 		if (typeof v !== 'string' || v.length < 36) {
@@ -364,7 +365,7 @@ const utils = {
 	},
 
 	/**
-	 * ### Проверяет, является ли значенние Data-объектным типом
+	 * ### Проверяет, является ли значение Data-объектным типом
 	 *
 	 * @method is_data_obj
 	 * @param v {*} - проверяемое значение
@@ -375,7 +376,7 @@ const utils = {
 	},
 
   /**
-   * ### Проверяет, является ли значенние Data-документом
+   * ### Проверяет, является ли значение Data-документом
    *
    * @method is_doc_obj
    * @param v {*} - проверяемое значение
@@ -386,7 +387,7 @@ const utils = {
   },
 
 	/**
-	 * ### Проверяет, является ли значенние менеджером объектов данных
+	 * ### Проверяет, является ли значение менеджером объектов данных
 	 *
 	 * @method is_data_mgr
 	 * @param v {*} - проверяемое значение
@@ -397,7 +398,7 @@ const utils = {
 	},
 
   /**
-   * ### Проверяет, является ли значенние менеджером перечисления
+   * ### Проверяет, является ли значение менеджером перечисления
    *
    * @method is_enm_mgr
    * @param v {*} - проверяемое значение
@@ -408,7 +409,7 @@ const utils = {
   },
 
   /**
-   * ### Проверяет, является ли значенние табличной частью или строкой табличной части
+   * ### Проверяет, является ли значение табличной частью или строкой табличной части
    *
    * @method is_tabular
    * @param v {*} - проверяемое значение
@@ -424,10 +425,10 @@ const utils = {
 	 * @method is_equal
 	 * @param v1 {DataObj|String}
 	 * @param v2 {DataObj|String}
-	 * @return {boolean} - true, если значенния эквивалентны
+	 * @return {boolean} - true, если значения эквивалентны
 	 */
 	is_equal(v1, v2) {
-		if (v1 == v2) {
+		if (v1 === v2) {
 			return true;
 		}
 		else if (typeof v1 === 'string' && typeof v2 === 'string' && v1.trim() === v2.trim()) {
@@ -436,7 +437,7 @@ const utils = {
 		else if (typeof v1 === typeof v2) {
 			return false;
 		}
-		return (this.fix_guid(v1, false) == this.fix_guid(v2, false));
+		return (this.fix_guid(v1, false) === this.fix_guid(v2, false));
 	},
 
   /**
@@ -486,14 +487,14 @@ const utils = {
 	 */
 	get_and_show_blob(url, post_data, method) {
 
-		function show_blob(req) {
-			url = window.URL.createObjectURL(req.response);
+		function show_blob(request) {
+			url = window.URL.createObjectURL(request.response);
 			const wnd_print = window.open(url, 'wnd_print', 'menubar=no,toolbar=no,location=no,status=no,directories=no,resizable=yes,scrollbars=yes');
 			wnd_print.onload = () => window.URL.revokeObjectURL(url);
 			return wnd_print;
 		}
 
-		const req = (!method || (typeof method == 'string' && method.toLowerCase().indexOf('post') != -1)) ?
+		const req = (!method || (typeof method == 'string' && method.toLowerCase().indexOf('post') !== -1)) ?
       this.post_ex(url,
         typeof post_data == 'object' ? JSON.stringify(post_data) : post_data,
         true,
@@ -539,7 +540,7 @@ const utils = {
 		function exclude_cpy(f) {
 			if (!(exclude && exclude.includes(f))) {
 				// копируем в dst свойства src, кроме тех, которые унаследованы от Object
-				if ((typeof tobj[f] == 'undefined') || (tobj[f] != src[f])) {
+				if ((typeof tobj[f] === 'undefined') || (tobj[f] !== src[f])) {
 					obj[f] = src[f];
 				}
 			}
@@ -665,7 +666,7 @@ const utils = {
       const {ne, gt, gte, lt, lte, nin, inh, ninh, lke, nlk} = comparison_types;
       switch (comparison_type) {
       case ne:
-        return left != right;
+        return left !== right;
       case gt:
         return left > right;
       case gte:
@@ -676,36 +677,36 @@ const utils = {
         return left <= right;
       case nin:
         if(Array.isArray(left) && !Array.isArray(right)) {
-          return left.indexOf(right) == -1;
+          return left.indexOf(right) === -1;
         }
         else if(!Array.isArray(left) && Array.isArray(right)) {
-          return right.indexOf(left) == -1;
+          return right.indexOf(left) === -1;
         }
         else if(!Array.isArray(left) && !Array.isArray(right)) {
-          return right != left;
+          return right !== left;
         }
         break;
       case comparison_types.in:
         if(Array.isArray(left) && !Array.isArray(right)) {
-          return left.indexOf(right) != -1;
+          return left.indexOf(right) !== -1;
         }
         else if(!Array.isArray(left) && Array.isArray(right)) {
-          return right.indexOf(left) != -1;
+          return right.indexOf(left) !== -1;
         }
         else if(!Array.isArray(left) && !Array.isArray(right)) {
-          return left == right;
+          return left === right;
         }
         break;
       case inh:
-        return utils.is_data_obj(left) ? left._hierarchy(right) : left == right;
+        return utils.is_data_obj(left) ? left._hierarchy(right) : left === right;
       case ninh:
-        return utils.is_data_obj(left) ? !left._hierarchy(right) : left != right;
+        return utils.is_data_obj(left) ? !left._hierarchy(right) : left !== right;
       case lke:
         return left.indexOf && right && left.indexOf(right) !== -1;
       case nlk:
         return left.indexOf && left.indexOf(right) === -1;
       default:
-        return left == right;
+        return left === right;
       }
     },
 
@@ -752,7 +753,7 @@ const utils = {
 
 
 					// пропускаем служебные свойства
-					if (j.substr(0, 1) == '_') {
+					if (j.substr(0, 1) === '_') {
             if(j === '_search' && sel.fields && sel.value) {
               ok = sel.value.every((str) => sel.fields.some((fld) => utils._like(o[fld], str)));
               if(!ok) {
@@ -1059,7 +1060,7 @@ utils.__define('blank', {
 				v = this.date;
 			else if (mtype['digits'])
 				v = 0;
-			else if (mtype.types && mtype.types[0] == 'boolean')
+			else if (mtype.types && mtype.types[0] === 'boolean')
 				v = false;
 			else
 				v = '';
