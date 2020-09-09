@@ -115,7 +115,7 @@ function adapter({AbstracrAdapter}) {
       }
 
       for (const name of pbases) {
-        if(bases.indexOf(name) != -1) {
+        if(bases.indexOf(name) !== -1) {
           // в Node, локальные базы - это алиасы удалённых
           // если direct, то все базы, кроме ram, так же - удалённые
           Object.defineProperty(local, name, {
@@ -133,7 +133,7 @@ function adapter({AbstracrAdapter}) {
           if(job_prm.couch_memory && job_prm.couch_memory.includes(name)) {
             local[`__${name}`] = new PouchDB(props.prefix + props.zone + '_' + name, Object.assign({adapter: 'memory'}, opts));
           }
-          else if(props.user_node || (props.direct && name != 'ram' && name != 'user')) {
+          else if(props.user_node || (props.direct && name !== 'ram' && name !== 'user')) {
             local[`__${name}`] = null;
           }
           else {
@@ -184,7 +184,7 @@ function adapter({AbstracrAdapter}) {
 
       md.bases().forEach((dbid) => {
         if(dbid !== 'meta' &&
-          local[dbid] && remote[dbid] && local[dbid] != remote[dbid] &&
+          local[dbid] && remote[dbid] && local[dbid] !== remote[dbid] &&
           (dbid !== 'doc' || !wsql.get_user_param('dynamic_doc'))
         ) {
           if(props.noreplicate && props.noreplicate.includes(dbid)) {
@@ -197,10 +197,7 @@ function adapter({AbstracrAdapter}) {
       return Promise.all(run_sync)
         .then(() => {
           // широковещательное оповещение об окончании загрузки локальных данных
-          if(props.use_ram === false) {
-            ;
-          }
-          else if(local._loading) {
+          if(props.use_ram !== false && local._loading) {
             return new Promise((resolve) => {
               this.once('pouch_data_loaded', resolve);
             });
@@ -223,8 +220,8 @@ function adapter({AbstracrAdapter}) {
       const {job_prm, wsql, aes, md} = $p;
 
       // реквизиты гостевого пользователя для демобаз
-      if(username == undefined && password == undefined) {
-        if(job_prm.guests && job_prm.guests.length) {
+      if(username === undefined && password === undefined) {
+        if (job_prm.guests && job_prm.guests.length) {
           username = job_prm.guests[0].username;
           password = aes.Ctr.decrypt(job_prm.guests[0].password);
         }
@@ -241,8 +238,8 @@ function adapter({AbstracrAdapter}) {
       }
 
       // если уже авторизованы под тем же пользователем, выходим с успешным результатом
-      if(props._auth) {
-        if(props._auth.username == username) {
+      if (props._auth) {
+        if (props._auth.username === username) {
           return Promise.resolve();
         }
         else {
@@ -269,7 +266,7 @@ function adapter({AbstracrAdapter}) {
               props._suffix = user.suffix || '';
               props._user = user.ref;
               props._push_only = Boolean(user.push_only);
-              if(user.direct && !props.direct && props.zone != job_prm.zone_demo) {
+              if(user.direct && !props.direct && props.zone !== job_prm.zone_demo) {
                 props.direct = true;
                 wsql.set_user_param('couch_direct', true);
               }
@@ -291,7 +288,7 @@ function adapter({AbstracrAdapter}) {
                 else if(ref.test(role)) {
                   props._user = role.substr(4);
                 }
-                else if(role === 'direct' && !props.direct && props.zone != job_prm.zone_demo) {
+                else if(role === 'direct' && !props.direct && props.zone !== job_prm.zone_demo) {
                   props.direct = true;
                   wsql.set_user_param('couch_direct', true);
                 }
@@ -301,7 +298,7 @@ function adapter({AbstracrAdapter}) {
               });
             }
 
-            if(props._push_only && props.direct) {
+            if (props._push_only && props.direct) {
               props.direct = false;
               wsql.set_user_param('couch_direct', false);
             }
@@ -350,7 +347,7 @@ function adapter({AbstracrAdapter}) {
             });
           });
 
-      if(!props.user_node) {
+      if (!props.user_node) {
         try_auth = try_auth
           .then((ram_logged_in) => {
             ram_logged_in && this.after_init(bases, {username, password});
@@ -427,7 +424,7 @@ function adapter({AbstracrAdapter}) {
 
       if(authorized) {
         for (const name in local.sync) {
-          if(name != 'meta' && props.autologin.indexOf(name) === -1) {
+          if(name !== 'meta' && props.autologin.indexOf(name) === -1) {
             try {
               local.sync[name].removeAllListeners();
               local.sync[name].cancel();
@@ -441,9 +438,9 @@ function adapter({AbstracrAdapter}) {
       }
 
       return Promise.all(md.bases().map((name) => {
-        if(name != 'meta' && remote[name]) {
+        if(name !== 'meta' && remote[name]) {
           let res = remote[name].logout && remote[name].logout();
-          if(name != 'ram') {
+          if(name !== 'ram') {
             const dbpath = AdapterPouch.prototype.dbpath.call(this, name);
             if(remote[name].name !== dbpath) {
               const sub = remote[name].close()
@@ -596,10 +593,10 @@ function adapter({AbstracrAdapter}) {
      */
     dbpath(name) {
       const {props: {path, zone, _suffix}, $p: {wsql, job_prm}} = this;
-      if(name == 'meta') {
+      if(name === 'meta') {
         return path + 'meta';
       }
-      else if(name == 'ram') {
+      else if(name === 'ram') {
         return path + zone + '_ram';
       }
       else if(name === 'pgsql') {
@@ -619,7 +616,7 @@ function adapter({AbstracrAdapter}) {
     db(_mgr) {
       const dbid = _mgr.cachable.replace('_remote', '').replace('_ram', '').replace('_doc', '');
       const {props, local, remote} = this;
-      if(dbid.indexOf('remote') != -1 || dbid === 'pgsql' || (props.noreplicate && props.noreplicate.includes(dbid))) {
+      if(dbid.indexOf('remote') !== -1 || dbid === 'pgsql' || (props.noreplicate && props.noreplicate.includes(dbid))) {
         return remote[dbid.replace('_remote', '')];
       }
       else {
@@ -709,10 +706,10 @@ function adapter({AbstracrAdapter}) {
 
           // для базы "ram", сервер мог указать тотальную перезагрузку данных
           // в этом случае - очищаем базы и перезапускаем браузер
-          if(id == 'ram') {
+          if(id === 'ram') {
             return db_remote.get('data_version')
               .then((v) => {
-                if(v.version != wsql.get_user_param('couch_ram_data_version')) {
+                if(v.version !== wsql.get_user_param('couch_ram_data_version')) {
                   // если это не первый запуск - перезагружаем
                   if(wsql.get_user_param('couch_ram_data_version')) {
                     rinfo = this.reset_local_data();
@@ -742,7 +739,7 @@ function adapter({AbstracrAdapter}) {
             return;
           }
 
-          if(id == 'ram' && linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)) {
+          if(id === 'ram' && linfo.doc_count < (job_prm.pouch_ram_doc_count || 10)) {
             // широковещательное оповещение о начале загрузки локальных данных
             _page = {
               total_rows: rinfo.doc_count,
@@ -769,7 +766,7 @@ function adapter({AbstracrAdapter}) {
               options.filter = job_prm.pouch_filter[id];
             }
             // если для базы meta фильтр не задан, используем умолчание
-            else if(id == 'meta') {
+            else if(id === 'meta') {
               options.filter = 'auth/meta';
             }
 
@@ -778,7 +775,7 @@ function adapter({AbstracrAdapter}) {
               options.back_off_function = this.back_off;
 
               // ram и meta синхронизируем в одну сторону, doc в демо-режиме, так же, в одну сторону
-              if(id == 'ram' || id == 'meta' || props.zone == job_prm.zone_demo) {
+              if(id === 'ram' || id === 'meta' || props.zone === job_prm.zone_demo) {
                 options.live = !job_prm.crazy_ram;
                 if(options.live) {
                   local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
@@ -839,7 +836,7 @@ function adapter({AbstracrAdapter}) {
                   }
                 });
 
-              if(id == 'ram') {
+              if(id === 'ram') {
                 sync
                   // replication was paused, usually because of a lost connection
                   .on('paused', (info) => this.emit('pouch_sync_paused', id, info))
@@ -878,6 +875,7 @@ function adapter({AbstracrAdapter}) {
      * Предпринимает попытку загрузки начального образа из _local/dump базы remote
      * @param local
      * @param remote
+     * @param opts
      * @return {Promise<Boolean>}
      */
     from_dump(local, remote, opts = {}) {
@@ -970,6 +968,7 @@ function adapter({AbstracrAdapter}) {
      * Предпринимает попытку загрузки начального образа из файлов
      * @param local
      * @param remote
+     * @param opts
      * @return {Promise<Boolean>}
      */
     from_files(local, remote, opts = {}) {
@@ -1064,6 +1063,7 @@ function adapter({AbstracrAdapter}) {
      * ### Перестраивает индексы
      * Обычно, вызывается после начальной синхронизации
      * @param id {String}
+     * @param silent
      * @return {Promise}
      */
     rebuild_indexes(id, silent) {
@@ -1179,10 +1179,10 @@ function adapter({AbstracrAdapter}) {
           return local.templates && local.templates.adapter === 'idb' && local.templates.destroy()
         })
         .then(() => {
-          return remote.ram != local.ram && local.ram.destroy()
+          return remote.ram !== local.ram && local.ram.destroy()
         })
         .then(() => {
-          return remote.doc != local.doc && local.doc.destroy()
+          return remote.doc !== local.doc && local.doc.destroy()
         })
         .then(do_reload)
         .catch(do_reload);
@@ -1193,7 +1193,7 @@ function adapter({AbstracrAdapter}) {
      *
      * @method load_obj
      * @param tObj {DataObj} - объект данных, который необходимо прочитать - дозаполнить
-     * @param attr {Object} - ополнительные параметры, например, db - прочитать из другой базы
+     * @param attr {Object} - дополнительные параметры, например, db - прочитать из другой базы
      * @return {Promise.<DataObj>} - промис с загруженным объектом
      */
     load_obj(tObj, attr) {
@@ -1215,7 +1215,7 @@ function adapter({AbstracrAdapter}) {
           tObj._obj._rev = res._rev;
         })
         .catch((err) => {
-          if(err.status != 404) {
+          if(err.status !== 404) {
             throw err;
           }
           else {
@@ -1232,7 +1232,7 @@ function adapter({AbstracrAdapter}) {
      *
      * @method save_obj
      * @param tObj {DataObj} - записываемый объект
-     * @param attr {Object} - ополнительные параметры записи
+     * @param attr {Object} - дополнительные параметры записи
      * @return {Promise.<DataObj>} - промис с записанным объектом
      */
     save_obj(tObj, attr) {
@@ -1378,10 +1378,10 @@ function adapter({AbstracrAdapter}) {
         .then((rows) => {
           rows.sort((a, b) => {
             const {guid} = this.$p.utils.blank
-            if(a.parent == guid && b.parent != guid) {
+            if(a.parent === guid && b.parent !== guid) {
               return -1;
             }
-            if(b.parent == guid && a.parent != guid) {
+            if(b.parent === guid && a.parent !== guid) {
               return 1;
             }
             if(a.name < b.name) {
@@ -1496,7 +1496,7 @@ function adapter({AbstracrAdapter}) {
         if(Array.isArray(attr.selection)) {
           attr.selection.forEach((asel) => {
             for (const fld in asel) {
-              if(fld[0] != '_' || fld == '_view' || fld == '_key') {
+              if(fld[0] !== '_' || fld === '_view' || fld === '_key') {
                 selection[fld] = asel[fld];
               }
             }
@@ -1504,7 +1504,7 @@ function adapter({AbstracrAdapter}) {
         }
         else {
           for (const fld in attr.selection) {
-            if(fld[0] != '_' || fld == '_view' || fld == '_key') {
+            if(fld[0] !== '_' || fld === '_view' || fld === '_key') {
               selection[fld] = attr.selection[fld];
             }
           }
@@ -1512,13 +1512,13 @@ function adapter({AbstracrAdapter}) {
       }
 
       // прибиваем фильтр по дате, если он встроен в ключ
-      if(selection._key && selection._key._drop_date && selection.date) {
+      if (selection._key && selection._key._drop_date && selection.date) {
         delete selection.date;
       }
 
       // строковый фильтр по полям поиска, если он не описан в ключе
-      if(attr.filter && (!selection._key || !selection._key._search)) {
-        if(cmd.input_by_string.length == 1) {
+      if (attr.filter && (!selection._key || !selection._key._search)) {
+        if(cmd.input_by_string.length === 1) {
           selection[cmd.input_by_string] = {like: attr.filter};
         }
         else {
@@ -1532,7 +1532,7 @@ function adapter({AbstracrAdapter}) {
       }
 
       // обратная сортировка по ключу, если есть признак сортировки в ключе и 'des' в атрибутах
-      if(selection._key && selection._key._order_by) {
+      if (selection._key && selection._key._order_by) {
         selection._key._order_by = attr.direction;
       }
 
@@ -1556,11 +1556,11 @@ function adapter({AbstracrAdapter}) {
 
               let fldsyn;
 
-              if(fld == 'ref') {
+              if (fld === 'ref') {
                 o[fld] = doc[fld];
                 return;
               }
-              else if(fld.indexOf(' as ') != -1) {
+              else if (fld.indexOf(' as ') !== -1) {
                 fldsyn = fld.split(' as ')[1];
                 fld = fld.split(' as ')[0].split('.');
                 fld = fld[fld.length - 1];
@@ -1575,7 +1575,7 @@ function adapter({AbstracrAdapter}) {
                   o[fldsyn] = $p.moment(doc[fld]).format($p.moment._masks[mf.type.date_part]);
                 }
                 else if(mf.type.is_ref) {
-                  if(!doc[fld] || doc[fld] == $p.utils.blank.guid) {
+                  if(!doc[fld] || doc[fld] === $p.utils.blank.guid) {
                     o[fldsyn] = '';
                   }
                   else {
@@ -1611,6 +1611,7 @@ function adapter({AbstracrAdapter}) {
      * @param _mgr {DataManager}
      * @param refs {Array}
      * @param with_attachments {Boolean}
+     * @param db
      * @return {*}
      */
     load_array(_mgr, refs, with_attachments, db) {
@@ -1754,6 +1755,7 @@ function adapter({AbstracrAdapter}) {
      * @param [selection._skip] {Number}
      * @param [selection._raw] {Boolean} - если _истина_, возвращаются сырые данные, а не дата-объекты
      * @param [selection._total_count] {Boolean} - если _истина_, вычисляет общее число записей под фильтром, без учета _skip и _top
+     * @param db
      * @return {Promise.<Array>}
      */
     find_rows(_mgr, selection, db) {
@@ -1881,7 +1883,7 @@ function adapter({AbstracrAdapter}) {
                 result.rows.forEach((row) => {
 
                   // фильтруем
-                  if(!selection._key._search || row.key[row.key.length - 1].toLowerCase().indexOf(selection._key._search) != -1) {
+                  if(!selection._key._search || row.key[row.key.length - 1].toLowerCase().indexOf(selection._key._search) !== -1) {
 
                     _total_count++;
 
@@ -2036,7 +2038,7 @@ function adapter({AbstracrAdapter}) {
         type = {type: 'text/plain'};
       }
 
-      if(!(attachment instanceof Blob) && type.indexOf('text') == -1) {
+      if(!(attachment instanceof Blob) && type.indexOf('text') === -1) {
         attachment = new Blob([attachment], {type: type});
       }
 
@@ -2053,7 +2055,7 @@ function adapter({AbstracrAdapter}) {
           }
         })
         .catch((err) => {
-          if(err.status != 404) {
+          if(err.status !== 404) {
             throw err;
           }
         })
@@ -2098,7 +2100,7 @@ function adapter({AbstracrAdapter}) {
           }
         })
         .catch((err) => {
-          if(err.status != 404) {
+          if(err.status !== 404) {
             throw err;
           }
         })
@@ -2121,7 +2123,7 @@ function adapter({AbstracrAdapter}) {
 
       if(!options) {
         if(changes.direction) {
-          if(changes.direction != 'pull') {
+          if(changes.direction !== 'pull') {
             return;
           }
           docs = changes.change.docs;
@@ -2193,7 +2195,7 @@ function adapter({AbstracrAdapter}) {
         clearInterval(this.props._refresher);
       }
       setInterval(() => {
-        if(this.authorized && this.remote.ram && this.remote.ram.adapter == 'http') {
+        if(this.authorized && this.remote.ram && this.remote.ram.adapter === 'http') {
           this.remote.ram.info()
             .then(response => {
               response = null;
@@ -2235,7 +2237,7 @@ function adapter({AbstracrAdapter}) {
     }
 
     /**
-     * ### Информирует об авторизованности на сервере CouchDB
+     * ### Информирует о статусе авторизации на сервере CouchDB
      *
      * @property authorized
      */
