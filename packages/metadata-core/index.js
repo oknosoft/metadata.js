@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.23-beta.3, built:2020-07-27
+ metadata-core v2.0.23-beta.4, built:2020-09-16
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -8,9 +8,11 @@
 
 'use strict';
 
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+var EventEmitter = require('events');
 
-var EventEmitter = _interopDefault(require('events'));
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+var EventEmitter__default = /*#__PURE__*/_interopDefaultLegacy(EventEmitter);
 
 class I18Handler {
 	get(target, name, receiver) {
@@ -1477,7 +1479,7 @@ var data_objs = /*#__PURE__*/Object.freeze({
 	RegisterRow: RegisterRow
 });
 
-class MetaEventEmitter extends EventEmitter{
+class MetaEventEmitter extends EventEmitter__default['default']{
   constructor() {
     super();
     this.setMaxListeners(20);
@@ -3479,13 +3481,15 @@ const utils = {
             }
           }
           else if(is_obj && sel.hasOwnProperty('inh')) {
-            ok = j === 'ref' ? o._hierarchy && o._hierarchy(sel.inh) : o[j]._hierarchy && o[j]._hierarchy(sel.inh);
+            const tmp = utils.is_data_obj(o) ? o : (this.get && this.get(o)) || o;
+            ok = j === 'ref' ? tmp._hierarchy && tmp._hierarchy(sel.inh) : tmp[j]._hierarchy && tmp[j]._hierarchy(sel.inh);
             if(!ok) {
               break;
             }
           }
           else if(is_obj && sel.hasOwnProperty('ninh')) {
-            ok = !(j === 'ref' ? o._hierarchy && o._hierarchy(sel.ninh) : o[j]._hierarchy && o[j]._hierarchy(sel.ninh));
+            const tmp = utils.is_data_obj(o) ? o : (this.get && this.get(o)) || o;
+            ok = !(j === 'ref' ? tmp._hierarchy && tmp._hierarchy(sel.ninh) : tmp[j]._hierarchy && tmp[j]._hierarchy(sel.ninh));
             if(!ok) {
               break;
             }
@@ -4694,7 +4698,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.23-beta.3";
+    return "2.0.23-beta.4";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

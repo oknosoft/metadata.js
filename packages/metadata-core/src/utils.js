@@ -836,14 +836,16 @@ const utils = {
           }
           // если свойство отбора является объектом `inh`, вычисляем иерархию
           else if(is_obj && sel.hasOwnProperty('inh')) {
-            ok = j === 'ref' ? o._hierarchy && o._hierarchy(sel.inh) : o[j]._hierarchy && o[j]._hierarchy(sel.inh);
+            const tmp = utils.is_data_obj(o) ? o : (this.get && this.get(o)) || o;
+            ok = j === 'ref' ? tmp._hierarchy && tmp._hierarchy(sel.inh) : tmp[j]._hierarchy && tmp[j]._hierarchy(sel.inh);
             if(!ok) {
               break;
             }
           }
           // если свойство отбора является объектом `ninh`, вычисляем иерархию
           else if(is_obj && sel.hasOwnProperty('ninh')) {
-            ok = !(j === 'ref' ? o._hierarchy && o._hierarchy(sel.ninh) : o[j]._hierarchy && o[j]._hierarchy(sel.ninh));
+            const tmp = utils.is_data_obj(o) ? o : (this.get && this.get(o)) || o;
+            ok = !(j === 'ref' ? tmp._hierarchy && tmp._hierarchy(sel.ninh) : tmp[j]._hierarchy && tmp[j]._hierarchy(sel.ninh));
             if(!ok) {
               break;
             }

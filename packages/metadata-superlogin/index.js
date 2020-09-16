@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.23-beta.3, built:2020-07-27
+ metadata-superlogin v2.0.23-beta.4, built:2020-09-12
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -8,10 +8,13 @@
 
 'use strict';
 
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+var axios = require('axios');
+var EventEmitter2 = require('events');
 
-var axios = _interopDefault(require('axios'));
-var EventEmitter2 = _interopDefault(require('events'));
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+var axios__default = /*#__PURE__*/_interopDefaultLegacy(axios);
+var EventEmitter2__default = /*#__PURE__*/_interopDefaultLegacy(EventEmitter2);
 
 const _debug = require('debug');
 const debug = {
@@ -73,17 +76,17 @@ const memoryStorage = {
 	},
 	storage: new Map()
 };
-class Superlogin extends EventEmitter2 {
+class Superlogin extends EventEmitter2__default['default'] {
 	constructor() {
 		super();
 		this._oauthComplete = false;
 		this._config = {};
 		this._refreshInProgress = false;
-		this._http = axios.create();
+		this._http = axios__default['default'].create();
 	}
 	configure(config = {}) {
 		if (config.serverUrl) {
-			this._http = axios.create({
+			this._http = axios__default['default'].create({
 				baseURL: config.serverUrl,
 				timeout: config.timeout
 			});
