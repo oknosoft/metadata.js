@@ -30,7 +30,7 @@ exports.builder = {
 };
 exports.handler = function (argv) {
 
-  const https = require('http');
+  const https = require('https');
 
   const zipUrl = "https://codeload.github.com/oknosoft/helloworld/zip/v2";
   const request = https.get(zipUrl);
