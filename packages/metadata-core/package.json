@@ -11,7 +11,7 @@
   "dependencies": {
     "alasql": "^0.6",
     "debug": "^4.1",
-    "moment": "^2.27",
+    "moment": "^2.29",
     "uuid": "^8.3"
   },
   "repository": {
