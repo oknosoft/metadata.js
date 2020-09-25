@@ -14,7 +14,7 @@
   "dependencies": {
     "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.9.1",
-    "alasql": "^0.6.3",
+    "alasql": "^0.6.4",
     "cron": "^1.8.2",
     "dataframe": "^2.0",
     "downshift": "^6.0.6",
@@ -98,7 +98,7 @@
     "redux-dynamic-middlewares": "^2.0",
     "redux-thunk": "^2.3.0",
     "rimraf": "^3.0.2",
-    "rollup": "^2.28.1",
+    "rollup": "^2.28.2",
     "rollup-plugin-cleanup": "^3.2.1",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
