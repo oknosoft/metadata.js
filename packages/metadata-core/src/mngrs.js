@@ -36,6 +36,27 @@ import msg from './i18n.ru';
 import {DataObj, EnumObj, DocObj, RegisterRow} from './objs';
 import MetaEventEmitter from './emitter';
 
+class Iterator {
+
+  constructor(by_ref, alatable) {
+    this._by_ref = by_ref;
+    this._alatable = alatable;
+    this._idx = 0;
+  }
+
+  next() {
+    if(this._idx >= this._alatable.length) {
+      return {done: true}; // проверка на последний элемент
+    }
+    const value = this._by_ref[this._alatable[this._idx].ref];
+    this._idx++;
+    if(value && !value.empty()) {
+      return {value, done: false};
+    }
+    return this.next();
+  }
+}
+
 
 export class DataManager extends MetaEventEmitter{
 
@@ -548,6 +569,14 @@ export class DataManager extends MetaEventEmitter{
    */
   forEach(fn) {
     return this.each(fn);
+  }
+
+  /**
+   * Итератор
+   * @return {Iterator}
+   */
+  [Symbol.iterator]() {
+    return new Iterator(this.by_ref, this.alatable);
   }
 }
 

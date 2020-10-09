@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.23-beta.4, built:2020-09-25
+ metadata-core v2.0.23-beta.4, built:2020-10-09
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1592,6 +1592,24 @@ class MetaEventEmitter extends EventEmitter__default['default']{
   }
 }
 
+class Iterator {
+  constructor(by_ref, alatable) {
+    this._by_ref = by_ref;
+    this._alatable = alatable;
+    this._idx = 0;
+  }
+  next() {
+    if(this._idx >= this._alatable.length) {
+      return {done: true};
+    }
+    const value = this._by_ref[this._alatable[this._idx].ref];
+    this._idx++;
+    if(value && !value.empty()) {
+      return {value, done: false};
+    }
+    return this.next();
+  }
+}
 class DataManager extends MetaEventEmitter{
 	constructor(owner, class_name) {
 		super();
@@ -1903,6 +1921,9 @@ class DataManager extends MetaEventEmitter{
   }
   forEach(fn) {
     return this.each(fn);
+  }
+  [Symbol.iterator]() {
+    return new Iterator(this.by_ref, this.alatable);
   }
 }
 class RefDataManager extends DataManager{
