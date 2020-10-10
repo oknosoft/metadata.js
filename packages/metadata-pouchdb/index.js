@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.23-beta.4, built:2020-09-25
+ metadata-pouchdb v2.0.23-beta.4, built:2020-10-10
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1341,6 +1341,7 @@ function adapter({AbstracrAdapter}) {
     }
     save_obj(tObj, attr) {
       const {_manager, _obj, _data, ref, class_name} = tObj;
+      const {check_rev, hashable, grouping} = _manager.metadata();
       const db = attr.db || this.db(_manager);
       if(!_data || (_data._saving && !_data._modified) || !db) {
         return Promise.resolve(tObj);
@@ -1372,7 +1373,7 @@ function adapter({AbstracrAdapter}) {
       if(attr.attachments) {
         tmp._attachments = attr.attachments;
       }
-      if(_manager.metadata().grouping === 'array') {
+      if(grouping === 'array') {
         delete tmp._id;
         delete tmp.class_name;
         const index = Math.floor(utils.crc32(tmp.ref) / 268435455);
@@ -1403,10 +1404,11 @@ function adapter({AbstracrAdapter}) {
       }
       else {
         delete tmp.ref;
+        let skip_save = hashable;
         return (tObj.is_new() ? Promise.resolve(true) : db.get(tmp._id))
           .then((res) => {
             if(typeof res === 'object') {
-              if(tmp._rev !== res._rev && _manager.metadata().check_rev !== false) {
+              if(tmp._rev !== res._rev && check_rev !== false) {
                 const {timestamp} = res;
                 const err = new Error(`Объект ${timestamp && typeof timestamp.user === 'string' ?
                   `изменил ${timestamp.user}<br/>${timestamp.moment}` : 'изменён другим пользователем'}`);
@@ -1423,12 +1425,19 @@ function adapter({AbstracrAdapter}) {
                 }
               }
             }
+            if(hashable) {
+              const hash = tObj._hash();
+              if(typeof res !== 'object' || !res.timestamp || res.timestamp.hash !== hash) {
+                tmp.timestamp.hash = hash;
+                skip_save = false;
+              }
+            }
             return res;
           })
           .catch((err) => {
             if(err.status !== 404) throw err;
           })
-          .then(() => db.put(tmp))
+          .then(() => skip_save ? {ok: true, id: tmp._id, rev: tmp._rev} : db.put(tmp))
           .then((res) => {
             if(res) {
               tObj.is_new() && tObj._set_loaded(tObj.ref);

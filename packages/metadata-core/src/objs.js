@@ -259,6 +259,41 @@ export class BaseDataObj {
   }
 
   /**
+   * Рассчитывает hash объекта
+   * @private
+   */
+  _hash() {
+    // накапливаем строку из всех реквизитов и табличных частей
+    let str = '';
+    const {_obj, _manager} = this;
+    const {fields, tabular_sections} = _manager.metadata();
+    const sfields = ['date','number_doc','posted','id','name','_deleted','is_folder','ref'];
+
+    for(const fld of Object.keys(fields).concat(sfields)) {
+      const v = _obj[fld];
+      if(v !== undefined && v !== null) {
+        str += v.valueOf();
+      }
+    }
+
+    for (const ts in tabular_sections) {
+      if(Array.isArray(_obj[ts])) {
+        const fields = Object.keys(tabular_sections[ts].fields);
+        for(const row of _obj[ts]) {
+          for(const fld of fields) {
+            const v = row[fld];
+            if(v !== undefined && v !== null) {
+              str += v.valueOf();
+            }
+          }
+        }
+      }
+    }
+
+    return utils.crc32(str);
+  }
+
+  /**
    * ### valueOf
    * для операций сравнения возвращаем guid
    */
@@ -975,7 +1010,7 @@ export class DataObj extends BaseDataObj {
     const res = [];
     const {fields, tabular_sections} = this._metadata();
     const {_obj, _manager: {_owner}} = this;
-    const {md, utils} = _owner.$p;
+    const {md} = _owner.$p;
 
     if(this.empty() || this.is_new()){
       return res;
