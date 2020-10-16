@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.23-beta.4, built:2020-10-10
+ metadata-pouchdb v2.0.23-beta.4, built:2020-10-16
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2089,6 +2089,10 @@ function adapter({AbstracrAdapter}) {
     fetch(url, opts = {}) {
       const {authorized, remote, props} = this;
       if(!opts.headers) {
+        if(typeof Headers === 'undefined') {
+          const {Headers} = require('node-fetch');
+          global.Headers = Headers;
+        }
         opts.headers = new Headers();
       }
       if(authorized) {
@@ -2110,6 +2114,9 @@ function adapter({AbstracrAdapter}) {
       }
       if(props.branch) {
         opts.headers.set('branch', props.branch.valueOf());
+      }
+      if(!opts.headers.has('Content-Type')) {
+        opts.headers.set('Content-Type', 'application/json');
       }
       return PouchDB$1.fetch(url, opts);
     }

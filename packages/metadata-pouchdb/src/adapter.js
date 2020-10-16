@@ -2258,6 +2258,10 @@ function adapter({AbstracrAdapter}) {
     fetch(url, opts = {}) {
       const {authorized, remote, props} = this;
       if(!opts.headers) {
+        if(typeof Headers === 'undefined') {
+          const {Headers} = require('node-fetch');
+          global.Headers = Headers;
+        }
         opts.headers = new Headers();
       }
       if(authorized) {
@@ -2280,6 +2284,10 @@ function adapter({AbstracrAdapter}) {
       if(props.branch) {
         opts.headers.set('branch', props.branch.valueOf());
       }
+      if(!opts.headers.has('Content-Type')) {
+        opts.headers.set('Content-Type', 'application/json');
+      }
+
       return PouchDB.fetch(url, opts);
     }
 
