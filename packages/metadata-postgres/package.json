@@ -1,7 +1,7 @@
 {
   "name": "metadata-postgres",
   "description": "PostgreSQL data adapter for metadata.js",
-  "version": "2.0.23-beta.4",
+  "version": "2.0.23-beta.5",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -9,7 +9,7 @@
     "npm": "^6.14"
   },
   "dependencies": {
-    "pg": "^8.3"
+    "pg": "^8.4"
   },
   "repository": {
     "type": "git",

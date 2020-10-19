@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.23-beta.4, built:2020-10-16
+ metadata-core v2.0.23-beta.5, built:2020-10-19
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -240,6 +240,23 @@ const msg = new I18n({
 	},
 });
 
+class Iterator {
+  constructor(_obj) {
+    this._obj = _obj;
+    this._idx = 0;
+  }
+  next() {
+    if(this._idx >= this._obj.length) {
+      return {done: true};
+    }
+    const _row = this._obj[this._idx];
+    this._idx++;
+    if(_row) {
+      return {value: _row._row, done: false};
+    }
+    return this.next();
+  }
+}
 class TabularSection {
 	constructor(name, owner) {
 		if (!owner._obj[name]){
@@ -254,8 +271,8 @@ class TabularSection {
     return msg.tabular + ' ' + _manager.class_name + '.' + _name;
   }
   get _obj() {
-    const {_owner, _name} = this;
-    return _owner._obj ? _owner._obj[_name] : [];
+    const {_owner: {_obj}, _name} = this;
+    return _obj ? _obj[_name] : [];
   }
   get(index) {
     const row = this._obj[index];
@@ -501,6 +518,9 @@ class TabularSection {
 	  const {toJSON} = _owner.constructor.prototype;
 		return _obj.map(_obj => toJSON.call({_obj, _manager}));
 	}
+  [Symbol.iterator]() {
+    return new Iterator(this._obj);
+  }
 }
 class TabularSectionRow {
 	constructor(owner, attr) {
@@ -1618,7 +1638,7 @@ class MetaEventEmitter extends EventEmitter__default['default']{
   }
 }
 
-class Iterator {
+class Iterator$1 {
   constructor(by_ref, alatable) {
     this._by_ref = by_ref;
     this._alatable = alatable;
@@ -1949,7 +1969,7 @@ class DataManager extends MetaEventEmitter{
     return this.each(fn);
   }
   [Symbol.iterator]() {
-    return new Iterator(this.by_ref, this.alatable);
+    return new Iterator$1(this.by_ref, this.alatable);
   }
 }
 class RefDataManager extends DataManager{
@@ -4745,7 +4765,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.23-beta.4";
+    return "2.0.23-beta.5";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
