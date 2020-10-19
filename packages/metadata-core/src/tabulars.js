@@ -7,6 +7,26 @@
 
 import utils from './utils';
 
+class Iterator {
+
+  constructor(_obj) {
+    this._obj = _obj;
+    this._idx = 0;
+  }
+
+  next() {
+    if(this._idx >= this._obj.length) {
+      return {done: true}; // проверка на последний элемент
+    }
+    const _row = this._obj[this._idx];
+    this._idx++;
+    if(_row) {
+      return {value: _row._row, done: false};
+    }
+    return this.next();
+  }
+}
+
 /**
  * ### Абстрактный объект табличной части
  * - Физически, данные хранятся в {{#crossLink "DataObj"}}{{/crossLink}}, а точнее - в поле типа массив и именем табчасти объекта `_obj`
@@ -57,8 +77,8 @@ export class TabularSection {
 	 * @type Object
 	 */
   get _obj() {
-    const {_owner, _name} = this;
-    return _owner._obj ? _owner._obj[_name] : [];
+    const {_owner: {_obj}, _name} = this;
+    return _obj ? _obj[_name] : [];
   }
 
 	/**
@@ -494,6 +514,14 @@ export class TabularSection {
 	  const {toJSON} = _owner.constructor.prototype;
 		return _obj.map(_obj => toJSON.call({_obj, _manager}));
 	}
+
+  /**
+   * Итератор
+   * @return {Iterator}
+   */
+  [Symbol.iterator]() {
+    return new Iterator(this._obj);
+  }
 }
 
 
