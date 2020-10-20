@@ -154,8 +154,18 @@ export default {
       else {
         value = initialValue.value || initialValue;
         iface_state.value.children = <TextField
-          value={value}
-          onChange={handleChange}
+          defaultValue={value}
+          onChange={({target}) => {
+            if(type === 'number') {
+              const v = parseFloat(target.value);
+              if(!isNaN(v)) {
+                handleChange(v);
+              }
+            }
+            else {
+              handleChange(target.value);
+            }
+          }}
           InputProps={{type}}
         />;
       }
