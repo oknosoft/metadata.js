@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.23-beta.5, built:2020-10-19
+ metadata-core v2.0.23-beta.5, built:2020-10-21
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3114,6 +3114,25 @@ const date_frmts = ['DD-MM-YYYY', 'DD-MM-YYYY HH:mm', 'DD-MM-YYYY HH:mm:ss', 'DD
 const rxref = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 const utils = {
 	moment: moment$1,
+  rnd: {
+    crypto: typeof crypto !== 'undefined' ? crypto : require('crypto'),
+    rnds16: new Uint16Array(32),
+    counter: 0,
+    rngs() {
+      const {rnds16, crypto} = this;
+      return crypto.getRandomValues ? crypto.getRandomValues(rnds16) : crypto.randomFillSync(rnds16);
+    },
+    random() {
+      if(!this.counter) {
+        this.rngs();
+      }
+      this.counter++;
+      if(this.counter > 31) {
+        this.counter = 0;
+      }
+      return this.rnds16[this.counter];
+    },
+  },
   load_script(src, type, callback) {
     return new Promise((resolve, reject) => {
       const r = setTimeout(reject, 20000);

@@ -24,6 +24,7 @@ if(typeof global != 'undefined'){
   global.moment = moment;
 }
 
+
 /**
  * Отбрасываем часовой пояс при сериализации даты
  * @method toJSON
@@ -132,6 +133,34 @@ const rxref = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9
 const utils = {
 
 	moment,
+
+  /**
+   * выпускаем наружу методы из библиотеки uuid, чтобы с версиями импорта не париться
+   */
+  rnd: {
+    crypto: typeof crypto !== 'undefined' ? crypto : require('crypto'),
+    rnds16: new Uint16Array(32),
+    counter: 0,
+
+    // массив случайных чисел
+    rngs() {
+      const {rnds16, crypto} = this;
+      return crypto.getRandomValues ? crypto.getRandomValues(rnds16) : crypto.randomFillSync(rnds16);
+    },
+
+    // случайное число с помощью Crypto
+    random() {
+      if(!this.counter) {
+        this.rngs();
+      }
+      this.counter++;
+      if(this.counter > 31) {
+        this.counter = 0;
+      }
+      return this.rnds16[this.counter];
+    },
+
+  },
 
   /**
    * Загружает скрипты и стили синхронно и асинхронно
