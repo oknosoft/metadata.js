@@ -310,6 +310,14 @@ export class TabularSection {
 		return this.each
 	}
 
+  /**
+   * ala map массива
+   * @param fn {Function}
+   */
+	map(fn) {
+    return this._obj.map((row, index) => fn(row._row, index));
+  }
+
 	/**
 	 * ### Сворачивает табличную часть
 	 * детали см. в {{#crossLink "TabularSection/aggregate:method"}}{{/crossLink}}

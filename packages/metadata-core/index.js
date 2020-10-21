@@ -393,6 +393,9 @@ class TabularSection {
 	get forEach() {
 		return this.each
 	}
+	map(fn) {
+    return this._obj.map((row, index) => fn(row._row, index));
+  }
 	group_by(dimensions, resources) {
 		try {
       const res = this.aggregate(dimensions, resources, 'SUM', true);
