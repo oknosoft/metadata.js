@@ -20,7 +20,7 @@ class I18Handler {
 	}
 
 	set (target, name, val, receiver) {
-		switch (name){
+		switch (name) {
 			case 'lang':
 				target._lang = val;
 				break;
@@ -37,7 +37,7 @@ class I18Handler {
 class I18n {
 	constructor(syn) {
 		this._lang = Object.keys(syn)[0];
-		if(typeof Proxy == 'function'){
+		if(typeof Proxy == 'function') {
       this.i18n = syn;
       return new Proxy(this, new I18Handler());
     };

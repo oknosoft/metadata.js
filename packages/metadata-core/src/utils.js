@@ -228,10 +228,10 @@ const utils = {
 	 *
 	 * @method fix_guid
 	 * @param ref {*} - значение, из которого надо извлечь идентификатор
-	 * @param generate {Boolean} - указывает, генерировать ли новый guid для пустого значения
+	 * @param {Boolean} [generate=false] - указывает, генерировать ли новый guid для пустого значения, по умолчанию нет
 	 * @return {String}
 	 */
-	fix_guid(ref, generate) {
+	fix_guid(ref, generate=false) {
 
 		if (ref && typeof ref == 'string') {
 
@@ -456,7 +456,7 @@ const utils = {
 	 * @return {boolean} - true, если значенния эквивалентны
 	 */
 	is_equal(v1, v2) {
-		if (v1 == v2) {
+		if (v1 === v2) {
 			return true;
 		}
 		else if (typeof v1 === 'string' && typeof v2 === 'string' && v1.trim() === v2.trim()) {
@@ -465,7 +465,7 @@ const utils = {
 		else if (typeof v1 === typeof v2) {
 			return false;
 		}
-		return (this.fix_guid(v1, false) == this.fix_guid(v2, false));
+		return (this.fix_guid(v1, false) === this.fix_guid(v2, false));
 	},
 
   /**
@@ -522,9 +522,9 @@ const utils = {
 			return wnd_print;
 		}
 
-		const req = (!method || (typeof method == 'string' && method.toLowerCase().indexOf('post') != -1)) ?
+		const req = (!method || (typeof method == 'string' && method.toLowerCase().indexOf('post') !== -1)) ?
       this.post_ex(url,
-        typeof post_data == 'object' ? JSON.stringify(post_data) : post_data,
+        typeof post_data === 'object' ? JSON.stringify(post_data) : post_data,
         true,
         xhr => xhr.responseType = 'blob')
       :
@@ -544,7 +544,7 @@ const utils = {
 	get_and_save_blob(url, post_data, file_name) {
 
 		return this.post_ex(url,
-			typeof post_data == 'object' ? JSON.stringify(post_data) : post_data, true, function (xhr) {
+			typeof post_data === 'object' ? JSON.stringify(post_data) : post_data, true, function (xhr) {
 				xhr.responseType = 'blob';
 			})
 			.then(function (req) {
@@ -568,7 +568,7 @@ const utils = {
 		function exclude_cpy(f) {
 			if (!(exclude && exclude.includes(f))) {
 				// копируем в dst свойства src, кроме тех, которые унаследованы от Object
-				if ((typeof tobj[f] == 'undefined') || (tobj[f] != src[f])) {
+				if ((typeof tobj[f] === 'undefined') || (tobj[f] !== src[f])) {
 					obj[f] = src[f];
 				}
 			}
@@ -694,7 +694,7 @@ const utils = {
       const {ne, gt, gte, lt, lte, nin, inh, ninh, lke, nlk} = comparison_types;
       switch (comparison_type) {
       case ne:
-        return left != right;
+        return left !== right;
       case gt:
         return left > right;
       case gte:
@@ -705,36 +705,36 @@ const utils = {
         return left <= right;
       case nin:
         if(Array.isArray(left) && !Array.isArray(right)) {
-          return left.indexOf(right) == -1;
+          return left.indexOf(right) === -1;
         }
         else if(!Array.isArray(left) && Array.isArray(right)) {
-          return right.indexOf(left) == -1;
+          return right.indexOf(left) === -1;
         }
         else if(!Array.isArray(left) && !Array.isArray(right)) {
-          return right != left;
+          return right !== left;
         }
         break;
       case comparison_types.in:
         if(Array.isArray(left) && !Array.isArray(right)) {
-          return left.indexOf(right) != -1;
+          return left.indexOf(right) !== -1;
         }
         else if(!Array.isArray(left) && Array.isArray(right)) {
-          return right.indexOf(left) != -1;
+          return right.indexOf(left) !== -1;
         }
         else if(!Array.isArray(left) && !Array.isArray(right)) {
-          return left == right;
+          return left === right;
         }
         break;
       case inh:
-        return utils.is_data_obj(left) ? left._hierarchy(right) : left == right;
+        return utils.is_data_obj(left) ? left._hierarchy(right) : left === right;
       case ninh:
-        return utils.is_data_obj(left) ? !left._hierarchy(right) : left != right;
+        return utils.is_data_obj(left) ? !left._hierarchy(right) : left !== right;
       case lke:
-        return left.indexOf && right && left.indexOf(right) !== -1;
+        return left?.indexOf && right && left.indexOf(right) !== -1;
       case nlk:
-        return left.indexOf && left.indexOf(right) === -1;
+        return left?.indexOf && left.indexOf(right) === -1;
       default:
-        return left == right;
+        return left === right;
       }
     },
 
@@ -929,7 +929,7 @@ const utils = {
     let pre = [], docs = [], sort, top = 300, skip = 0, count = 0, skipped = 0;
 
     if(selection) {
-      if(selection._sort) {
+      if(selection?._sort) {
         sort = selection._sort;
         delete selection._sort;
       }
@@ -1090,7 +1090,7 @@ utils.__define('blank', {
 				v = this.date;
 			else if (mtype['digits'])
 				v = 0;
-			else if (mtype.types && mtype.types[0] == 'boolean')
+			else if (mtype.types && mtype.types[0] === 'boolean')
 				v = false;
 			else
 				v = '';

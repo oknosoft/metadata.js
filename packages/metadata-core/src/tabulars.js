@@ -140,10 +140,10 @@ export class TabularSection {
 
 		let index;
 
-    if(typeof val == 'undefined') {
+    if(typeof val === 'undefined') {
       return;
     }
-    else if(typeof val == 'number') {
+    else if(typeof val === 'number') {
       index = val;
     }
 		else if (val.row && _obj[val.row - 1] && _obj[val.row - 1]._row === val){
@@ -157,7 +157,7 @@ export class TabularSection {
         }
       }
 		}
-		if (index == undefined || !_obj[index]){
+		if (index === undefined || !_obj[index]){
       return;
     }
 
@@ -213,7 +213,7 @@ export class TabularSection {
       }
       _obj = _index.get(selection[index]);
 		  if(!_obj) {
-		    _obj = this._obj.filter((row) => row[index] == selection[index]);
+		    _obj = this._obj.filter((row) => row[index] === selection[index]);
         _index.set(selection[index], _obj);
       }
 		  selection = Object.assign({}, selection);
@@ -409,7 +409,7 @@ export class TabularSection {
     }
 
 		// для простых агрегатных функций, sql не используем
-		if (!dimensions.length && resources.length == 1 && aggr == "sum") {
+		if (!dimensions.length && resources.length === 1 && aggr === "sum") {
 			return this._obj.reduce(function (sum, row, index, array) {
 				return sum + row[resources[0]];
 			}, 0);
@@ -418,10 +418,10 @@ export class TabularSection {
 		let sql, res = true;
 
 		resources.forEach((f) => {
-			if (!sql){
+			if (!sql) {
         sql = "select ";
       }
-      else{
+      else {
         sql += ", ";
       }
       sql += aggr + "(`" + f + "`) `" + f + "`";
@@ -447,7 +447,7 @@ export class TabularSection {
 		try {
 			res = $p.wsql.alasql(sql, [this._obj]);
 			if (!ret_array) {
-				if (resources.length == 1)
+				if (resources.length === 1)
 					res = res.length ? res[0][resources[0]] : 0;
 				else
 					res = res.length ? res[0] : {};
@@ -618,7 +618,7 @@ export class TabularSectionRow {
 		const {_owner, _obj} = this;
 		const _meta = this._metadata(f);
 
-		if (_obj[f] == v || (!v && _obj[f] == utils.blank.guid)){
+		if (_obj[f] === v || (!v && _obj[f] === utils.blank.guid)){
       return;
     }
 
@@ -630,7 +630,7 @@ export class TabularSectionRow {
 
 		// учтём связь по типу
 		if (_meta.choice_type) {
-			const prop = _meta.choice_type.path.length == 2 ? this[_meta.choice_type.path[1]] : _owner._owner[_meta.choice_type.path[0]];
+			const prop = _meta.choice_type.path.length === 2 ? this[_meta.choice_type.path[1]] : _owner._owner[_meta.choice_type.path[0]];
 			if (prop && prop.type){
         fetched_type = prop.type;
         v = utils.fetch_type(v, fetched_type);

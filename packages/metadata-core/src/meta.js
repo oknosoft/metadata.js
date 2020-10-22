@@ -526,37 +526,37 @@ class Meta extends MetaEventEmitter {
   class_name_to_1c(name) {
 
     var pn = name.split('.');
-    if(pn.length == 1) {
+    if(pn.length === 1) {
       return 'Перечисление.' + name;
     }
-    else if(pn[0] == 'enm') {
+    else if(pn[0] === 'enm') {
       name = 'Перечисление.';
     }
-    else if(pn[0] == 'cat') {
+    else if(pn[0] === 'cat') {
       name = 'Справочник.';
     }
-    else if(pn[0] == 'doc') {
+    else if(pn[0] === 'doc') {
       name = 'Документ.';
     }
-    else if(pn[0] == 'ireg') {
+    else if(pn[0] === 'ireg') {
       name = 'РегистрСведений.';
     }
-    else if(pn[0] == 'areg') {
+    else if(pn[0] === 'areg') {
       name = 'РегистрНакопления.';
     }
-    else if(pn[0] == 'accreg') {
+    else if(pn[0] === 'accreg') {
       name = 'РегистрБухгалтерии.';
     }
-    else if(pn[0] == 'cch') {
+    else if(pn[0] === 'cch') {
       name = 'ПланВидовХарактеристик.';
     }
-    else if(pn[0] == 'cacc') {
+    else if(pn[0] === 'cacc') {
       name = 'ПланСчетов.';
     }
-    else if(pn[0] == 'dp') {
+    else if(pn[0] === 'dp') {
       name = 'Обработка.';
     }
-    else if(pn[0] == 'rep') {
+    else if(pn[0] === 'rep') {
       name = 'Отчет.';
     }
 
@@ -641,7 +641,7 @@ Meta._sys = [{
         },
         user: {
           synonym: 'Пользователь',
-          tooltip: 'Пользователь, отметивыший событие, как просмотренное',
+          tooltip: 'Пользователь, отметивший событие, как просмотренное',
           type: {types: ['string'], str_len: 100},
         },
       },

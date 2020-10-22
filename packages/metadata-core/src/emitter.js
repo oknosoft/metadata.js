@@ -5,7 +5,7 @@ import EventEmitter from 'events'
 /**
  * ### MetaEventEmitter будет прототипом менеджеров данных
  */
-export default class MetaEventEmitter extends EventEmitter{
+export default class MetaEventEmitter extends EventEmitter {
 
   constructor() {
     super();
@@ -17,13 +17,13 @@ export default class MetaEventEmitter extends EventEmitter{
 	 * @param type
 	 * @param listener
 	 */
-	on(type, listener){
+	on(type, listener) {
 
-		if(typeof listener == 'function' && typeof type != 'object'){
+		if(typeof listener == 'function' && typeof type != 'object') {
 			super.on(type, listener);
 			return [type, listener];
 		}
-		else{
+		else {
 			for(const fld in type){
         typeof type[fld] === 'function' && super.on(fld, type[fld]);
 			}
@@ -36,7 +36,7 @@ export default class MetaEventEmitter extends EventEmitter{
    * @param type
    * @param listener
    */
-	off(type, listener){
+	off(type, listener) {
 		if(listener){
 			super.removeListener(type, listener);
 		}
@@ -65,14 +65,14 @@ export default class MetaEventEmitter extends EventEmitter{
 
     const res = [];
 
-    switch (type){
+    switch (type) {
       // для события update, объединяем старые значения реквизитов
       case 'update':
       // для события update, объединяем имена табличных частей
       case 'rows':
-        for(const arg of handler.args){
+        for(const arg of handler.args) {
           if(res.some(row => {
-              if(row[0] == arg[0]){
+              if(row[0] == arg[0]) {
                 if(!row[1].hasOwnProperty(Object.keys(arg[1])[0])){
                   Object.assign(row[1], arg[1]);
                 }
@@ -159,7 +159,7 @@ export default class MetaEventEmitter extends EventEmitter{
     _async && _async.update && _async.update.args.some(attr => {
       if(attr[0] === obj) {
         for(const fld of fields){
-          if(!attr[1].hasOwnProperty(fld)){
+          if(!attr[1].hasOwnProperty(fld)) {
             attr[1][fld] = undefined;
           }
         }

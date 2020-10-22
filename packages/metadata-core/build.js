@@ -1,6 +1,5 @@
 'use strict';
 
-const fs = require('fs');
 const rollup = require('rollup').rollup;
 const resolve = require('rollup-plugin-node-resolve');
 const replace = require('rollup-plugin-replace');

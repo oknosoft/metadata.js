@@ -2618,8 +2618,8 @@ function constructor() {
 
         ext = ext.toLowerCase();
 
-        for (var mtype in this.mime_db) {
-          if (this.mime_db[mtype].extensions && this.mime_db[mtype].extensions.indexOf(ext) != -1)
+        for (const mtype in this.mime_db) {
+          if (this.mime_db[mtype].extensions && this.mime_db[mtype].extensions.indexOf(ext) !== -1)
             return mtype;
         }
 

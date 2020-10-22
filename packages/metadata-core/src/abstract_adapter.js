@@ -2,7 +2,7 @@
 import MetaEventEmitter from './emitter'
 
 
-export default class AbstracrAdapter extends MetaEventEmitter{
+export default class AbstracrAdapter extends MetaEventEmitter {
 
 	constructor($p) {
 		super();
@@ -69,7 +69,7 @@ export default class AbstracrAdapter extends MetaEventEmitter{
 	 * @param attr
 	 * @return {Promise.<Array>}
 	 */
-	get_selection(_mgr, attr){
+	get_selection(_mgr, attr) {
 		return Promise.resolve([]);
 	}
 

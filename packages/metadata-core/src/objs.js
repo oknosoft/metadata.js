@@ -74,10 +74,10 @@ export class BaseDataObj {
     const {_obj} = this;
     const res = _obj ? _obj[f] : '';
 
-    if(f == 'type' && typeof res == 'object') {
+    if(f === 'type' && typeof res == 'object') {
       return res;
     }
-    else if(f == 'ref') {
+    else if(f === 'ref') {
       return res;
     }
     else if(mf.is_ref) {
@@ -114,7 +114,7 @@ export class BaseDataObj {
     else if(mf.digits) {
       return utils.fix_number(_obj[f], !mf.hasOwnProperty('str_len'));
     }
-    else if(mf.types[0] == 'boolean') {
+    else if(mf.types[0] === 'boolean') {
       return utils.fix_boolean(_obj[f]);
     }
     else {
@@ -161,7 +161,7 @@ export class BaseDataObj {
       if(mf.digits && typeof v === 'number' || mf.hasOwnProperty('str_len') && typeof v === 'string' && !utils.is_guid(v)) {
         _obj[f] = v;
       }
-      else if(typeof v === 'boolean' && mf.types.indexOf('boolean') != -1) {
+      else if(typeof v === 'boolean' && mf.types.indexOf('boolean') !== -1) {
         _obj[f] = v;
       }
       else if(mf.date_part && v instanceof Date) {
@@ -170,7 +170,7 @@ export class BaseDataObj {
       else {
         _obj[f] = utils.fix_guid(v);
 
-        if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1) {
+        if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) !== -1) {
 
         }
         else {
@@ -212,7 +212,7 @@ export class BaseDataObj {
     else if(mf.digits) {
       _obj[f] = utils.fix_number(v, !mf.hasOwnProperty('str_len'));
     }
-    else if(mf.types[0] == 'boolean') {
+    else if(mf.types[0] === 'boolean') {
       _obj[f] = utils.fix_boolean(v);
     }
     else {
@@ -236,7 +236,7 @@ export class BaseDataObj {
    * @private
    */
   _setter(f, v) {
-    if(this._obj[f] != v) {
+    if(this._obj[f] !== v) {
       this.__notify(f);
       this.__setter(f, v);
     }
@@ -688,7 +688,7 @@ export class DataObj extends BaseDataObj {
    */
   load() {
     const {_data} = this;
-    if(this.ref == utils.blank.guid) {
+    if(this.ref === utils.blank.guid) {
       if(_data) {
         _data._loading = false;
         _data._modified = false;
@@ -783,7 +783,7 @@ export class DataObj extends BaseDataObj {
         // этот код выполним в самом конце, после записи
         const reset_modified = () => {
           if(before_save_res === false) {
-            if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted !== initial_posted) {
+            if(this instanceof DocObj && typeof initial_posted === 'boolean' && this.posted !== initial_posted) {
               this.posted = initial_posted;
             }
           }
@@ -820,7 +820,7 @@ export class DataObj extends BaseDataObj {
         let numerator;
         if(!this._deleted) {
           if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
-            if(utils.blank.date == this.date) {
+            if(utils.blank.date === this.date) {
               this.date = new Date();
             }
             if(!this.number_doc) {
@@ -1150,7 +1150,7 @@ export class CatObj extends DataObj {
   _children(folders) {
     const res = [];
     this._manager.forEach((o) => {
-      if(o != this && (!folders || o.is_folder) && o._hierarchy(this)) {
+      if(o !== this && (!folders || o.is_folder) && o._hierarchy(this)) {
         res.push(o);
       }
     });
@@ -1181,13 +1181,13 @@ export class CatObj extends DataObj {
       return group.some((v) => this._hierarchy(v));
     }
     const {parent} = this;
-    if(this == group || parent == group) {
+    if(this === group || parent === group) {
       return true;
     }
     if(parent && !parent.empty()) {
       return parent._hierarchy(group);
     }
-    return group == utils.blank.guid;
+    return group === utils.blank.guid;
   }
 
   /**
@@ -1499,7 +1499,7 @@ export class EnumObj extends DataObj {
    * @return {boolean} - true, если ссылка пустая
    */
   empty() {
-    return !this.ref || this.ref == '_';
+    return !this.ref || this.ref === '_';
   }
 }
 
@@ -1532,9 +1532,9 @@ export class RegisterRow extends DataObj {
       }
     }
 
-    for (var check in manager.metadata().dimensions) {
+    for (const check in manager.metadata().dimensions) {
       if(!attr.hasOwnProperty(check) && attr.ref) {
-        var keys = attr.ref.split('¶');
+        const keys = attr.ref.split('¶');
         Object.keys(manager.metadata().dimensions).forEach((fld, ind) => {
           this[fld] = keys[ind];
         });
