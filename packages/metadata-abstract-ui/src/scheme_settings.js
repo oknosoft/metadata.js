@@ -463,7 +463,6 @@ export default function scheme_settings() {
     get obj() {
       return this._getter('obj');
     }
-
     set obj(v) {
       this._setter('obj', v);
     }
@@ -471,7 +470,6 @@ export default function scheme_settings() {
     get user() {
       return this._getter('user');
     }
-
     set user(v) {
       this._setter('user', v);
     }
@@ -479,7 +477,6 @@ export default function scheme_settings() {
     get order() {
       return this._getter('order');
     }
-
     set order(v) {
       this._setter('order', v);
     }
@@ -487,7 +484,6 @@ export default function scheme_settings() {
     get formula() {
       return this._getter('formula');
     }
-
     set formula(v) {
       this._setter('formula', v);
     }
@@ -495,7 +491,6 @@ export default function scheme_settings() {
     get query() {
       return this._getter('query');
     }
-
     set query(v) {
       this._setter('query', v);
     }
@@ -503,7 +498,6 @@ export default function scheme_settings() {
     get tag() {
       return this._getter('tag');
     }
-
     set tag(v) {
       this._setter('tag', v);
     }
@@ -511,7 +505,6 @@ export default function scheme_settings() {
     get date_from() {
       return this._getter('date_from');
     }
-
     set date_from(v) {
       this._setter('date_from', v);
     }
@@ -519,7 +512,6 @@ export default function scheme_settings() {
     get date_till() {
       return this._getter('date_till');
     }
-
     set date_till(v) {
       this._setter('date_till', v);
     }
@@ -527,7 +519,6 @@ export default function scheme_settings() {
     get standard_period() {
       return this._getter('standard_period');
     }
-
     set standard_period(v) {
       this._setter('standard_period', v);
       !this._data._loading && this.set_standard_period();
@@ -536,7 +527,6 @@ export default function scheme_settings() {
     get fields() {
       return this._getter_ts('fields');
     }
-
     set fields(v) {
       this._setter_ts('fields', v);
     }
@@ -544,7 +534,6 @@ export default function scheme_settings() {
     get sorting() {
       return this._getter_ts('sorting');
     }
-
     set sorting(v) {
       this._setter_ts('sorting', v);
     }
@@ -552,7 +541,6 @@ export default function scheme_settings() {
     get dimensions() {
       return this._getter_ts('dimensions');
     }
-
     set dimensions(v) {
       this._setter_ts('dimensions', v);
     }
@@ -560,7 +548,6 @@ export default function scheme_settings() {
     get resources() {
       return this._getter_ts('resources');
     }
-
     set resources(v) {
       this._setter_ts('resources', v);
     }
@@ -568,7 +555,6 @@ export default function scheme_settings() {
     get selection() {
       return this._getter_ts('selection');
     }
-
     set selection(v) {
       this._setter_ts('selection', v);
     }
@@ -576,7 +562,6 @@ export default function scheme_settings() {
     get params() {
       return this._getter_ts('params');
     }
-
     set params(v) {
       this._setter_ts('params', v);
     }
@@ -584,7 +569,6 @@ export default function scheme_settings() {
     get composition() {
       return this._getter_ts('composition');
     }
-
     set composition(v) {
       this._setter_ts('composition', v);
     }
@@ -592,7 +576,6 @@ export default function scheme_settings() {
     get conditional_appearance() {
       return this._getter_ts('conditional_appearance');
     }
-
     set conditional_appearance(v) {
       this._setter_ts('conditional_appearance', v);
     }
@@ -1182,6 +1165,40 @@ export default function scheme_settings() {
         });
         return row ? {sortColumn: row.field, sortDirection: row.direction.valueOf().toUpperCase()} : {};
       }
+    }
+
+    /**
+     * Возвращает или устанавливает режим источника данных
+     * @param key {string} - ключ формы
+     * @param {('ram'|'couchdb'|'pg')} mode - имя режима
+     * @return {string}
+     */
+    source_mode(key, mode) {
+      if(mode) {
+        if(wsql.get_user_param(key) !== mode) {
+          wsql.set_user_param(key, mode);
+        }
+      }
+      else {
+        // если значение задано для ключа - его и используем
+        mode = wsql.get_user_param(key);
+        if(!mode) {
+          const _mgr = md.mgr_by_class_name(this.obj);
+          // если умолчание задано в менеджере класса, используем его
+          if(_mgr && _mgr.source_mode) {
+            mode = _mgr.source_mode;
+          }
+          // если класс живёт в ram, используем ram_indexer
+          else if(_mgr && /ram$/.test(_mgr.cachable) || _mgr.direct_load) {
+            mode = 'ram';
+          }
+          else {
+            // для обычных документов используем couchdb
+            mode = 'couchdb';
+          }
+        }
+      }
+      return mode;
     }
   }
 

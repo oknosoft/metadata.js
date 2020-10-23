@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.23-beta.5, built:2020-10-21
+ metadata-core v2.0.23-beta.5, built:2020-10-23
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -4082,24 +4082,24 @@ class WSQL {
       }
     }
 	};
-	save_options(prefix, options){
-		return this.set_user_param(prefix + "_" + options.name, options);
-	}
-	set_user_param(prm_name, prm_value){
-		const {$p, _params, _ls} = this;
-		if(typeof prm_value == "object"){
-			_params[prm_name] = prm_value;
-			prm_value = JSON.stringify(prm_value);
-		}
-		else if(prm_value === false || prm_value === "false"){
-			this._params[prm_name] = false;
-			prm_value = "";
-		}
-		else {
-			_params[prm_name] = prm_value;
-		}
-		_ls.setItem($p.job_prm.local_storage_prefix+prm_name, prm_value);
-	}
+  save_options(prefix, options) {
+    return this.set_user_param(prefix + '_' + options.name, options);
+  }
+  set_user_param(prm_name, prm_value) {
+    const {$p, _params, _ls} = this;
+    if(typeof prm_value == 'object') {
+      _params[prm_name] = prm_value;
+      prm_value = JSON.stringify(prm_value);
+    }
+    else if(prm_value === false || prm_value === 'false') {
+      this._params[prm_name] = false;
+      prm_value = '';
+    }
+    else {
+      _params[prm_name] = prm_value;
+    }
+    _ls.setItem($p.job_prm.local_storage_prefix + prm_name, prm_value);
+  }
 	get_user_param(prm_name, type){
 		const {$p, _params, _ls} = this;
 		if(!_params.hasOwnProperty(prm_name) && _ls){

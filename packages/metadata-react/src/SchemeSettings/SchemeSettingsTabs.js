@@ -69,7 +69,7 @@ export default class SchemeSettingsTabs extends Component {
   render() {
 
     const {state, props, sizes} = this;
-    const {scheme, handleSchemeChange, tabParams} = props;
+    const {scheme, handleSchemeChange, frm_key, source_mode, tabParams} = props;
     const {value} = state;
     const is_tabular = scheme.obj.split('.').length > 2;
     const styleBar = sizes.width ? {width: sizes.width} : undefined;
@@ -144,7 +144,12 @@ export default class SchemeSettingsTabs extends Component {
           rowSelection={this.rowSelection(scheme, 'conditional_appearance')}
         />}
 
-        {value === (is_tabular ? 7 : 5) && <SchemeSettingsSelect scheme={scheme} handleSchemeChange={handleSchemeChange}/>}
+        {value === (is_tabular ? 7 : 5) && <SchemeSettingsSelect
+          scheme={scheme}
+          handleSchemeChange={handleSchemeChange}
+          frm_key={frm_key}
+          source_mode={source_mode}
+        />}
 
       </div>
     ];
@@ -155,6 +160,8 @@ SchemeSettingsTabs.propTypes = {
   scheme: PropTypes.object.isRequired,
   handleSchemeChange: PropTypes.func.isRequired,
   tabParams: PropTypes.object,
+  frm_key: PropTypes.string,
+  source_mode: PropTypes.string,
 };
 
 SchemeSettingsTabs.contextTypes = {

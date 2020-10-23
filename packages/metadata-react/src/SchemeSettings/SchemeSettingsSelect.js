@@ -12,6 +12,7 @@ import IconButton from '@material-ui/core/IconButton';
 import SaveIcon from '@material-ui/icons/Save';
 import CopyIcon from '@material-ui/icons/FileCopy';
 import FormGroup from '@material-ui/core/FormGroup';
+import Select from '@material-ui/core/Select';
 import DataField from '../DataField';
 import withStyles from '../Header/toolbar';
 
@@ -57,7 +58,7 @@ class SchemeSettingsSelect extends Component {
 
     const {state, props, handleCreate, handleSave} = this;
     const {_obj, _meta} = state;
-    const {scheme, classes, handleSchemeChange} = props;
+    const {scheme, classes, handleSchemeChange, frm_key, source_mode} = props;
 
     return [
       <Toolbar key="bar" disableGutters className={classes.toolbar}>
@@ -67,6 +68,17 @@ class SchemeSettingsSelect extends Component {
 
       <FormGroup key="body" style={{margin: 16}}>
         <DataField _obj={scheme} _fld="name" fullWidth/>
+        {!source_mode && <Select
+          native
+          label="Режим получения данных"
+          margin="dense"
+          defaultValue={scheme.source_mode(frm_key, source_mode)}
+          onChange={({target}) => scheme.source_mode(frm_key, target.value)}
+        >
+          <option value="ram">Индекс в ОЗУ</option>
+          <option value="couchdb">Mango Couchdb</option>
+          <option value="pg">Внешний индекс</option>
+        </Select>}
         <DataField _obj={scheme} _fld="query" fullWidth/>
         <DataField _obj={scheme} _fld="standard_period" fullWidth/>
       </FormGroup>

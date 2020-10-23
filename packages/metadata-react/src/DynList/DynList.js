@@ -57,10 +57,11 @@ class DynList extends MDNRComponent {
   handleManagerChange({_mgr, _meta, _ref}) {
 
     const {class_name} = _mgr;
-    const {flat, parent, _owner} = this.props;
+    const {flat, parent, _owner, frm_key = 'list'} = this.props;
 
     this._meta = _meta || _mgr.metadata();
     this.show_flat = this._meta.hierarchical;
+    this.frm_key = `frm_${class_name.replace('.', '_')}_${frm_key}`;
 
     const newState = {
       ref: _ref || '',
@@ -129,9 +130,9 @@ class DynList extends MDNRComponent {
 
   loadMoreRows = ({startIndex, stopIndex}) => {
     const {
-      props: {_mgr, _owner, find_rows},
+      props: {_mgr, _owner, find_rows, source_mode},
       state: {scheme, columns, ref, scrollSetted, flat, parent},
-      rows, fakeRows, ranges}  = this;
+      rows, fakeRows, ranges, frm_key}  = this;
 
     if(startIndex < 0) {
       startIndex = 0;
@@ -177,7 +178,7 @@ class DynList extends MDNRComponent {
       this.setState(newState);
 
       // в зависимости от типа кеширования...
-      if(/ram$/.test(_mgr.cachable) || _mgr._direct_loaded || _mgr.direct_load) {
+      if(scheme.source_mode(frm_key, source_mode) === 'ram') {
         // фильтруем в озу
         const selector = _mgr.get_search_selector({
           _obj: _owner ? (_owner._obj || _owner.props && _owner.props._obj) : null,
@@ -260,8 +261,8 @@ class DynList extends MDNRComponent {
             }
           })
           .catch((err) => {
-            this.setState({network_error: err});
             if(this._mounted) {
+              this.setState({network_error: err});
               this._timer = setTimeout(this.handleFilterChange, 2600);
             }
           });
@@ -293,27 +294,23 @@ class DynList extends MDNRComponent {
 
   // получает набор банных из индексера либо спрашивает у менеджера, если оффлайн
   fromIndexer(selector) {
-    const {props: {_mgr, indexer}, state: {scheme}}  = this;
-    if(!navigator.onLine || !scheme || !indexer) {
+    const {props: {_mgr, source_mode}, state: {scheme}, frm_key} = this;
+    if(!navigator.onLine || !scheme || scheme.source_mode(frm_key, source_mode) !== 'pg') {
+      delete selector.ref;
       return _mgr.find_rows_remote(selector);
     }
 
-    const {remote: {doc}, props: {_suffix}} = $p.adapters.pouch;
-    const {username, password} = doc.__opts.auth;
+    const {pouch} = $p.adapters;
 
     scheme.append_selection(selector);
 
     const opts = {
       method: 'post',
-      credentials: 'include',
-      headers: {
-        Authorization: `Basic ${btoa(unescape(encodeURIComponent(username + ':' + password)))}`,
-        suffix: _suffix || '0'
-      },
+      headers: new Headers({suffix: pouch.props._suffix || '0'}),
       body: JSON.stringify(selector)
     };
 
-    return fetch('/r/_find', opts)
+    return pouch.fetch('/r/_find', opts)
       .then((res) => {
         if(res.status <= 201) {
           return res.json();
@@ -533,9 +530,9 @@ class DynList extends MDNRComponent {
 
   render() {
 
-    const {state, props, context, sizes, handleFilterChange, handleSchemeChange, Toolbar, show_flat} = this;
+    const {state, props, context, sizes, handleFilterChange, handleSchemeChange, frm_key, Toolbar, show_flat} = this;
     const {columns, scheme, confirm_text, info_text, settings_open, rowCount, flat} = state;
-    const {_mgr: {RepParams}, classes, title, registerFilterChange, width, height, GridRenderer, rowHeight, ...others} = props;
+    const {_mgr: {RepParams}, classes, title, registerFilterChange, width, height, GridRenderer, rowHeight, source_mode, ...others} = props;
 
     if(!scheme) {
       return <LoadingMessage text="Чтение настроек компоновки..."/>;
@@ -606,6 +603,8 @@ class DynList extends MDNRComponent {
           scheme={scheme}
           tabParams={RepParams && <RepParams scheme={scheme} handleFilterChange={handleFilterChange}/>}
           handleSchemeChange={handleSchemeChange}
+          frm_key={frm_key}
+          source_mode={source_mode}
         />
       }
       <ReactDataGrid

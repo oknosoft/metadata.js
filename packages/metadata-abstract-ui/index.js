@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.23-beta.5, built:2020-10-19
+ metadata-abstract-ui v2.0.23-beta.5, built:2020-10-23
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1106,6 +1106,29 @@ function scheme_settings() {
         });
         return row ? {sortColumn: row.field, sortDirection: row.direction.valueOf().toUpperCase()} : {};
       }
+    }
+    source_mode(key, mode) {
+      if(mode) {
+        if(wsql.get_user_param(key) !== mode) {
+          wsql.set_user_param(key, mode);
+        }
+      }
+      else {
+        mode = wsql.get_user_param(key);
+        if(!mode) {
+          const _mgr = md.mgr_by_class_name(this.obj);
+          if(_mgr && _mgr.source_mode) {
+            mode = _mgr.source_mode;
+          }
+          else if(_mgr && /ram$/.test(_mgr.cachable) || _mgr.direct_load) {
+            mode = 'ram';
+          }
+          else {
+            mode = 'couchdb';
+          }
+        }
+      }
+      return mode;
     }
   }
   this.CatScheme_settings = CatScheme_settings;

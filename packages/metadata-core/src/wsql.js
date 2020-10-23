@@ -168,9 +168,9 @@ export default class WSQL {
 	 * @return {Promise}
 	 * @async
 	 */
-	save_options(prefix, options){
-		return this.set_user_param(prefix + "_" + options.name, options);
-	}
+  save_options(prefix, options) {
+    return this.set_user_param(prefix + '_' + options.name, options);
+  }
 
 	/**
 	 * ### Устанавливает параметр в user_params и localStorage
@@ -180,24 +180,24 @@ export default class WSQL {
 	 * @param prm_value {string|number|object|boolean} - значение
 	 * @async
 	 */
-	set_user_param(prm_name, prm_value){
+  set_user_param(prm_name, prm_value) {
 
-		const {$p, _params, _ls} = this;
+    const {$p, _params, _ls} = this;
 
-		if(typeof prm_value == "object"){
-			_params[prm_name] = prm_value;
-			prm_value = JSON.stringify(prm_value);
-		}
-		else if(prm_value === false || prm_value === "false"){
-			this._params[prm_name] = false;
-			prm_value = "";
-		}
-		else{
-			_params[prm_name] = prm_value;
-		}
+    if(typeof prm_value == 'object') {
+      _params[prm_name] = prm_value;
+      prm_value = JSON.stringify(prm_value);
+    }
+    else if(prm_value === false || prm_value === 'false') {
+      this._params[prm_name] = false;
+      prm_value = '';
+    }
+    else {
+      _params[prm_name] = prm_value;
+    }
 
-		_ls.setItem($p.job_prm.local_storage_prefix+prm_name, prm_value);
-	}
+    _ls.setItem($p.job_prm.local_storage_prefix + prm_name, prm_value);
+  }
 
 	/**
 	 * ### Возвращает значение сохраненного параметра из localStorage
