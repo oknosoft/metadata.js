@@ -178,7 +178,8 @@ class DynList extends MDNRComponent {
       this.setState(newState);
 
       // в зависимости от типа кеширования...
-      if(scheme.source_mode(frm_key, source_mode) === 'ram') {
+      const mode = scheme.source_mode(frm_key, source_mode);
+      if(mode === 'ram') {
         // фильтруем в озу
         const selector = _mgr.get_search_selector({
           _obj: _owner ? (_owner._obj || _owner.props && _owner.props._obj) : null,
@@ -233,7 +234,7 @@ class DynList extends MDNRComponent {
         }
         selector._raw = true;
 
-        return (find_rows ? find_rows(selector, scheme) : this.fromIndexer(selector))
+        return ((find_rows && mode === 'custom') ? find_rows(selector, scheme) : this.fromIndexer(selector))
           .then((data) => {
 
             if(!this._mounted) return;

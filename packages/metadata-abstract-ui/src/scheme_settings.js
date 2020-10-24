@@ -842,6 +842,8 @@ export default function scheme_settings() {
     /**
      * ### Фильтрует внешнюю табчасть
      * @param collection {TabularSection}
+     * @param parent
+     * @param self
      * @return {Array|TabularSection}
      */
     filter(collection, parent = '', self = false) {
@@ -1170,7 +1172,7 @@ export default function scheme_settings() {
     /**
      * Возвращает или устанавливает режим источника данных
      * @param key {string} - ключ формы
-     * @param {('ram'|'couchdb'|'pg')} mode - имя режима
+     * @param {('ram'|'couchdb'|'pg'|'custom')} mode - имя режима
      * @return {string}
      */
     source_mode(key, mode) {

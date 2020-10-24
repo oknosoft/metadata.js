@@ -59,4 +59,9 @@ export default withStyles(theme => ({
       transform: 'rotate(-90deg)',
     },
   },
+  formControl: {
+    marginTop: theme.spacing(),
+    paddingRight: theme.spacing(),
+    boxSizing: 'border-box',
+  },
 }));

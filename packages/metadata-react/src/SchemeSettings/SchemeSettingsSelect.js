@@ -13,6 +13,8 @@ import SaveIcon from '@material-ui/icons/Save';
 import CopyIcon from '@material-ui/icons/FileCopy';
 import FormGroup from '@material-ui/core/FormGroup';
 import Select from '@material-ui/core/Select';
+import InputLabel from '@material-ui/core/InputLabel';
+import FormControl from '@material-ui/core/FormControl';
 import DataField from '../DataField';
 import withStyles from '../Header/toolbar';
 
@@ -68,18 +70,21 @@ class SchemeSettingsSelect extends Component {
 
       <FormGroup key="body" style={{margin: 16}}>
         <DataField _obj={scheme} _fld="name" fullWidth/>
-        {!source_mode && <Select
-          native
-          label="Режим получения данных"
-          margin="dense"
-          defaultValue={scheme.source_mode(frm_key, source_mode)}
-          onChange={({target}) => scheme.source_mode(frm_key, target.value)}
-        >
-          <option value="ram">Индекс в ОЗУ</option>
-          <option value="couchdb">Mango Couchdb</option>
-          <option value="pg">Внешний индекс</option>
-        </Select>}
-        <DataField _obj={scheme} _fld="query" fullWidth/>
+        {!source_mode && <FormControl className={classes.formControl} fullWidth>
+          <InputLabel>Режим получения данных</InputLabel>
+          <Select
+            native
+            //margin="dense"
+            defaultValue={scheme.source_mode(frm_key, source_mode)}
+            onChange={({target}) => scheme.source_mode(frm_key, target.value)}
+          >
+            <option value="ram">Индекс в ОЗУ</option>
+            <option value="couchdb">Mango Couchdb</option>
+            <option value="pg">Внешний индекс</option>
+            <option value="custom">Метод формы списка</option>
+          </Select>
+        </FormControl>}
+        {/*<DataField _obj={scheme} _fld="query" fullWidth/>*/}
         <DataField _obj={scheme} _fld="standard_period" fullWidth/>
       </FormGroup>
     ];
