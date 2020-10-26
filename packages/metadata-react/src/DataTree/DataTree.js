@@ -180,7 +180,7 @@ class DataTree extends MDNRComponent {
       return <LoadingMessage text="Ошибка настроек компоновки..."/>;
     }
 
-    registerFilterChange && registerFilterChange(this.handleFilterChange);
+    registerFilterChange && registerFilterChange(this.handleFilterChange, scheme);
 
     const show_grid = !settings_open || sizes.height > 572;
 

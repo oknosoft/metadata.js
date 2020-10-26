@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.23-beta.5, built:2020-10-24
+ metadata-abstract-ui v2.0.23-beta.5, built:2020-10-26
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1261,7 +1261,7 @@ function mngrs() {
       }
     },
     get_search_selector: {
-      value({_obj, _fld, _meta, search, top, skip, sorting, flat, parent}) {
+      value({_obj, _fld, _meta, search, top, skip, sorting, flat, parent, source_mode}) {
         const {cachable, _owner, adapter} = this;
         const {md, utils, classes} = _owner.$p;
         const select = {};
@@ -1274,7 +1274,7 @@ function mngrs() {
             select.is_folder = false;
           }
         }
-        if(/ram$/.test(cachable) || this._direct_ram || this._direct_loaded) {
+        if(/ram$/.test(cachable) || source_mode === 'ram' || this._direct_ram || this._direct_loaded) {
           select._top = top;
           select._skip = skip;
           if(sorting) {

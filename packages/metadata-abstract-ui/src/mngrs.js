@@ -47,7 +47,7 @@ export default function mngrs() {
      * @return Object
      */
     get_search_selector: {
-      value({_obj, _fld, _meta, search, top, skip, sorting, flat, parent}) {
+      value({_obj, _fld, _meta, search, top, skip, sorting, flat, parent, source_mode}) {
         const {cachable, _owner, adapter} = this;
         const {md, utils, classes} = _owner.$p;
         const select = {};
@@ -62,7 +62,7 @@ export default function mngrs() {
           }
         }
 
-        if(/ram$/.test(cachable) || this._direct_ram || this._direct_loaded) {
+        if(/ram$/.test(cachable) || source_mode === 'ram' || this._direct_ram || this._direct_loaded) {
 
           select._top = top;
           select._skip = skip;

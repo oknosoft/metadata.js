@@ -57,7 +57,7 @@ class DynList extends MDNRComponent {
   handleManagerChange({_mgr, _meta, _ref}) {
 
     const {class_name} = _mgr;
-    const {flat, parent, _owner, frm_key = 'list'} = this.props;
+    const {flat, parent, _owner, frm_key = 'list', scheme} = this.props;
 
     this._meta = _meta || _mgr.metadata();
     this.show_flat = this._meta.hierarchical;
@@ -79,13 +79,15 @@ class DynList extends MDNRComponent {
 
     this.setState(newState);
 
-    $p.cat.scheme_settings.get_scheme(class_name)
-      .then(this.handleSchemeChange);
+    scheme ?
+      this.handleSchemeChange(scheme, true) :
+      $p.cat.scheme_settings.get_scheme(class_name)
+        .then(this.handleSchemeChange);
 
   }
 
   // при изменении настроек или варианта компоновки
-  handleSchemeChange = (scheme) => {
+  handleSchemeChange = (scheme, from_props) => {
 
     const {props: {handlers, _mgr}, _meta: {fields}, _mounted} = this;
     if(!_mounted) {
@@ -93,7 +95,8 @@ class DynList extends MDNRComponent {
     }
 
     if(scheme) {
-      scheme.set_default();
+      from_props !== true && scheme.set_default();
+      scheme.set_standard_period(true);
       handlers.handleSchemeChange && handlers.handleSchemeChange(scheme);
 
       // пересчитываем и перерисовываем динсписок
@@ -185,6 +188,8 @@ class DynList extends MDNRComponent {
           _obj: _owner ? (_owner._obj || _owner.props && _owner.props._obj) : null,
           _meta: _owner ? _owner._meta : {},
           _fld: _owner && _owner.props._fld,
+          _ref: !scrollSetted && ref,
+          source_mode: mode,
           search: scheme._search,
           skip: startIndex,
           top: increment + 1,
@@ -194,6 +199,47 @@ class DynList extends MDNRComponent {
         });
         if(selector.top < LIMIT / 2) {
           selector.top = LIMIT / 2;
+        }
+
+        //
+        if(!_owner) {
+          const sprm = {
+            columns,
+            skip: startIndex,
+            limit: increment + 1,
+            _owner,
+          };
+          const selector2 = _mgr.mango_selector ? _mgr.mango_selector(scheme, sprm) : scheme.mango_selector(sprm);
+          scheme.append_selection(selector2);
+
+          for(const cond of selector2.selector.$and) {
+            for(const fld in cond) {
+              if(['class_name','search'].includes(fld)) {
+                continue;
+              }
+
+              if(fld === 'date') {
+                if(!selector.date) {
+                  selector.date = [];
+                }
+                else if(!Array.isArray(selector.date)) {
+                  selector.date = [selector.date];
+                }
+                selector.date.push(cond[fld]);
+                for(const ct in cond[fld]) {
+                  cond[fld][ct] = new Date(cond[fld][ct]);
+                }
+                continue;
+              }
+
+              for(const ct in cond[fld]) {
+                if(['$in','$inh','$nin','$nin'].includes(ct) && typeof cond[fld][ct] === 'string') {
+                  cond[fld][ct] = cond[fld][ct].split(',');
+                }
+              }
+              Object.assign(selector, cond);
+            }
+          }
         }
 
         return (_mgr.direct_load && !_mgr._direct_loaded ? _mgr.direct_load() : Promise.resolve())
@@ -541,8 +587,11 @@ class DynList extends MDNRComponent {
     else if(!columns || !columns.length) {
       return <LoadingMessage text="Ошибка настроек компоновки..."/>;
     }
+    if(source_mode === 'ram' && _mgr.direct_load && !_mgr._direct_loaded) {
+      return <LoadingMessage text="Чтение индекса документов..."/>;
+    }
 
-    registerFilterChange && registerFilterChange(handleFilterChange);
+    registerFilterChange && registerFilterChange(handleFilterChange, scheme);
 
     const show_grid = !settings_open || sizes.height > 572;
 

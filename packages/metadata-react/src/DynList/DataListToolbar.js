@@ -87,13 +87,13 @@ class DataListToolbar extends Component {
 
         {!scheme.standard_period.empty() && widthUpSm && <IconButton disabled>|</IconButton>}
 
-        {!scheme.standard_period.empty() && widthUpSm && <DateRange
+        {!scheme.standard_period.empty() && widthUpSm && !btns && <DateRange
           _obj={scheme}
           _fld={'date'}
           _meta={{synonym: 'Период'}}
           classes={classes}
           handleChange={props.handleFilterChange}
-        />}
+        /> /* если не указаны дополнительные кнопки и в схеме предусмотрен выбор периода, показываем кнопку Период */}
 
         {(!toolbar2row || widthUpSm) && btns /* дополнительные кнопки */}
 
@@ -124,7 +124,9 @@ class DataListToolbar extends Component {
           onClose={this.handleRequestClose}
           >
           {(!widthUpSm || setting_in_menu) &&
-          <MenuItem onClick={this.handleSettingsToggle}><ListItemIcon><SettingsIcon/></ListItemIcon>Настройки</MenuItem>}
+          <MenuItem onClick={this.handleSettingsToggle}><ListItemIcon><SettingsIcon/></ListItemIcon>{
+            `${props.settings_open ? 'Скрыть н' : 'Н'}астройки`
+          }</MenuItem>}
 
           {props.handlePrint &&
           <MenuPrint scheme={scheme} handlePrint={props.handlePrint} />}

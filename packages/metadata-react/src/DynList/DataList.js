@@ -26,6 +26,8 @@ class DataList extends MDNRComponent {
   constructor(props, context) {
     super(props, context);
 
+    console.log('DataList is deprecated. Use DynList instead')
+
     this.state = {
       selectedRow: 0,
       scrollToRow: 0,
@@ -228,7 +230,7 @@ class DataList extends MDNRComponent {
       return <LoadingMessage text="Ошибка настроек компоновки..."/>;
     }
 
-    registerFilterChange && registerFilterChange(handleFilterChange);
+    registerFilterChange && registerFilterChange(handleFilterChange, scheme);
 
     const show_grid = !settings_open || sizes.height > 572;
 
