@@ -24,6 +24,7 @@ if(typeof global != 'undefined'){
   global.moment = moment;
 }
 
+const ctnames = '$eq,between,$between,$gte,gte,$gt,gt,$lte,lte,$lt,lt,ninh,inh,nin,$nin,in,$in,not,ne,$ne,nlk,lke,like,or,$or,$and'.split(',');
 
 /**
  * Отбрасываем часовой пояс при сериализации даты
@@ -339,6 +340,7 @@ const utils = {
 	 * @method date_add_day
 	 * @param date {Date} - исходная дата
 	 * @param days {Number} - число дней, добавляемых к дате (может быть отрицательным)
+   * @param reset_time {Boolean} - сбросить часы, минуты
 	 * @return {Date}
 	 */
 	date_add_day(date, days, reset_time) {
@@ -618,7 +620,6 @@ const utils = {
 	 * @method _clone
 	 * @for Object
 	 * @param obj {Object|Array} - исходный объект
-	 * @param [exclude_propertyes] {Object} - объект, в ключах которого имена свойств, которые не надо копировать
 	 * @returns {Object|Array} - копия объекта
 	 */
 	_clone(obj) {
@@ -759,13 +760,6 @@ const utils = {
 	_selection(o, selection) {
 
 		let ok = true;
-    let prop;
-    function cprop(name) {
-      if(this.hasOwnProperty(name)) {
-        prop = name;
-        return true;
-      }
-    }
 
 		if (selection) {
 			// если отбор является функцией, выполняем её, передав контекст
@@ -779,7 +773,6 @@ const utils = {
 					const sel = selection[j];
 					const is_obj = sel && typeof(sel) === 'object';
 
-
 					// пропускаем служебные свойства
 					if (j.substr(0, 1) == '_') {
             if(j === '_search' && sel.fields && sel.value) {
@@ -790,14 +783,17 @@ const utils = {
             }
 						continue;
 					}
+
 					// если свойство отбора является функцией, выполняем её, передав контекст
 					if (typeof sel == 'function') {
 						ok = sel.call(this, o, j);
             if(!ok) {
               break;
             }
+            continue;
           }
-					else if (Array.isArray(sel)) {
+
+					if (Array.isArray(sel)) {
             // если свойство отбора является объектом `or`, выполняем Array.some() TODO: здесь напрашивается рекурсия
 					  if(j === 'or') {
               ok = sel.some((el) => {
@@ -817,54 +813,63 @@ const utils = {
             if(!ok) {
               break;
             }
+            continue;
           }
-					// если свойство отбора является объектом `like`, сравниваем подстроку
-          else if(is_obj && sel.hasOwnProperty('like')) {
-						if (!utils._like(o[j], sel.like)) {
-							ok = false;
-							break;
-						}
-					}
-					// это синоним `like`
-          else if(is_obj && sel.hasOwnProperty('lke')) {
-            if (!utils._like(o[j], sel.lke)) {
+
+          // получаем имя вида сравнения
+          let ctname;
+					if(is_obj) {
+            for(const ct in sel) {
+              if(ctnames.includes(ct) && Object.keys(sel).length === 1) {
+                ctname = ct;
+              }
+            }
+          }
+
+          if(!ctname) {
+            if (!utils.is_equal(o[j], sel)) {
               ok = false;
               break;
             }
           }
+
+					// если свойство отбора является объектом `like`, сравниваем подстроку
+          else if(['like','lke'].includes(ctname)) {
+						if (!utils._like(o[j], sel[ctname])) {
+							ok = false;
+							break;
+						}
+					}
           // это вид сравнения `не содержит`
-          else if(is_obj && sel.hasOwnProperty('nlk')) {
-            if (utils._like(o[j], sel.nlk)) {
+          else if(ctname === 'nlk') {
+            if (utils._like(o[j], sel[ctname])) {
               ok = false;
               break;
             }
           }
 					// если свойство отбора является объектом `not`, сравниваем на неравенство
-          else if(is_obj && ['not', 'ne', '$ne'].some(cprop.bind(sel))) {
-					  const not = sel[prop];
-						if (utils.is_equal(o[j], not)) {
+          else if(['not', 'ne', '$ne'].includes(ctname)) {
+						if (utils.is_equal(o[j], sel[ctname])) {
 							ok = false;
 							break;
 						}
 					}
 					// если свойство отбора является объектом `in`, выполняем Array.some()
-          else if(is_obj && ['in', '$in'].some(cprop.bind(sel))) {
-					  const arr = sel[prop];
-						ok = arr.some((el) => utils.is_equal(el, o[j]));
+          else if(['in', '$in'].includes(ctname)) {
+						ok = sel[ctname].some((el) => utils.is_equal(el, o[j]));
             if(!ok) {
               break;
             }
           }
           // если свойство отбора является объектом `nin`, выполняем Array.every(!=)
-          else if(is_obj && ['nin', '$nin'].some(cprop.bind(sel))) {
-            const arr = sel.nin || sel.$nin;
-            ok = arr.every((el) => !utils.is_equal(el, o[j]));
+          else if(['nin', '$nin'].includes(ctname)) {
+            ok = sel[ctname].every((el) => !utils.is_equal(el, o[j]));
             if(!ok) {
               break;
             }
           }
           // если свойство отбора является объектом `inh`, вычисляем иерархию
-          else if(is_obj && sel.hasOwnProperty('inh')) {
+          else if(ctname === 'inh') {
             const tmp = utils.is_data_obj(o) ? o : (this.get && this.get(o)) || o;
             ok = j === 'ref' ? tmp._hierarchy && tmp._hierarchy(sel.inh) : tmp[j]._hierarchy && tmp[j]._hierarchy(sel.inh);
             if(!ok) {
@@ -872,7 +877,7 @@ const utils = {
             }
           }
           // если свойство отбора является объектом `ninh`, вычисляем иерархию
-          else if(is_obj && sel.hasOwnProperty('ninh')) {
+          else if(ctname === 'ninh') {
             const tmp = utils.is_data_obj(o) ? o : (this.get && this.get(o)) || o;
             ok = !(j === 'ref' ? tmp._hierarchy && tmp._hierarchy(sel.ninh) : tmp[j]._hierarchy && tmp[j]._hierarchy(sel.ninh));
             if(!ok) {
@@ -880,27 +885,45 @@ const utils = {
             }
           }
 					// если свойство отбора является объектом `lt`, сравниваем на _меньше_
-          else if(is_obj && sel.hasOwnProperty('lt')) {
-						ok = o[j] < sel.lt;
+          else if(['lt','$lt'].includes(ctname)) {
+						ok = o[j] < sel[ctname];
+            if(!ok) {
+              break;
+            }
+          }
+          else if(['lte','$lte'].includes(ctname)) {
+            ok = o[j] <= sel[ctname];
             if(!ok) {
               break;
             }
           }
 					// если свойство отбора является объектом `gt`, сравниваем на _больше_
-					else if (is_obj && sel.hasOwnProperty('gt')) {
-						ok = o[j] > sel.gt;
+					else if (['gt','$gt'].includes(ctname)) {
+						ok = o[j] > sel[ctname];
+            if(!ok) {
+              break;
+            }
+          }
+          else if (['gte','$gte'].includes(ctname)) {
+            ok = o[j] >= sel[ctname];
             if(!ok) {
               break;
             }
           }
 					// если свойство отбора является объектом `between`, сравниваем на _вхождение_
-					else if (is_obj && sel.hasOwnProperty('between')) {
+					else if (ctname === 'between') {
 						let tmp = o[j];
             if(typeof tmp != 'number') {
               tmp = utils.fix_date(o[j]);
             }
             ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);
             if(!ok) {
+              break;
+            }
+          }
+          else if (ctname === '$eq') {
+            if (!utils.is_equal(o[j], sel.$eq)) {
+              ok = false;
               break;
             }
           }
@@ -926,7 +949,7 @@ const utils = {
    * @private
    */
   _find_rows_with_sort(src, selection) {
-    let pre = [], docs = [], sort, top = 300, skip = 0, count = 0, skipped = 0;
+    let pre = [], docs = [], sort, ref, top = 300, skip = 0, count = 0, skipped = 0;
 
     if(selection) {
       if(selection._sort) {
@@ -940,6 +963,10 @@ const utils = {
       if(selection.hasOwnProperty('_skip')) {
         skip = selection._skip;
         delete selection._skip;
+      }
+      if(selection.hasOwnProperty('_ref')) {
+        ref = selection._ref;
+        delete selection._ref;
       }
     }
 

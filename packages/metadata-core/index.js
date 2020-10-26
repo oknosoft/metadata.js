@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.23-beta.5, built:2020-10-24
+ metadata-core v2.0.23-beta.5, built:2020-10-26
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3066,6 +3066,7 @@ moment$1._masks = {
 if(typeof global != 'undefined'){
   global.moment = moment$1;
 }
+const ctnames = '$eq,between,$between,$gte,gte,$gt,gt,$lte,lte,$lt,lt,ninh,inh,nin,$nin,in,$in,not,ne,$ne,nlk,lke,like,or,$or,$and'.split(',');
 Date.prototype.toJSON = Date.prototype.toISOString = function () {
 	return moment$1(this).format(moment$1._masks.iso);
 };
@@ -3481,13 +3482,6 @@ const utils = {
   },
 	_selection(o, selection) {
 		let ok = true;
-    let prop;
-    function cprop(name) {
-      if(this.hasOwnProperty(name)) {
-        prop = name;
-        return true;
-      }
-    }
 		if (selection) {
 			if (typeof selection == 'function') {
 				ok = selection.call(this, o);
@@ -3510,8 +3504,9 @@ const utils = {
             if(!ok) {
               break;
             }
+            continue;
           }
-					else if (Array.isArray(sel)) {
+					if (Array.isArray(sel)) {
 					  if(j === 'or') {
               ok = sel.some((el) => {
                 const key = Object.keys(el)[0];
@@ -3529,79 +3524,103 @@ const utils = {
             if(!ok) {
               break;
             }
+            continue;
           }
-          else if(is_obj && sel.hasOwnProperty('like')) {
-						if (!utils._like(o[j], sel.like)) {
-							ok = false;
-							break;
-						}
-					}
-          else if(is_obj && sel.hasOwnProperty('lke')) {
-            if (!utils._like(o[j], sel.lke)) {
+          let ctname;
+					if(is_obj) {
+            for(const ct in sel) {
+              if(ctnames.includes(ct) && Object.keys(sel).length === 1) {
+                ctname = ct;
+              }
+            }
+          }
+          if(!ctname) {
+            if (!utils.is_equal(o[j], sel)) {
               ok = false;
               break;
             }
           }
-          else if(is_obj && sel.hasOwnProperty('nlk')) {
-            if (utils._like(o[j], sel.nlk)) {
-              ok = false;
-              break;
-            }
-          }
-          else if(is_obj && ['not', 'ne', '$ne'].some(cprop.bind(sel))) {
-					  const not = sel[prop];
-						if (utils.is_equal(o[j], not)) {
+          else if(['like','lke'].includes(ctname)) {
+						if (!utils._like(o[j], sel[ctname])) {
 							ok = false;
 							break;
 						}
 					}
-          else if(is_obj && ['in', '$in'].some(cprop.bind(sel))) {
-					  const arr = sel[prop];
-						ok = arr.some((el) => utils.is_equal(el, o[j]));
+          else if(ctname === 'nlk') {
+            if (utils._like(o[j], sel[ctname])) {
+              ok = false;
+              break;
+            }
+          }
+          else if(['not', 'ne', '$ne'].includes(ctname)) {
+						if (utils.is_equal(o[j], sel[ctname])) {
+							ok = false;
+							break;
+						}
+					}
+          else if(['in', '$in'].includes(ctname)) {
+						ok = sel[ctname].some((el) => utils.is_equal(el, o[j]));
             if(!ok) {
               break;
             }
           }
-          else if(is_obj && ['nin', '$nin'].some(cprop.bind(sel))) {
-            const arr = sel.nin || sel.$nin;
-            ok = arr.every((el) => !utils.is_equal(el, o[j]));
+          else if(['nin', '$nin'].includes(ctname)) {
+            ok = sel[ctname].every((el) => !utils.is_equal(el, o[j]));
             if(!ok) {
               break;
             }
           }
-          else if(is_obj && sel.hasOwnProperty('inh')) {
+          else if(ctname === 'inh') {
             const tmp = utils.is_data_obj(o) ? o : (this.get && this.get(o)) || o;
             ok = j === 'ref' ? tmp._hierarchy && tmp._hierarchy(sel.inh) : tmp[j]._hierarchy && tmp[j]._hierarchy(sel.inh);
             if(!ok) {
               break;
             }
           }
-          else if(is_obj && sel.hasOwnProperty('ninh')) {
+          else if(ctname === 'ninh') {
             const tmp = utils.is_data_obj(o) ? o : (this.get && this.get(o)) || o;
             ok = !(j === 'ref' ? tmp._hierarchy && tmp._hierarchy(sel.ninh) : tmp[j]._hierarchy && tmp[j]._hierarchy(sel.ninh));
             if(!ok) {
               break;
             }
           }
-          else if(is_obj && sel.hasOwnProperty('lt')) {
-						ok = o[j] < sel.lt;
+          else if(['lt','$lt'].includes(ctname)) {
+						ok = o[j] < sel[ctname];
             if(!ok) {
               break;
             }
           }
-					else if (is_obj && sel.hasOwnProperty('gt')) {
-						ok = o[j] > sel.gt;
+          else if(['lte','$lte'].includes(ctname)) {
+            ok = o[j] <= sel[ctname];
             if(!ok) {
               break;
             }
           }
-					else if (is_obj && sel.hasOwnProperty('between')) {
+					else if (['gt','$gt'].includes(ctname)) {
+						ok = o[j] > sel[ctname];
+            if(!ok) {
+              break;
+            }
+          }
+          else if (['gte','$gte'].includes(ctname)) {
+            ok = o[j] >= sel[ctname];
+            if(!ok) {
+              break;
+            }
+          }
+					else if (ctname === 'between') {
 						let tmp = o[j];
             if(typeof tmp != 'number') {
               tmp = utils.fix_date(o[j]);
             }
             ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);
             if(!ok) {
+              break;
+            }
+          }
+          else if (ctname === '$eq') {
+            if (!utils.is_equal(o[j], sel.$eq)) {
+              ok = false;
               break;
             }
           }
@@ -3615,7 +3634,7 @@ const utils = {
 		return ok;
 	},
   _find_rows_with_sort(src, selection) {
-    let pre = [], docs = [], sort, top = 300, skip = 0, count = 0, skipped = 0;
+    let pre = [], docs = [], sort, ref, top = 300, skip = 0, count = 0, skipped = 0;
     if(selection) {
       if(selection._sort) {
         sort = selection._sort;
@@ -3628,6 +3647,10 @@ const utils = {
       if(selection.hasOwnProperty('_skip')) {
         skip = selection._skip;
         delete selection._skip;
+      }
+      if(selection.hasOwnProperty('_ref')) {
+        ref = selection._ref;
+        delete selection._ref;
       }
     }
     for (const o of src) {
