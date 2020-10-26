@@ -579,7 +579,9 @@ class DynList extends MDNRComponent {
 
     const {state, props, context, sizes, handleFilterChange, handleSchemeChange, frm_key, Toolbar, show_flat} = this;
     const {columns, scheme, confirm_text, info_text, settings_open, rowCount, flat} = state;
-    const {_mgr: {RepParams}, classes, title, registerFilterChange, width, height, GridRenderer, rowHeight, source_mode, ...others} = props;
+    const {
+      _mgr: {RepParams, direct_load, _direct_loaded},
+      classes, title, registerFilterChange, width, height, GridRenderer, rowHeight, source_mode, ...others} = props;
 
     if(!scheme) {
       return <LoadingMessage text="Чтение настроек компоновки..."/>;
@@ -587,7 +589,7 @@ class DynList extends MDNRComponent {
     else if(!columns || !columns.length) {
       return <LoadingMessage text="Ошибка настроек компоновки..."/>;
     }
-    if(source_mode === 'ram' && _mgr.direct_load && !_mgr._direct_loaded) {
+    if(source_mode === 'ram' && direct_load && !_direct_loaded) {
       return <LoadingMessage text="Чтение индекса документов..."/>;
     }
 
