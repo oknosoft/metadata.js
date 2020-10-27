@@ -13,6 +13,7 @@ import RemoveIcon from '@material-ui/icons/DeleteOutline';
 import EditIcon from '@material-ui/icons/Edit';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import AttachIcon from '@material-ui/icons/AttachFile';
+import HistoryIcon from '@material-ui/icons/History';
 import SelectIcon from '@material-ui/icons/PlaylistAddCheck';
 import SettingsIcon from '@material-ui/icons/Settings';
 import TreeIcon from '@material-ui/icons/AccountTree';
@@ -131,6 +132,12 @@ class DataListToolbar extends Component {
 
           {props.handlePrint &&
           <MenuPrint scheme={scheme} handlePrint={props.handlePrint} />}
+
+          {props.handleHistory &&
+            <MenuItem onClick={() => {
+              this.handleRequestClose();
+              props.handleHistory();
+            }}><ListItemIcon><HistoryIcon/></ListItemIcon>История</MenuItem>}
 
           {props.handleAttachments &&
           <MenuItem onClick={props.handleAttachments}><ListItemIcon><AttachIcon/></ListItemIcon>Вложения</MenuItem>}
