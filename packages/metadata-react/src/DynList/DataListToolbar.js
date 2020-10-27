@@ -75,7 +75,8 @@ class DataListToolbar extends Component {
 
         {!props.denyAddDel && <IconButton key="create" title="Создать объект" onClick={props.handleAdd}><AddIcon/></IconButton>}
 
-        {props.handleEdit && <IconButton key="edit" title="Открыть форму объекта" onClick={props.handleEdit}><EditIcon/></IconButton>}
+        {props.handleEdit && !props.hide_edit && <IconButton
+          key="edit" title="Открыть форму объекта" onClick={props.handleEdit}><EditIcon/></IconButton>}
 
         {!props.denyAddDel && !props.denyDel && <IconButton
           key="del" title="Пометить на удаление" onClick={props.handleRemove}><RemoveIcon/></IconButton>}

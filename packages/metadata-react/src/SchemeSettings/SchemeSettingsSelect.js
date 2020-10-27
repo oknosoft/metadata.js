@@ -70,7 +70,7 @@ class SchemeSettingsSelect extends Component {
 
       <FormGroup key="body" style={{margin: 16}}>
         <DataField _obj={scheme} _fld="name" fullWidth/>
-        {!source_mode && <FormControl className={classes.formControl} fullWidth>
+        <FormControl className={classes.formControl} fullWidth disabled={!!source_mode}>
           <InputLabel>Режим получения данных</InputLabel>
           <Select
             native
@@ -83,7 +83,7 @@ class SchemeSettingsSelect extends Component {
             <option value="pg">Внешний индекс</option>
             <option value="custom">Метод формы списка</option>
           </Select>
-        </FormControl>}
+        </FormControl>
         {/*<DataField _obj={scheme} _fld="query" fullWidth/>*/}
         <DataField _obj={scheme} _fld="standard_period" fullWidth/>
       </FormGroup>

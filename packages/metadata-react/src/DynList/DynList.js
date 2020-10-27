@@ -581,7 +581,7 @@ class DynList extends MDNRComponent {
     const {columns, scheme, confirm_text, info_text, settings_open, rowCount, flat} = state;
     const {
       _mgr: {RepParams, direct_load, _direct_loaded},
-      classes, title, registerFilterChange, width, height, GridRenderer, rowHeight, source_mode, ...others} = props;
+      classes, title, registerFilterChange, width, height, GridRenderer, rowHeight, source_mode, hide_edit, ...others} = props;
 
     if(!scheme) {
       return <LoadingMessage text="Чтение настроек компоновки..."/>;
@@ -601,6 +601,7 @@ class DynList extends MDNRComponent {
       scheme,
       ...others,
       settings_open,
+      hide_edit,
       flat,
       show_flat,
       flatChange: this.flatChange,
