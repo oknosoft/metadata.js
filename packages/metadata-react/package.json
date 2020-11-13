@@ -14,7 +14,7 @@
     "classnames": "^2.2",
     "downshift": "^6.0",
     "font-awesome": "^4.7.0",
-    "marked": "^1.2.2",
+    "marked": "^1.2.3",
     "metadata-abstract-ui": "^2.0.23-beta.6",
     "metadata-redux": "^2.0.23-beta.6",
     "rc-calendar": "^9.15",

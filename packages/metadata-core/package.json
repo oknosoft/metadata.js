@@ -9,7 +9,7 @@
     "npm": "^6.14"
   },
   "dependencies": {
-    "alasql": "^0.6.4",
+    "alasql": "^0.6.5",
     "debug": "^4.2",
     "moment": "^2.29",
     "uuid": "^8.3"

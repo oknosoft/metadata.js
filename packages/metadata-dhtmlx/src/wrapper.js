@@ -6,6 +6,10 @@ export default ($p) => {
 	const _md = $p.md;
 	$p.moment = $p.utils.moment;
 
+  function xmlentities(str) {
+    return str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
 	/**
 	 * ### Возаращает строку xml для инициализации PropertyGrid
 	 * служебный метод, используется {{#crossLink "OHeadFields"}}{{/crossLink}}
@@ -64,14 +68,18 @@ export default ($p) => {
 				else
 					txt = fv;
 
-				if (mf.type.is_ref) {
-					;
-				} else if (mf.type.date_part) {
-					txt = moment(txt).format(moment._masks[mf.type.date_part]);
-
-				} else if (mf.type.types[0] == 'boolean') {
-					txt = txt ? '1' : '0';
-				}
+        if(mf.type.is_ref) {
+          ;
+        }
+        else if(mf.type.date_part) {
+          txt = moment(txt).format(moment._masks[mf.type.date_part]);
+        }
+        else if(mf.type.types[0] == 'boolean') {
+          txt = txt ? '1' : '0';
+        }
+        else if(mf.type.types[0] == 'string') {
+          txt = xmlentities(txt);
+        }
 			},
 
 			by_type = function (fv) {
