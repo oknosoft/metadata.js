@@ -1052,6 +1052,42 @@ export class DataObj extends BaseDataObj {
     return res;
   }
 
+  /**
+   * ### Значение допреквизита по имени
+   * @param name {String} - имя параметра
+   * @param [value] {Any} - если задано, устанавливает
+   */
+  _extra(name, value) {
+    const {extra_fields, _manager: {_owner}} = this;
+    const {cch, md} = _owner.$p;
+    if(!extra_fields || !cch.properties) {
+      return;
+    }
+    const property = cch.properties.predefined(name);
+    if(!property) {
+      return;
+    }
+
+    const row = extra_fields.find(property.ref, 'property');
+    if(value !== undefined) {
+      if(row) {
+        row.value = value;
+      }
+      else {
+        extra_fields.add({property, value});
+      }
+    }
+    else {
+      if(row) {
+        return row.value;
+      }
+      const {types, is_ref} = property.type;
+      if(is_ref && types.length === 1) {
+        const mgr = md.mgr_by_class_name(types[0]);
+        return mgr && mgr.get();
+      }
+    }
+  }
 }
 
 /**
@@ -1189,56 +1225,6 @@ export class CatObj extends DataObj {
     }
     return group == utils.blank.guid;
   }
-
-  /**
-   * ### Значение допреквизита по имени
-   * @param name
-   */
-  _extra(name) {
-    const {extra_fields, _manager: {_owner}} = this;
-    const {cch, md} = _owner.$p;
-    if(!extra_fields || !cch.properties) {
-      return;
-    }
-    const property = cch.properties.predefined(name);
-    if(!property) {
-      return;
-    }
-    const row = extra_fields.find(property.ref, 'property');
-    if(row) {
-      return row.value;
-    }
-    const {types, is_ref} = property.type;
-    if(is_ref && types.length === 1) {
-      const mgr = md.mgr_by_class_name(types[0]);
-      return mgr && mgr.get();
-    }
-  }
-
-  /**
-   * ### Устанавливает значение допреквизита
-   * @param name
-   * @param value
-   */
-  _extra_set(name, value) {
-    const {extra_fields, _manager: {_owner}} = this;
-    const {cch, md} = _owner.$p;
-    if(!extra_fields || !cch.properties) {
-      return;
-    }
-    const property = cch.properties.predefined(name);
-    if(!property) {
-      return;
-    }
-    const row = extra_fields.find(property.ref, 'property');
-    if(row) {
-      row.value = value;
-    }
-    else {
-      extra_fields.add({property, value});
-    }
-  }
-
 
 }
 
