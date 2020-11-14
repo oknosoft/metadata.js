@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.23-beta.6, built:2020-11-13
+ metadata-core v2.0.23-beta.6, built:2020-11-14
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2328,17 +2328,22 @@ class RefDataManager extends DataManager{
 				}
 				return s;
 			}
-			function order_flds(){
-				if(t instanceof ChartOfAccountManager){
-					return "ORDER BY id";
-				}else if(cmd["hierarchical"]){
-					if(cmd["group_hierarchy"])
-						return "ORDER BY _t_.is_folder desc, is_initial_value, presentation";
-					else
-						return "ORDER BY _t_.parent desc, is_initial_value, presentation";
-				}else
-					return "ORDER BY is_initial_value, presentation";
-			}
+      function order_flds() {
+        if(t instanceof ChartOfAccountManager) {
+          return 'ORDER BY id';
+        }
+        else if(cmd.hierarchical) {
+          if(cmd.group_hierarchy) {
+            return 'ORDER BY _t_.is_folder desc, is_initial_value, presentation';
+          }
+          else {
+            return 'ORDER BY _t_.parent desc, is_initial_value, presentation';
+          }
+        }
+        else {
+          return 'ORDER BY is_initial_value, presentation';
+        }
+      }
 			function selection_prms(){
 				function on_parent(o){
 					if(o){
@@ -2374,7 +2379,7 @@ class RefDataManager extends DataManager{
 			const sql = t.sql_selection_list_flds ? t.sql_selection_list_flds(initial_value) :
         `SELECT ${list_flds()}, case when _t_.ref = '${initial_value}' then 0 else 1 end as is_initial_value
 				 FROM ${t.table_name} AS _t_ ${join_flds()} %3 %4 LIMIT 300`;
-			return sql.replace("%3", where_flds()).replace("%4", order_flds());
+      return sql.replace('%4', order_flds()).replace('%3', where_flds());
 		}
 		function sql_create(){
 			var sql = "CREATE TABLE IF NOT EXISTS ";
