@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.23-beta.6, built:2020-11-14
+ metadata-core v2.0.23-beta.6, built:2020-11-25
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1865,7 +1865,7 @@ class DataManager extends MetaEventEmitter{
 			else if ((property = row[f]) instanceof DataObj){
 				return property._manager;
 			}
-			else if (utils.is_guid(property) && property != utils.blank.guid) {
+			else if (property && property != utils.blank.guid) {
 				for (let i in rt) {
 					mgr = rt[i];
 					if (mgr.by_ref[property]){
@@ -1873,7 +1873,8 @@ class DataManager extends MetaEventEmitter{
 					}
 				}
 			}
-		} else {
+		}
+		else {
 			if (utils.is_data_obj(property)){
 				oproperty = property;
 			}

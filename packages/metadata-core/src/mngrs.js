@@ -446,7 +446,7 @@ export class DataManager extends MetaEventEmitter{
 			else if ((property = row[f]) instanceof DataObj){
 				return property._manager;
 			}
-			else if (utils.is_guid(property) && property != utils.blank.guid) {
+			else if (property && property != utils.blank.guid) {
 				for (let i in rt) {
 					mgr = rt[i];
 					if (mgr.by_ref[property]){
@@ -454,7 +454,8 @@ export class DataManager extends MetaEventEmitter{
 					}
 				}
 			}
-		} else {
+		}
+		else {
 
 			// Получаем объект свойства
 			if (utils.is_data_obj(property)){
