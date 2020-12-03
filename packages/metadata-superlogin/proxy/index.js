@@ -11,6 +11,7 @@ import urlParse from 'url-parse';
 import {toPromise} from 'pouchdb-utils';
 import oAuthPopup from './popup';
 import {load_common, load_ram} from './no_ram';
+import {event_src} from './events';
 
 class AuthError extends Error {
   constructor(message) {
@@ -30,7 +31,6 @@ function getBaseUrl({__opts, name}) {
   const url = urlParse(prefix + name);
   return url.origin;
 }
-
 
 function getSessionUrl(db) {
   const {_auth_provider} = db.__opts.owner.props;
@@ -143,4 +143,4 @@ export default function index (withMeta) {
   };
 };
 
-export {load_common, load_ram};
+export {load_common, load_ram, event_src};
