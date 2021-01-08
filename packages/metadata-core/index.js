@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.23-beta.7, built:2020-11-26
+ metadata-core v2.0.23-beta.8, built:2021-01-08
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3632,7 +3632,7 @@ const utils = {
 		return ok;
 	},
   _find_rows_with_sort(src, selection) {
-    let pre = [], docs = [], sort, ref, top = 300, skip = 0, count = 0, skipped = 0;
+    let pre = [], docs = [], sort, top = 300, skip = 0, count = 0, skipped = 0;
     if(selection) {
       if(selection._sort) {
         sort = selection._sort;
@@ -3647,7 +3647,7 @@ const utils = {
         delete selection._skip;
       }
       if(selection.hasOwnProperty('_ref')) {
-        ref = selection._ref;
+        selection._ref;
         delete selection._ref;
       }
     }
@@ -4808,7 +4808,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.23-beta.7";
+    return "2.0.23-beta.8";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

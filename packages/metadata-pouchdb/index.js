@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.23-beta.7, built:2020-11-26
+ metadata-pouchdb v2.0.23-beta.8, built:2021-01-08
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2093,7 +2093,7 @@ function adapter({AbstracrAdapter}) {
           const {Headers} = require('node-fetch');
           global.Headers = Headers;
         }
-        opts.headers = new Headers();
+        opts.headers = new Headers({Accept: 'application/json'});
       }
       if(authorized) {
         if(!props.user_node) {

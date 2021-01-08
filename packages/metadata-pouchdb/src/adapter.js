@@ -2262,7 +2262,7 @@ function adapter({AbstracrAdapter}) {
           const {Headers} = require('node-fetch');
           global.Headers = Headers;
         }
-        opts.headers = new Headers();
+        opts.headers = new Headers({Accept: 'application/json'});
       }
       if(authorized) {
         if(!props.user_node) {
