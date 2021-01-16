@@ -9,7 +9,7 @@
 
         <item id="sep3" type="separator"/>
 
-        <item type="button" id="btn_export" text="&lt;i class='fa fa-file-excel-o fa-fw'&gt;&lt;/i&gt; Выгрузить в файл" />
+        <item type="button" id="btn_export" text="&lt;i class='fa fa-file-excel-o fa-fw'&gt;&lt;/i&gt; Выгрузить" />
 
         <item id="sep4" type="separator"/>
 

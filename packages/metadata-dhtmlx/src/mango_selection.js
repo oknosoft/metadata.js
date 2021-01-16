@@ -172,8 +172,8 @@ class MangoSelection {
           toolbar.addListOption('bs_more', 'btn_order_list', '~', 'button', '<i class="fa fa-briefcase fa-lg fa-fw"></i> Список заказов');
         }
       }
-      toolbar.addListOption('bs_more', 'btn_import', '~', 'button', '<i class="fa fa-upload fa-lg fa-fw"></i> Загрузить из файла');
-      toolbar.addListOption('bs_more', 'btn_export', '~', 'button', '<i class="fa fa-download fa-lg fa-fw"></i> Выгрузить в файл');
+      toolbar.addListOption('bs_more', 'btn_import', '~', 'button', '<i class="fa fa-upload fa-lg fa-fw"></i> Загрузить');
+      toolbar.addListOption('bs_more', 'btn_export', '~', 'button', '<i class="fa fa-download fa-lg fa-fw"></i> Выгрузить');
 
 
       // добавляем команды печати
