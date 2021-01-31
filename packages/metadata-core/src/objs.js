@@ -1182,11 +1182,14 @@ export class CatObj extends DataObj {
   /**
    * ### Дети
    * Возвращает массив элементов, находящихся в иерархии текущего
+   *
+   * @param folders_only {Boolean}
+   * @return {Array.<DataObj>}
    */
-  _children(folders) {
+  _children(folders_only) {
     const res = [];
     this._manager.forEach((o) => {
-      if(o != this && (!folders || o.is_folder) && o._hierarchy(this)) {
+      if(o != this && (!folders_only || o.is_folder) && o._hierarchy(this)) {
         res.push(o);
       }
     });

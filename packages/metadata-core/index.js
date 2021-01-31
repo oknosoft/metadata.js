@@ -1326,10 +1326,10 @@ class CatObj extends DataObj {
     this.__notify('name');
     this._obj.name = String(v);
   }
-  _children(folders) {
+  _children(folders_only) {
     const res = [];
     this._manager.forEach((o) => {
-      if(o != this && (!folders || o.is_folder) && o._hierarchy(this)) {
+      if(o != this && (!folders_only || o.is_folder) && o._hierarchy(this)) {
         res.push(o);
       }
     });
