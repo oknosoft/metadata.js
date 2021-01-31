@@ -262,8 +262,13 @@ function adapter({AbstracrAdapter}) {
             if(user.ref && typeof user.roles === 'string') {
               // уточним зону
               if(user.zones && user.zones.length && !user.zones.includes(props.zone)) {
-                props.zone = user.zones[0];
-                wsql.set_user_param('zone', props.zone);
+                if(typeof props.zone === 'string' && !isNaN(parseFloat(props.zone))) {
+                  props.zone = parseFloat(props.zone);
+                }
+                if(!user.zones.includes(props.zone)) {
+                  props.zone = user.zones[0];
+                  wsql.set_user_param('zone', props.zone);
+                }
               }
               this.emit('authenticated', user);
               props._suffix = user.suffix || '';
