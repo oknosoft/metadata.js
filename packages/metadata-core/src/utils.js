@@ -554,24 +554,37 @@ const utils = {
 			});
 	},
 
+  /**
+   * Даёт процессору отдохнуть
+   * @param time {Number}
+   * @param res {Any}
+   * @return {Promise<Any>}
+   */
+  sleep(time = 100, res) {
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(res), time);
+    });
+  },
+
 	/**
 	 * Копирует все свойства из src в текущий объект исключая те, что в цепочке прототипов src до Object
 	 * @method _mixin
 	 * @for Object
 	 * @param obj {Object} - приемник
 	 * @param src {Object} - источник
-	 * @param include {Array}
-	 * @param exclude {Array}
+	 * @param [include] {Array} - массив включаемых полей
+	 * @param [exclude] {Array} - массив исключаемых полей
+	 * @param [clone] {Boolean} - клонировать, а не устанавливать объектные свойства
 	 * @return {Object}
 	 */
-	_mixin(obj, src, include, exclude) {
+	_mixin(obj, src, include, exclude, clone) {
 		const tobj = {}; // tobj - вспомогательный объект для фильтрации свойств, которые есть у объекта Object и его прототипа
 
 		function exclude_cpy(f) {
 			if (!(exclude && exclude.includes(f))) {
 				// копируем в dst свойства src, кроме тех, которые унаследованы от Object
 				if ((typeof tobj[f] == 'undefined') || (tobj[f] != src[f])) {
-					obj[f] = src[f];
+					obj[f] = clone ? utils._clone(src[f]) : src[f];
 				}
 			}
 		}

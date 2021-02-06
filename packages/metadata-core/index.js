@@ -3342,12 +3342,17 @@ const utils = {
 				saveAs(req.response, file_name);
 			});
 	},
-	_mixin(obj, src, include, exclude) {
+  sleep(time = 100, res) {
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(res), time);
+    });
+  },
+	_mixin(obj, src, include, exclude, clone) {
 		const tobj = {};
 		function exclude_cpy(f) {
 			if (!(exclude && exclude.includes(f))) {
 				if ((typeof tobj[f] == 'undefined') || (tobj[f] != src[f])) {
-					obj[f] = src[f];
+					obj[f] = clone ? utils._clone(src[f]) : src[f];
 				}
 			}
 		}
