@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.23-beta.8, built:2021-01-31
+ metadata-core v2.0.24-beta.1, built:2021-02-06
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2674,7 +2674,7 @@ class RegisterManager extends DataManager{
 		if (attr.ref && return_row)
 			return this.by_ref[attr.ref];
 		attr.action = "select";
-		const {alasql} = this._owner.$p.wsql;
+		this._owner.$p.wsql;
 		const arr = wsql.alasql(this.get_sql_struct(attr), attr._values);
 		let res;
 		delete attr.action;
@@ -4808,7 +4808,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.23-beta.8";
+    return "2.0.24-beta.1";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

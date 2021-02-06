@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.23-beta.8, built:2021-01-31
+ metadata-pouchdb v2.0.24-beta.1, built:2021-02-06
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -894,32 +894,6 @@ function adapter({AbstracrAdapter}) {
       }
       return delay * 3;
     }
-    rerun_sync(id, options, sync_events) {
-      const {local, remote} = this;
-      const sync = local.sync[id];
-      const rerun = () => {
-        if(sync) {
-          sync.cancel();
-          sync.removeAllListeners();
-        }
-        setTimeout(() => {
-          local.sync[id] = sync_events(local[id].replicate.from(remote[id], options));
-          this.rerun_sync(id, options, sync_events);
-        }, 300000 + Math.floor(Math.random() * 60000));
-      };
-      if(sync) {
-        sync.listeners('complete').forEach((fn) => {
-          if(fn.toString().includes('(info)')) {
-            sync.removeListener('complete', fn);
-          }
-        });
-        sync.on('complete', rerun);
-        sync.on('error', rerun);
-      }
-      else {
-        rerun();
-      }
-    }
     run_sync(id) {
       const {local, remote, $p: {wsql, job_prm, record_log}, props} = this;
       if(local.sync[id]) {
@@ -988,13 +962,8 @@ function adapter({AbstracrAdapter}) {
             const final_sync = (options) => {
               options.back_off_function = this.back_off;
               if(id == 'ram' || id == 'meta' || props.zone == job_prm.zone_demo) {
-                options.live = !job_prm.crazy_ram;
-                if(options.live) {
-                  local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
-                }
-                else {
-                  this.rerun_sync(id, options, sync_events);
-                }
+                options.live = true;
+                local.sync[id] = sync_events(db_local.replicate.from(db_remote, options));
               }
               else if(_push_only) {
                 options.live = true;
@@ -1047,176 +1016,8 @@ function adapter({AbstracrAdapter}) {
               options.filter = 'auth/push_only';
               options.query_params = {user: _user};
             }
-            (job_prm.templates ? this.from_files(db_local, db_remote, options) : this.from_dump(db_local, db_remote, options))
-              .then((synced) => {
-                if(synced) {
-                  final_sync(options);
-                  if(typeof synced === 'number') {
-                    this.rebuild_indexes(id)
-                      .then(() => this.load_data());
-                  }
-                }
-                else {
-                  sync_events(db_local.replicate.from(db_remote, options), options);
-                }
-              });
+            sync_events(db_local.replicate.from(db_remote, options), options);
           });
-        });
-    }
-    from_dump(local, remote, opts = {}) {
-      const {utils, job_prm} = this.$p;
-      if(job_prm.crazy_ram && local === this.local.ram) {
-        return Promise.resolve(false);
-      }
-      return local.get('_local/dumped')
-        .then(() => true)
-        .catch(() => remote.get('_local/dump'))
-        .then(doc => {
-          if(doc === true) {
-            return doc;
-          }
-          const byteCharacters = atob(doc.dump);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          const blob = new Blob([new Uint8Array(byteNumbers)], {type: 'application/zip'});
-          return utils.blob_as_text(blob, 'array');
-        })
-        .then((uarray) => {
-          if(uarray === true) {
-            return uarray;
-          }
-          return ('JSZip' in window ? Promise.resolve() : utils.load_script('https://cdn.jsdelivr.net/jszip/2/jszip.min.js', 'script'))
-            .then(() => {
-              const zip = new JSZip(uarray);
-              return zip.files.dump.asText();
-            });
-        })
-        .then((text) => {
-          if(text === true) {
-            return text;
-          }
-          const opt = {
-            proxy: remote.name,
-            checkpoints: 'target',
-            emit: (docs) => {
-              this.emit('pouch_dumped', {db: local, docs});
-              if(local.name.indexOf('ram') !== -1) {
-                this.emit('pouch_data_page', {
-                  total_rows: docs.length,
-                  local_rows: 3,
-                  docs_written: 3,
-                  limit: 300,
-                  page: 0,
-                  start: Date.now(),
-                });
-              }
-            }
-          };
-          if(remote.__opts.auth) {
-            opt.auth = remote.__opts.auth;
-          }
-          if(opts.filter) {
-            opt.filter = opts.filter;
-          }
-          if(opts.query_params) {
-            opt.query_params = opts.query_params;
-          }
-          if(opts.selector) {
-            opt.selector = opts.selector;
-          }
-          return (local.load ? Promise.resolve() : utils.load_script('/dist/pouchdb.load.js', 'script'))
-            .then(() => {
-              return local.load(text, opt);
-            })
-            .then(() => local.put({_id: '_local/dumped'}))
-            .then(() => -1);
-        })
-        .catch((err) => {
-          err.status !== 404 && console.log(err);
-          return false;
-        });
-    }
-    from_files(local, remote, opts = {}) {
-      const li = local.name.lastIndexOf('_');
-      const id = local.name.substr(li + 1);
-      const {job_prm} = this.$p;
-      if(job_prm.crazy_ram && local === this.local.ram) {
-        return Promise.resolve(false);
-      }
-      return fetch(`/${id}/00000.json`)
-        .then((res) => res.json())
-        .then((info) => {
-          return local.get('_local/stamp')
-            .then((doc) => {
-              if(doc.stamp === info.stamp) {
-                return true;
-              }
-              info._rev = doc._rev;
-              return info;
-            })
-            .catch(() => {
-              return info;
-            });
-        })
-        .then((info) => {
-          if(info === true) {
-            return info;
-          }
-          if(info) {
-            return (local.load ? Promise.resolve() : this.$p.utils.load_script('/dist/pouchdb.load.js', 'script'))
-              .then(() => info);
-          }
-        })
-        .then((info) => {
-          if(info === true) {
-            return info;
-          }
-          if(info) {
-            const {origin} = location;
-            let series = Promise.resolve();
-            const msg = {db: id, ok: true, docs_read: 0, pending: info.doc_count, start_time: new Date().toISOString()};
-            this.emit_async('repl_state', msg);
-            const opt = {
-              proxy: remote.name,
-              checkpoints: 'target',
-              emit: (docs) => {
-                this.emit('pouch_dumped', {db: local, docs});
-              }
-            };
-            if(remote.__opts.auth) {
-              opt.auth = remote.__opts.auth;
-            }
-            if(opts.filter) {
-              opt.filter = opts.filter;
-            }
-            if(opts.query_params) {
-              opt.query_params = opts.query_params;
-            }
-            if(opts.selector) {
-              opt.selector = opts.selector;
-            }
-            for(let i = 1; i <= info.files; i++) {
-              series = series.then(() => {
-                return local.load(`${origin}/${id}/${i.pad(5)}.json`, opt);
-              })
-                .then((step) => {
-                  msg.docs_read = (info.doc_count * i / info.files).round();
-                  msg.pending = info.doc_count - msg.docs_read;
-                  this.emit_async('repl_state', msg);
-                });
-            }
-            return series
-              .then(() => {
-                info._id = '_local/stamp';
-                return local.put(info);
-              })
-              .then(() => -1);
-          }
-        })
-        .catch(() => {
-          return false;
         });
     }
     rebuild_indexes(id, silent) {
