@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.24-beta.1, built:2021-02-06
+ metadata-abstract-ui v2.0.24-beta.1, built:2021-02-08
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -280,19 +280,7 @@ function scheme_settings() {
           endkey: [class_name, 9999],
         },
       };
-      const {adapter} = this;
-      if(adapter.local.templates && adapter.local.templates !==  adapter.remote.doc) {
-        return this.adapter.find_rows(this, opt, adapter.local.templates)
-          .then((templates_data) => {
-            return this.adapter.find_rows(this, opt)
-              .then((data) => {
-                return templates_data.concat(data);
-              });
-          })
-      }
-      else {
-        return this.adapter.find_rows(this, opt);
-      }
+      return this.adapter.find_rows(this, opt);
     }
     get_scheme(class_name) {
       const scheme_name = this.scheme_name(class_name);
@@ -384,19 +372,8 @@ function scheme_settings() {
     load() {
       return super.load()
         .then(() => {
-          const {_data, _manager: {adapter}} = this;
           if(!this.is_new()) {
             this.set_standard_period();
-          }
-          else if(adapter.local.templates && adapter.local.templates !== adapter.remote.doc) {
-            _data._loading = true;
-            return adapter.load_obj(this, {db: adapter.local.templates})
-              .then(() => {
-                _data._loading = false;
-                _data._modified = false;
-                this.set_standard_period();
-                return this.after_load();
-              });
           }
           return this;
         })

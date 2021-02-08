@@ -943,13 +943,10 @@ function adapter({AbstracrAdapter}) {
 
       return this.log_out()
         .then(() => {
-          return local.templates && local.templates.adapter === 'idb' && local.templates.destroy()
+          return local.ram && remote.ram != local.ram && local.ram.destroy()
         })
         .then(() => {
-          return remote.ram != local.ram && local.ram.destroy()
-        })
-        .then(() => {
-          return remote.doc != local.doc && local.doc.destroy()
+          return local.doc && remote.doc != local.doc && local.doc.destroy()
         })
         .then(do_reload)
         .catch(do_reload);
@@ -1482,7 +1479,7 @@ function adapter({AbstracrAdapter}) {
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
         for (const name in _m[kind]) {
-          (_m[kind][name].cachable === 'doc_ram' || _m[kind][name].cachable === 'templates_ram') && res.push(kind + '.' + name);
+          (_m[kind][name].cachable === 'doc_ram') && res.push(kind + '.' + name);
         }
       });
 

@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.24-beta.1, built:2021-02-06
+ metadata-pouchdb v2.0.24-beta.1, built:2021-02-08
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1111,13 +1111,10 @@ function adapter({AbstracrAdapter}) {
       };
       return this.log_out()
         .then(() => {
-          return local.templates && local.templates.adapter === 'idb' && local.templates.destroy()
+          return local.ram && remote.ram != local.ram && local.ram.destroy()
         })
         .then(() => {
-          return remote.ram != local.ram && local.ram.destroy()
-        })
-        .then(() => {
-          return remote.doc != local.doc && local.doc.destroy()
+          return local.doc && remote.doc != local.doc && local.doc.destroy()
         })
         .then(do_reload)
         .catch(do_reload);
@@ -1523,7 +1520,7 @@ function adapter({AbstracrAdapter}) {
       props._doc_ram_loading = true;
       ['cat', 'cch', 'ireg'].forEach((kind) => {
         for (const name in _m[kind]) {
-          (_m[kind][name].cachable === 'doc_ram' || _m[kind][name].cachable === 'templates_ram') && res.push(kind + '.' + name);
+          (_m[kind][name].cachable === 'doc_ram') && res.push(kind + '.' + name);
         }
       });
       const cpi = res.indexOf('cat.choice_params');

@@ -83,18 +83,7 @@ export default function scheme_settings() {
         },
       };
       const {adapter} = this;
-      if(adapter.local.templates && adapter.local.templates !==  adapter.remote.doc) {
-        return this.adapter.find_rows(this, opt, adapter.local.templates)
-          .then((templates_data) => {
-            return this.adapter.find_rows(this, opt)
-              .then((data) => {
-                return templates_data.concat(data);
-              });
-          })
-      }
-      else {
-        return this.adapter.find_rows(this, opt);
-      }
+      return this.adapter.find_rows(this, opt);
     }
 
     /**
@@ -250,20 +239,8 @@ export default function scheme_settings() {
     load() {
       return super.load()
         .then(() => {
-          const {_data, _manager: {adapter}} = this;
           if(!this.is_new()) {
             this.set_standard_period();
-          }
-          else if(adapter.local.templates && adapter.local.templates !== adapter.remote.doc) {
-
-            _data._loading = true;
-            return adapter.load_obj(this, {db: adapter.local.templates})
-              .then(() => {
-                _data._loading = false;
-                _data._modified = false;
-                this.set_standard_period();
-                return this.after_load();
-              });
           }
           return this;
         })
