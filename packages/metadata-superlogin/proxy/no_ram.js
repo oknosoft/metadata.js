@@ -19,7 +19,7 @@ const page = {
 
 export function load_ram({adapters: {pouch}, md}, types) {
   const {remote: {doc}, props} = pouch;
-  const headers = doc.getBasicAuthHeaders({prefix: pouch.auth_prefix(), ...doc.__opts.auth});
+  const headers = doc.__opts.auth ? doc.getBasicAuthHeaders({prefix: pouch.auth_prefix(), ...doc.__opts.auth}) : {};
   if(types) {
     headers.types = types.join(',');
   }

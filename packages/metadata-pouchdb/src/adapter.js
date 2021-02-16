@@ -1101,6 +1101,12 @@ function adapter({AbstracrAdapter}) {
                 }
               }
             }
+            return res;
+          })
+          .catch((err) => {
+            if(err.status !== 404) throw err;
+          })
+          .then((res) => {
             // если в метаданных {hashable: true}, проверим hash - может, и не надо записывать
             if(hashable) {
               const hash = tObj._hash();
@@ -1109,12 +1115,8 @@ function adapter({AbstracrAdapter}) {
                 skip_save = false;
               }
             }
-            return res;
+            return skip_save ? {ok: true, id: tmp._id, rev: tmp._rev} : db.put(tmp)
           })
-          .catch((err) => {
-            if(err.status !== 404) throw err;
-          })
-          .then(() => skip_save ? {ok: true, id: tmp._id, rev: tmp._rev} : db.put(tmp))
           .then((res) => {
             if(res) {
               tObj.is_new() && tObj._set_loaded(tObj.ref);

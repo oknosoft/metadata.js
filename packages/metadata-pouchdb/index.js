@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.24-beta.2, built:2021-02-13
+ metadata-pouchdb v2.0.24-beta.2, built:2021-02-16
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1228,6 +1228,12 @@ function adapter({AbstracrAdapter}) {
                 }
               }
             }
+            return res;
+          })
+          .catch((err) => {
+            if(err.status !== 404) throw err;
+          })
+          .then((res) => {
             if(hashable) {
               const hash = tObj._hash();
               if(typeof res !== 'object' || !res.timestamp || res.timestamp.hash !== hash) {
@@ -1235,12 +1241,8 @@ function adapter({AbstracrAdapter}) {
                 skip_save = false;
               }
             }
-            return res;
+            return skip_save ? {ok: true, id: tmp._id, rev: tmp._rev} : db.put(tmp)
           })
-          .catch((err) => {
-            if(err.status !== 404) throw err;
-          })
-          .then(() => skip_save ? {ok: true, id: tmp._id, rev: tmp._rev} : db.put(tmp))
           .then((res) => {
             if(res) {
               tObj.is_new() && tObj._set_loaded(tObj.ref);
