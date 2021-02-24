@@ -427,7 +427,7 @@ class Meta extends MetaEventEmitter {
 
     var mts = this.get(class_name).tabular_sections[ts_name],
       mfrm = this.get(class_name).form,
-      fields = mts.fields, mf;
+      fields = mts ? mts.fields : {}, mf;
 
     // если имеются метаданные формы, используем их
     if(mfrm && mfrm.obj) {

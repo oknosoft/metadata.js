@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.24-beta.3, built:2021-02-18
+ metadata-core v2.0.24-beta.3, built:2021-02-24
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -4455,7 +4455,7 @@ class Meta extends MetaEventEmitter {
     }
     var mts = this.get(class_name).tabular_sections[ts_name],
       mfrm = this.get(class_name).form,
-      fields = mts.fields, mf;
+      fields = mts ? mts.fields : {}, mf;
     if(mfrm && mfrm.obj) {
       if(!mfrm.obj.tabular_sections[ts_name]) {
         return;
