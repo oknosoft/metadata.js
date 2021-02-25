@@ -57,11 +57,18 @@ class DynList extends MDNRComponent {
   handleManagerChange({_mgr, _meta, _ref}) {
 
     const {class_name} = _mgr;
-    const {flat, parent, _owner, frm_key = 'list', scheme} = this.props;
+    let {flat, parent, _owner, frm_key = 'list', scheme} = this.props;
 
     this._meta = _meta || _mgr.metadata();
     this.show_flat = this._meta.hierarchical;
     this.frm_key = `frm_${class_name.replace('.', '_')}_${frm_key}`;
+
+    if(!parent && this._meta.hierarchical && this._meta.cachable === 'ram') {
+      const v = _mgr.get(_ref, true);
+      if(v) {
+        parent = v.parent;
+      }
+    }
 
     const newState = {
       ref: _ref || '',
@@ -561,32 +568,6 @@ class DynList extends MDNRComponent {
     row && handlers.handleAttachments && handlers.handleAttachments(row, _mgr);
   };
 
-  // обработчик истории изменений объекта теущей строки
-  handleHistory = () => {
-    const {selectedRow: row, props: {handlers, _mgr}} = this;
-    const {dp: {buyers_order}, utils}  = $p;
-
-    if(!row || utils.is_empty_guid(row.ref)) {
-      return handlers.handleIfaceState({
-        component: '',
-        name: 'alert',
-        value: {open: true, text: 'Укажите строку для вывода истории изменения', title: _mgr.metadata().synonym}
-      });
-    }
-
-    import('wb-forms/dist/ObjHistory/ObjHistory')
-      .then((module) => {
-        const Component = module.default;
-        const props = {hfields: null, db: null, obj: {ref: row.ref}, _mgr}
-        handlers.handleIfaceState({
-          component: '',
-          name: 'alert',
-          value: {open: true, title: 'История', initFullScreen: true, Component, props}
-        });
-      });
-
-  };
-
   get ltitle() {
     const {_mgr} = this.props;
     return `${_mgr.metadata().list_presentation || _mgr.metadata().synonym} (список)`;
@@ -638,7 +619,7 @@ class DynList extends MDNRComponent {
       handleEdit: this.handleEdit(true),
       handleRemove: this.handleRemove,
       handlePrint: this.handlePrint,
-      handleHistory: this.handleHistory,
+      handleHistory: props.handleHistory && props.handleHistory.bind(this),
       //handleAttachments: this.handleAttachments,
       handleSettingsOpen: this.handleSettingsOpen,
       handleSettingsClose: this.handleSettingsClose,
