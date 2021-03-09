@@ -16,17 +16,13 @@ import NotificationsIconNone from '@material-ui/icons/NotificationsNone';
 import Badge from '@material-ui/core/Badge';
 import {withStyles} from '@material-ui/styles';
 
-const styles = theme => ({
+const styles = ({palette, spacing}) => ({
   badge: {
-    //отключаем смещение
-    //right: -15,
     // The border color match the background color.
-    border: `1px solid ${
-      theme.palette.type === 'light' ? theme.palette.grey[200] : theme.palette.grey[900]
-      }`,
+    border: `1px solid ${palette.type === 'light' ? palette.grey[200] : palette.grey[900]}`,
   },
   root: {
-    marginRight: theme.spacing(),
+    marginRight: spacing(),
   }
 });
 

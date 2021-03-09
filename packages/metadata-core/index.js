@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.24-beta.3, built:2021-02-24
+ metadata-core v2.0.24-beta.3, built:2021-03-09
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -240,7 +240,7 @@ const msg = new I18n({
 	},
 });
 
-class Iterator {
+class Iterator$1 {
   constructor(_obj) {
     this._obj = _obj;
     this._idx = 0;
@@ -522,7 +522,7 @@ class TabularSection {
 		return _obj.map(_obj => toJSON.call({_obj, _manager}));
 	}
   [Symbol.iterator]() {
-    return new Iterator(this._obj);
+    return new Iterator$1(this._obj);
   }
 }
 class TabularSectionRow {
@@ -1633,7 +1633,7 @@ class MetaEventEmitter extends EventEmitter__default['default']{
   }
 }
 
-class Iterator$1 {
+class Iterator {
   constructor(by_ref, alatable) {
     this._by_ref = by_ref;
     this._alatable = alatable;
@@ -1965,7 +1965,7 @@ class DataManager extends MetaEventEmitter{
     return this.each(fn);
   }
   [Symbol.iterator]() {
-    return new Iterator$1(this.by_ref, this.alatable);
+    return new Iterator(this.by_ref, this.alatable);
   }
 }
 class RefDataManager extends DataManager{
