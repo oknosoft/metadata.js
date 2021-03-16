@@ -15,7 +15,7 @@ export default function Alert({text, title, html, Component, props, handleOk, op
   >
     {text && <DialogContentText>{text}</DialogContentText>}
     {html && <div dangerouslySetInnerHTML={{__html: html}}/>}
-    {Component && <Component {...props}/>}
+    {Component && <Component handleOk={handleOk} {...other} {...props}/>}
   </Dialog>;
 }
 
