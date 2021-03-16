@@ -238,13 +238,13 @@ export default {
 
     return new Promise((resolve, reject) => {
 
-      const close_confirm = () => {
+      const close_confirm = (res) => {
         this.close_confirm('alert');
         if(timer) {
           clearTimeout(timer);
           timer = 0;
         }
-        resolve();
+        resolve(res);
       };
 
       let timer = timeout && setTimeout(close_confirm, timeout);
