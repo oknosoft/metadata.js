@@ -2047,9 +2047,14 @@ function adapter({AbstracrAdapter}) {
           opts.headers.set('Authorization', `Basic ${new Buffer(str, 'utf8').toString('base64')}`);
         }
       }
-      if(props.branch) {
-        opts.headers.set('branch', props.branch.valueOf());
+
+      if(typeof sessionStorage === "object" && sessionStorage.key('zone')) {
+        opts.headers.set('zone', sessionStorage.getItem('zone'));
+        opts.headers.set('branch', sessionStorage.getItem('branch'));
+        opts.headers.set('impersonation', sessionStorage.getItem('impersonation'));
+        opts.headers.set('year', sessionStorage.getItem('year'));
       }
+
       if(!opts.headers.has('Content-Type')) {
         opts.headers.set('Content-Type', 'application/json');
       }

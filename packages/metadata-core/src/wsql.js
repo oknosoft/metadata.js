@@ -116,11 +116,11 @@ export default class WSQL {
 
 		// если зона не указана, устанавливаем "1"
     let zone;
-		if (!this._ls.getItem(job_prm.local_storage_prefix + "zone")){
-      zone = job_prm.hasOwnProperty("zone") ? job_prm.zone : 1;
+    if(!this._ls.getItem(job_prm.local_storage_prefix + 'zone')) {
+      zone = job_prm.hasOwnProperty('zone') ? job_prm.zone : 1;
     }
-		if (zone !== undefined){
-      this.set_user_param("zone", zone);
+    if(zone !== undefined) {
+      this.set_user_param('zone', zone);
     }
 
     // для гостевой зоны, couch_direct по умолчанию сброшен
@@ -148,6 +148,13 @@ export default class WSQL {
 		    this.set_user_param(prm.p, this.fetch_type(job_prm.hasOwnProperty(prm.p) ? job_prm[prm.p] : prm.v, prm.t));
 		  }
 		});
+
+    if(typeof sessionStorage === 'object' && !sessionStorage.key('zone')) {
+      sessionStorage.setItem('zone', this.get_user_param('zone'));  // number
+      sessionStorage.setItem('branch', '');                         // guid
+      sessionStorage.setItem('impersonation', '');                  // guid
+      sessionStorage.setItem('year', '');                           // number
+    }
 
 		// инициализируем метаданные
     if(meta) {

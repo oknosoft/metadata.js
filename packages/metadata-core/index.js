@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.24-beta.3, built:2021-03-09
+ metadata-core v2.0.24-beta.3, built:2021-03-28
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -4073,11 +4073,11 @@ class WSQL {
     ];
 		Array.isArray(job_prm.additional_params) && job_prm.additional_params.forEach((v) => nesessery_params.push(v));
     let zone;
-		if (!this._ls.getItem(job_prm.local_storage_prefix + "zone")){
-      zone = job_prm.hasOwnProperty("zone") ? job_prm.zone : 1;
+    if(!this._ls.getItem(job_prm.local_storage_prefix + 'zone')) {
+      zone = job_prm.hasOwnProperty('zone') ? job_prm.zone : 1;
     }
-		if (zone !== undefined){
-      this.set_user_param("zone", zone);
+    if(zone !== undefined) {
+      this.set_user_param('zone', zone);
     }
     if(zone == job_prm.zone_demo){
       nesessery_params.some((prm) => {
@@ -4101,6 +4101,12 @@ class WSQL {
 		    this.set_user_param(prm.p, this.fetch_type(job_prm.hasOwnProperty(prm.p) ? job_prm[prm.p] : prm.v, prm.t));
 		  }
 		});
+    if(typeof sessionStorage === 'object' && !sessionStorage.key('zone')) {
+      sessionStorage.setItem('zone', this.get_user_param('zone'));
+      sessionStorage.setItem('branch', '');
+      sessionStorage.setItem('impersonation', '');
+      sessionStorage.setItem('year', '');
+    }
     if(meta) {
       meta(this.$p);
       for(let i in adapters){
