@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.24-beta.3, built:2021-03-28
+ metadata-core v2.0.24-beta.3, built:2021-04-16
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -794,7 +794,7 @@ class BaseDataObj {
     const {utils: {blank}, classes: {Meta}} = _manager._owner.$p;
     for(const fld in _obj) {
       const mfld = _manager.metadata(fld);
-      if(mfld) {
+      if(mfld || fld === '_attachments') {
         if(Array.isArray(_obj[fld])) {
           res[fld] = this[fld].toJSON();
         }

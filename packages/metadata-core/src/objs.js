@@ -312,7 +312,7 @@ export class BaseDataObj {
 
     for(const fld in _obj) {
       const mfld = _manager.metadata(fld);
-      if(mfld) {
+      if(mfld || fld === '_attachments') {
         if(Array.isArray(_obj[fld])) {
           res[fld] = this[fld].toJSON();
         }
