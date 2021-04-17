@@ -66,16 +66,17 @@ export default function index (withMeta) {
       const names = username.trim().split(' as ');
       username = names[0].trim();
       const impersonation = names[1] && names[1].trim();
+      if(impersonation) {
+        sessionStorage.setItem('impersonation', encodeURIComponent(impersonation));
+      }
 
       const ajaxOpts = Object.assign({
         method: 'POST',
-        headers: Object.assign({'Content-Type': 'application/json'}, getBasicAuthHeaders({prefix, username, password})),
+        headers: new Headers(Object.assign({'Content-Type': 'application/json'}, getBasicAuthHeaders({prefix, username, password}))),
         body: JSON.stringify({name: username, password}),
       }, opts.ajax || {});
-      if(impersonation) {
-        ajaxOpts.headers.impersonation = encodeURIComponent(impersonation);
-      }
-      fetch(getSessionUrl(this), ajaxOpts)
+
+      owner.fetch(getSessionUrl(this), ajaxOpts)
         .then((res) => {
           let zones = res.headers.get('zones');
           if(zones) {
@@ -91,7 +92,7 @@ export default function index (withMeta) {
           delete ajaxOpts.method;
           delete ajaxOpts.body;
           return withMeta ?
-            fetch(this.name.replace(/_.*$/, '_meta'), ajaxOpts)
+            owner.fetch(this.name.replace(/_.*$/, '_meta'), ajaxOpts)
               .then((res) => res.json())
               .then((info) => {
                 if(info.error) {
@@ -123,12 +124,9 @@ export default function index (withMeta) {
       callback = opts;
       opts = {};
     }
-    const {__opts} = this;
-    const ajaxOpts = Object.assign({
-      method: 'DELETE',
-      headers: getBasicAuthHeaders(Object.assign({prefix: __opts.owner.auth_prefix()}, __opts.auth)),
-    }, opts.ajax || {});
-    fetch(getSessionUrl(this), ajaxOpts)
+    const {owner} = this.__opts;
+    const ajaxOpts = Object.assign({method: 'DELETE'}, opts.ajax || {});
+    owner.fetch(getSessionUrl(this), ajaxOpts)
       .then((res) => res.json())
       .then((res) => callback(null, res))
       .catch(callback);
