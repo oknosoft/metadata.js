@@ -1,7 +1,7 @@
 {
   "name": "metadata-react",
   "description": "React UI components for metadata.js",
-  "version": "2.0.24-beta.3",
+  "version": "2.0.24-beta.4",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -15,8 +15,8 @@
     "downshift": "^6.1",
     "font-awesome": "^4.7.0",
     "marked": "^2.0",
-    "metadata-abstract-ui": "^2.0.24-beta.3",
-    "metadata-redux": "^2.0.24-beta.3",
+    "metadata-abstract-ui": "^2.0.24-beta.4",
+    "metadata-redux": "^2.0.24-beta.4",
     "rc-calendar": "^9.15",
     "rc-cascader": "^1.4",
     "rc-time-picker": "^3.7",
@@ -26,7 +26,7 @@
     "react-fullscreenable": "^2.5.1-0",
     "react-helmet": "^6.1",
     "react-onclickoutside": "^6.10",
-    "react-swipeable": "^6.0",
+    "react-swipeable": "^6.1",
     "react-virtualized": "^9.22",
     "yamljs": "^0.3"
   },
