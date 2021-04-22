@@ -32,6 +32,13 @@ const styles = (theme) => ({
   },
   checkbox: {
     borderRadius: 'unset',
+  },
+  listbox: {
+    boxSizing: 'border-box',
+    '& ul': {
+      padding: 0,
+      margin: 0,
+    },
   }
 });
 

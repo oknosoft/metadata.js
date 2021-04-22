@@ -2,7 +2,7 @@ import {withStyles} from '@material-ui/styles';
 
 const styles = theme => ({
   root: {
-    maxWidth: 420,
+    maxWidth: 560,
   },
   button: {
     width: 300,
@@ -23,7 +23,7 @@ const styles = theme => ({
   flex: {display: 'flex'},
   infoText: {
     marginLeft: theme.spacing(),
-    maxWidth: 380,
+    maxWidth: 500,
   },
   disabled: {
     pointerEvents: 'none',

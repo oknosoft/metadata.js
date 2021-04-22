@@ -6,60 +6,14 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import providers from './providers';
+import Autocomplete from '../../DataField/Autocomplete';
 import withStyles from './styles';
-const keys = Object.keys(providers);
 
-function Provider({provider = 'couchdb', changeProvider, classes}) {
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const {Icon, name} = providers[provider];
-  const [selectedIndex, setSelectedIndex] = React.useState(1);
 
-  function handleClickListItem(event) {
-    setAnchorEl(event.currentTarget);
-  }
 
-  function handleMenuItemClick(event, option) {
-    changeProvider(option);
-    setAnchorEl(null);
-  }
-
-  function handleClose() {
-    setAnchorEl(null);
-  }
-
-  return (
-    <div>
-      <List component="nav" aria-label="Select provider">
-        <ListItem
-          button
-          aria-haspopup="true"
-          aria-controls="lock-menu"
-          aria-label="Провайдер авторизации"
-          onClick={handleClickListItem}
-        >
-          <ListItemIcon><Icon key="icon" className={classes.small}/></ListItemIcon>
-          <ListItemText primary={name} secondary="Провайдер авторизации" />
-        </ListItem>
-      </List>
-      <Menu
-        id="lock-menu"
-        anchorEl={anchorEl}
-        keepMounted
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        {keys.map((option, index) => (
-          <MenuItem
-            key={`opt-${index}`}
-            selected={option === provider}
-            onClick={event => handleMenuItemClick(event, option)}
-          >
-            {providers[option].name}
-          </MenuItem>
-        ))}
-      </Menu>
-    </div>
-  );
+function Provider({provider = 'couchdb', changeProvider, pkeys, classes}) {
+  const value = pkeys.find(({value}) => value === provider);
+  return <Autocomplete options={pkeys} label="Провайдер" onChange={(event, value) => changeProvider(value.value)} value={value} />;
 }
 
 export default withStyles(Provider);

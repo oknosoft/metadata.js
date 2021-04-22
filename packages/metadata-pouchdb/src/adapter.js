@@ -430,21 +430,6 @@ function adapter({AbstracrAdapter}) {
     log_out() {
       const {props, local, remote, fetch, authorized, $p: {md}} = this;
 
-      if(authorized) {
-        for (const name in local.sync) {
-          if(name != 'meta' && props.autologin.indexOf(name) === -1) {
-            try {
-              local.sync[name].removeAllListeners();
-              local.sync[name].cancel();
-              local.sync[name] = null;
-            }
-            catch (err) {
-            }
-          }
-        }
-        props._auth = null;
-      }
-
       return Promise.all(md.bases().map((name) => {
         if(name != 'meta' && remote[name]) {
           let res = remote[name].logout && remote[name].logout();
@@ -468,6 +453,20 @@ function adapter({AbstracrAdapter}) {
         }
       }))
         .then(() => {
+          if(authorized) {
+            for (const name in local.sync) {
+              if(name != 'meta' && props.autologin.indexOf(name) === -1) {
+                try {
+                  local.sync[name].removeAllListeners();
+                  local.sync[name].cancel();
+                  local.sync[name] = null;
+                }
+                catch (err) {
+                }
+              }
+            }
+            props._auth = null;
+          }
           props._user = '';
           this.emit('user_log_out');
         });

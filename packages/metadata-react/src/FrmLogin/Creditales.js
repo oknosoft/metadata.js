@@ -7,7 +7,6 @@
  */
 
 import React from 'react';
-import TextField from '@material-ui/core/TextField';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Input from '@material-ui/core/Input';
@@ -15,28 +14,29 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import IconButton from '@material-ui/core/IconButton';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
-import FormGroup from '@material-ui/core/FormGroup';
 
-export default function Creditales(
-  {login, password, showPassword, handleClickShowPasssword, handleMouseDownPassword, handleLogin, loginChange, passwordChange}) {
+import withStyles, {extClasses} from '../DataField/stylesPropertyGrid';
+
+function Creditales(
+  {login, password, showPassword, handleClickShowPasssword, handleMouseDownPassword, handleLogin, loginChange, passwordChange, classes}) {
+
+  const ext = extClasses(classes);
+
   return (
-    <FormGroup>
-
-      <TextField
-        label="Имя пользователя"
-        inputProps={{placeholder: 'login', id: 'username', name: 'username'}}
-        fullWidth
-        margin="dense"
-        value={login}
-        onChange={loginChange}
-      />
-
-      <FormControl
-        fullWidth
-        margin="dense"
-      >
-        <InputLabel>Пароль</InputLabel>
+    <>
+      <FormControl classes={ext.control} fullWidth>
+        <InputLabel classes={ext.label}>Логин</InputLabel>
         <Input
+          classes={ext.input}
+          inputProps={{placeholder: 'login', id: 'username', name: 'username'}}
+          value={login}
+          onChange={loginChange}
+        />
+      </FormControl>
+      <FormControl classes={ext.control} fullWidth>
+        <InputLabel classes={ext.label}>Пароль</InputLabel>
+        <Input
+          classes={ext.input}
           type={showPassword ? 'text' : 'password'}
           inputProps={{placeholder: 'password', id: 'password', name: 'password'}}
           value={password}
@@ -54,7 +54,8 @@ export default function Creditales(
           }
         />
       </FormControl>
-
-    </FormGroup>
+    </>
   );
 }
+
+export default withStyles(Creditales);
