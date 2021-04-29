@@ -7,7 +7,7 @@
  */
 
 import React, {Component} from 'react';
-import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
+import AutoSizer from 'react-virtualized-auto-sizer';
 import DiagramsArray from './DiagramsArray';
 import connect from './connect';
 

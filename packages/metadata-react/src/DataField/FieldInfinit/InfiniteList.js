@@ -10,7 +10,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import InfiniteLoader from 'react-virtualized/dist/es/InfiniteLoader';
 import List from 'react-virtualized/dist/es/List';
-import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
+import AutoSizer from 'react-virtualized-auto-sizer';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';

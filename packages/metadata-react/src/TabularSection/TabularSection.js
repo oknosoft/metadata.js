@@ -7,7 +7,7 @@ import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 
 import ReactDataGrid from 'react-data-grid';
-import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
+import AutoSizer from 'react-virtualized-auto-sizer';
 
 class TabularSection extends MComponent {
 
@@ -156,6 +156,9 @@ class TabularSection extends MComponent {
 
   handleRowsUpdated = ({ fromRow, toRow, updated }) => {
     //merge updated row with current row and rerender by setting state
+    if(fromRow !== toRow) {
+      return;
+    }
     for (let i = fromRow; i <= toRow; i++) {
       const row = this.rowGetter(i);
       if(row){
@@ -185,8 +188,13 @@ class TabularSection extends MComponent {
   // обработчик при изменении настроек компоновки
   handleSchemeChange = (scheme) => {
 
-    const {props: {_obj, read_only, columnsChange}, state} = this;
+    const {props: {_obj, read_only, columnsChange, denyReorder}, state} = this;
     const _columns = scheme.rx_columns({mode: 'tabular', fields: state._meta.fields, _obj, read_only});
+    if(denyReorder) {
+      for(const column of _columns) {
+        column.sortable = false;
+      }
+    }
 
     columnsChange && columnsChange({scheme, columns: _columns});
 

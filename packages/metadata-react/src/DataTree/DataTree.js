@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import MDNRComponent from '../common/MDNRComponent';
 
-import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
+import AutoSizer from 'react-virtualized-auto-sizer';
 import cn from 'classnames';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 import DataListToolbar from '../DynList/DataListToolbar';

@@ -27,7 +27,9 @@
     "react-helmet": "^6.1",
     "react-onclickoutside": "^6.10",
     "react-swipeable": "^6.1",
-    "react-virtualized": "^9.22",
+    "react-virtualized-auto-sizer": "^1.0.5",
+    "react-window": "^1.8.6",
+    "react-window-infinite-loader": "^1.0.7",
     "yamljs": "^0.3"
   },
   "peerDependencies": {
