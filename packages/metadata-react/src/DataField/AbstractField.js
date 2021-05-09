@@ -75,6 +75,12 @@ export default class AbstractField extends FieldWithMeta {
     return props.hasOwnProperty('isTabular') ? props.isTabular : $p.utils.is_tabular(props._obj);
   }
 
+  get read_only() {
+    const {props, _meta} = this;
+    const {read_only} = (props.hasOwnProperty('read_only') ? props : _meta);
+    return read_only;
+  }
+
   onChange({target}) {
     const {_obj, _fld, handleValueChange} = this.props;
     _obj[_fld] = target.value;

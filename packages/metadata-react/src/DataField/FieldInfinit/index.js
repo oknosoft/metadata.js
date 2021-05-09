@@ -1,3 +1,4 @@
-import FieldInfinit from './FieldInfinit';
+//import FieldInfinit from './FieldInfinit';
+import FieldAutocomplete from './FieldAutocomplete';
 
-export default FieldInfinit;
+export default FieldAutocomplete;

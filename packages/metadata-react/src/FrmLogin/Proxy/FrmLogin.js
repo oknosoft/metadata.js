@@ -48,6 +48,7 @@ class FrmLogin extends React.Component {
       login: '',
       password: '',
       provider,
+      reload: false,
     };
   }
 
@@ -91,8 +92,21 @@ class FrmLogin extends React.Component {
     }
   };
 
+  set_reset = () => {
+    this.setState({reload: true});
+  }
+
+  handleReset() {
+    $p.eve && ($p.eve.redirect = true);
+    location.replace('/');
+  }
+
   footer() {
-    const {state: {provider, error}, props: {classes, user, idle, handleLogOut, handleUnLock, _obj}} = this;
+    let {state: {provider, error, reload}, props: {classes, user, idle, handleLogOut, handleUnLock, _obj}} = this;
+
+    if(user.log_error && user.log_error.includes('proxy:')) {
+      reload = true;
+    }
 
     function Button(props) {
       return <BaseButton color="primary" size="small" className={classes.dialogButton} {...props}/>;
@@ -100,10 +114,11 @@ class FrmLogin extends React.Component {
 
     return [
       <DialogActions key="actions">
-        {user.logged_in && !idle && <Button onClick={handleLogOut} title="Завершить сеанс">Выйти</Button>}
-        {user.logged_in && idle && <Button onClick={handleUnLock} title="Возобновить сеанс">Войти</Button>}
-        {!user.logged_in && <Button onClick={() => this.handleLogin(provider)} title="Авторизация">Войти</Button>}
-        {user.logged_in && !idle && <Button onClick={this.handleNavigate} title="Перейти к списку документов">К документам</Button>}
+        {reload && <Button onClick={this.handleReset} title="Перезагрузка">Перезапуск</Button>}
+        {!reload && user.logged_in && !idle && <Button onClick={handleLogOut} title="Завершить сеанс">Выйти</Button>}
+        {!reload && user.logged_in && idle && <Button onClick={handleUnLock} title="Возобновить сеанс">Войти</Button>}
+        {!reload && !user.logged_in && <Button onClick={() => this.handleLogin(provider)} title="Авторизация">Войти</Button>}
+        {!reload && user.logged_in && !idle && <Button onClick={this.handleNavigate} title="Перейти к списку документов">К документам</Button>}
       </DialogActions>,
       (user.log_error || error) &&
       <FormGroup key="error" row>
@@ -121,7 +136,7 @@ class FrmLogin extends React.Component {
   }
 
   creditales() {
-    const {state: {  provider, login, password, showPassword}, props: {classes, user, _obj, disable}} = this;
+    const {state: {  provider, login, password, showPassword}, props: {classes, user, _obj}} = this;
     if(user.logged_in) {
       return <FormGroup>
         <PropField _obj={_obj} _fld="id" read_only />
@@ -151,7 +166,7 @@ class FrmLogin extends React.Component {
       [classes.root]: true,
       [classes.disabled]: user.try_log_in,
     })}>
-      <ProxySettings user={user} />
+      <ProxySettings user={user} set_reset={this.set_reset} />
       {this.creditales()}
       {this.footer()}
       {fetching && <LoadingModal open text="Запрос к серверу..." />}

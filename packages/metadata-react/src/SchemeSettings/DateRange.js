@@ -18,7 +18,18 @@ import 'rc-calendar/assets/index.css';
 import '../DataField/rc-calendar.css';
 
 
-import {isValidRange, formatRange} from '../DataField/FieldDateRange';
+const formatStr = 'DD.MM.YYYY';
+function format(v) {
+  return v ? v.format(formatStr) : '';
+}
+
+export function isValidRange(v) {
+  return v && v[0] && v[1];
+}
+
+export function formatRange(v) {
+  return isValidRange(v) && `${format(v[0])} - ${format(v[1])}` || ''
+}
 
 
 export default class DateRange extends Component {

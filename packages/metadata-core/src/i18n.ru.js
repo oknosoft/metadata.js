@@ -73,7 +73,8 @@ const msg = new I18n({
 
 		error_critical: 'Критическая ошибка',
 		error_metadata: 'Ошибка загрузки метаданных конфигурации',
-		error_network: 'Ошибка сети или сервера - запрос отклонен',
+		error_network: 'Ошибка сети или сервера',
+		get error_proxy() {return `proxy: ${this.error_network}. ${this.requery}`},
 		error_rights: 'Ограничение доступа',
 		error_low_acl: 'Недостаточно прав для выполнения операции',
 

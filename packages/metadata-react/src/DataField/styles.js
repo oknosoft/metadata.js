@@ -85,6 +85,9 @@ const styles = theme => ({
   required: {
     borderBottom: '3px dashed red',
     paddingBottom: 4,
+  },
+  popper: {
+    minWidth: 310,
   }
 });
 

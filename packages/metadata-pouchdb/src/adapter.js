@@ -2048,10 +2048,14 @@ function adapter({AbstracrAdapter}) {
       }
 
       if(typeof sessionStorage === "object" && sessionStorage.key('zone')) {
-        opts.headers.set('zone', sessionStorage.getItem('zone'));
-        opts.headers.set('branch', sessionStorage.getItem('branch'));
-        opts.headers.set('impersonation', sessionStorage.getItem('impersonation'));
-        opts.headers.set('year', sessionStorage.getItem('year'));
+        const zone = sessionStorage.getItem('zone');
+        if(zone) {
+          url = url.replace(/_\d\d_/, `_${zone}_`);
+          opts.headers.set('zone', zone);
+          opts.headers.set('branch', sessionStorage.getItem('branch'));
+          opts.headers.set('impersonation', sessionStorage.getItem('impersonation'));
+          opts.headers.set('year', sessionStorage.getItem('year'));
+        }
       }
 
       if(!opts.headers.has('Content-Type')) {

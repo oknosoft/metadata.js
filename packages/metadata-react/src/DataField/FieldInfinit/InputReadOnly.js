@@ -5,7 +5,7 @@ import Input from '@material-ui/core/Input';
 import TextField from '@material-ui/core/TextField';
 import cn from 'classnames';
 
-export default function InpitReadOnly(props) {
+export default function InputReadOnly(props) {
   const {_meta, classes} = props;
   return props.isTabular ?
     <div>

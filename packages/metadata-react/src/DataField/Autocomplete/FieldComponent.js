@@ -6,7 +6,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Input from '@material-ui/core/Input';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import ListSubheader from '@material-ui/core/ListSubheader';
-import {Typography} from '@material-ui/core';
+import Typography from '@material-ui/core/Typography';
 
 import ListboxComponent from './ListboxComponent';
 import withStyles, {extClasses} from '../../DataField/stylesPropertyGrid';
@@ -19,22 +19,25 @@ const renderGroup = (params) => [
   params.children,
 ];
 
-function FieldComponent({classes, label, fullWidth, ...other}) {
+function FieldComponent({classes, label, fullWidth, disableClearable, ...other}) {
 
   const ext = extClasses(classes);
 
   //renderGroup={renderGroup}
   //groupBy={(option) => option[0].toUpperCase()}
-
   //(params) => <TextField {...params}  label={label} />
+
+  if(typeof disableClearable !== 'boolean') {
+    disableClearable = true;
+  }
 
   return (
     <Autocomplete
       classes={{listbox: classes.listbox}}
       disableListWrap
-      disableClearable
+      disableClearable={disableClearable}
       ListboxComponent={ListboxComponent}
-      getOptionLabel={(v) => v.name}
+      getOptionLabel={(v) => (v && v.name) || ''}
       renderInput={({inputProps, InputProps, InputLabelProps, id, ...other}) => (
         <FormControl classes={ext.control} fullWidth={fullWidth} {...other}>
           <InputLabel classes={ext.label} {...InputLabelProps}>{label}</InputLabel>

@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.24-beta.4, built:2021-04-17
+ metadata-core v2.0.25-beta.1, built:2021-05-09
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -64,7 +64,8 @@ const msg = new I18n({
 		error_geocoding: 'Ошибка геокодера',
 		error_critical: 'Критическая ошибка',
 		error_metadata: 'Ошибка загрузки метаданных конфигурации',
-		error_network: 'Ошибка сети или сервера - запрос отклонен',
+		error_network: 'Ошибка сети или сервера',
+		get error_proxy() {return `proxy: ${this.error_network}. ${this.requery}`},
 		error_rights: 'Ограничение доступа',
 		error_low_acl: 'Недостаточно прав для выполнения операции',
     file_download: 'Загрузка файлов',
@@ -4819,7 +4820,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.24-beta.4";
+    return "2.0.25-beta.1";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

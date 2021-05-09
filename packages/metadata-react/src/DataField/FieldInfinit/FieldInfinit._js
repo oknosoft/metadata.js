@@ -24,8 +24,8 @@ import ClearIcon from '@material-ui/icons/Clear';
 
 // окно диалога для показа всплывающей формы
 import InfiniteList, {prevent} from './InfiniteList';
-import InpitReadOnly from './InpitReadOnly';
-import InpitEditable from './InpitEditable';
+import InputReadOnly from './InputReadOnly';
+import InputEditable from './InputEditable';
 import OuterDialog from './OuterDialog';
 
 import AbstractField, {suggestionText} from '../AbstractField';
@@ -240,8 +240,6 @@ class FieldInfinit extends AbstractField {
 
             {_meta.type.types.length > 1 && <IconButton title="Выбрать тип значения"><TitleIcon/></IconButton>}
 
-            {!is_enm && _manager.acl.includes('i') && <IconButton title="Создать элемент"><AddIcon/></IconButton>}
-
             {!is_enm && _manager.acl.includes('v') && <IconButton
               title={_manager.frm_obj_name}
               disabled={iconDisabled}
@@ -268,7 +266,7 @@ class FieldInfinit extends AbstractField {
     const value = _obj[_fld];
 
     return (
-      read_only ? <InpitReadOnly
+      read_only ? <InputReadOnly
           _meta={_meta}
           _fld={_fld}
           isTabular={isTabular}
@@ -307,7 +305,7 @@ class FieldInfinit extends AbstractField {
               onClick={this.handleBlur}
               onKeyDown={this.handleKeyBlur}
             >
-              <InpitEditable
+              <InputEditable
                 labelProps={getLabelProps()}
                 inputProps={Object.assign(getInputProps({
                   onKeyDown: this.inputKeyDown,

@@ -23,7 +23,8 @@ export function load_ram({adapters: {pouch}, md}, types) {
   if(types) {
     headers.set('types', types.join(','));
   }
-  return pouch.fetch(`/couchdb/mdm/${props.zone}/${props._suffix}`, {headers})
+  const zone = sessionStorage.getItem('zone') || props.zone;
+  return pouch.fetch(`/couchdb/mdm/${zone}/${props._suffix}`, {headers})
     .then(stream_load(md, pouch))
     .then(() => {
       props._data_loaded = true;
@@ -41,14 +42,24 @@ export function load_ram({adapters: {pouch}, md}, types) {
 }
 
 // загружает данные, которые не зависят от отдела абонента
-export function load_common({adapters: {pouch}, md}, types) {
+export function load_common({adapters: {pouch}, md, msg}, types) {
   const headers = new Headers();
   if(types) {
     headers.set('types', types.join(','));
   }
-  return pouch.fetch(`/couchdb/mdm/${pouch.props.zone}/common`, {headers})
+  const zone = sessionStorage.getItem('zone') || pouch.props.zone;
+  return pouch.fetch(`/couchdb/mdm/${zone}/common`, {headers})
     .then(stream_load(md, pouch))
-    .then(() => pouch.emit('pouch_no_data', 'no_ram'));
+    .catch((err) => {
+      pouch.emit('user_log_fault', {message: 'custom', text: msg.error_proxy});
+      return err;
+    })
+    .then((err) => {
+      pouch.emit('pouch_no_data', 'no_ram');
+      if(err instanceof Error) {
+        throw err;
+      }
+    });
 }
 
 function stream_load(md, pouch) {
@@ -62,7 +73,12 @@ function stream_load(md, pouch) {
     pouch.emit('pouch_data_page', page);
   }
 
-  return async function stream_load({body, headers}) {
+  return async function stream_load({body, headers, status, statusText}) {
+
+    if(status > 200) {
+      throw new Error(`${status}: ${statusText}`);
+    }
+
     const reader = body.getReader();
     const decoder = new TextDecoder("utf-8");
 

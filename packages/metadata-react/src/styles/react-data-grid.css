@@ -29,7 +29,8 @@ input.editor-main:focus, select.editor-main:focus {
   border-radius: 0;
 }
 .rdg-editor-container input.editor-main, select.editor-main {
-  padding: 6px;
+  padding: 1px 0 0 2px;
+  border: 0;
   font-size: inherit;
 }
 .rdg-editor-container, .react-grid-Container *, input {

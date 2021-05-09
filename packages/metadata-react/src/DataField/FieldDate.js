@@ -6,106 +6,72 @@
  * Created 22.09.2016
  */
 
-import React, {Component} from 'react';
-import ReactDOM from 'react-dom';
-import PropTypes from 'prop-types';
-
-import Calendar from 'rc-calendar';
-import DatePicker from 'rc-calendar/lib/Picker';
-import TimePickerPanel from 'rc-time-picker/lib/Panel';
-import ruRU from 'rc-calendar/lib/locale/ru_RU';
-import 'rc-time-picker/assets/index.css';
-import './rc-calendar.css';
-
-import StyledCustomField from './StyledCustomField';
+import React from 'react';
 import AbstractField from './AbstractField';
-
-const multiFormats = ['DD.MM.YYYY HH:mm', 'DD.MM.YYYY HH:mm:ss', 'DD.MM.YYYY HHmm', 'DD.MM.YYYY', 'DD.MM.YY', 'DD/MM/YY', 'DDMMYY', 'DDMMYYYY'];
-const format = multiFormats[0];
-
-function getFormat(time) {
-  return time ? format : 'DD.MM.YYYY';
-}
+import withStyles from './styles';
+import cn from 'classnames';
+import InputLabel from '@material-ui/core/InputLabel';
+import Input from '@material-ui/core/Input';
+import FormControl from '@material-ui/core/FormControl';
 
 class FieldDate extends AbstractField {
 
   constructor(props, context) {
     super(props, context);
-    const {_obj, _fld} = props;
-
-    this.state = {
-      showTime: true,
-      showDateInput: true,
-      value: moment(_obj[_fld]),
-      defaultCalendarValue: moment(_obj[_fld]),
-    };
+    const m = moment(this.state.value);
+    this._type = this._meta.type.date_part.includes('time') ? 'datetime-local' : 'date';
+    this.state.value = m.format(this._type === 'date' ? 'YYYY-MM-DD' : 'YYYY-MM-DDTHH:mm');
   }
 
-  handleChange = (value) => {
-    if(value){
-      const {_obj, _fld, handleValueChange} = this.props;
-      _obj[_fld] = value.toDate();
-      this.setState({value}, () => handleValueChange && handleValueChange(_obj[_fld]));
-    }
+  onChange = ({target}) => {
+    this.setState({value: target.value});
+    const {_obj, _fld, handleValueChange} = this.props;
+    _obj[_fld] = moment(target.value).toDate();
+    handleValueChange && handleValueChange(_obj[_fld]);
   };
 
-  get timePickerElement() {
-    if(!FieldDate.timePickerElement) {
-      FieldDate.timePickerElement = <TimePickerPanel defaultValue={moment('00:00:00', 'HH:mm:ss')} />;
-    }
-    return FieldDate.timePickerElement;
-  }
-
   render() {
-
-    const {props, state, _meta, isTabular, handleChange} = this;
-    const {_fld, classes, fullWidth} = props;
-
-    const calendar = (<Calendar
-      locale={ruRU}
-      className="fld-calendar"
-      dateInputPlaceholder={_meta.tooltip || _meta.synonym}
-      //formatter={getFormat(state.showTime)}
-      format={multiFormats}
-      timePicker={state.showTime ? this.timePickerElement : null}
-      defaultValue={state.defaultCalendarValue}
-      showDateInput={state.showDateInput}
-    />);
-
-    return (<DatePicker
-      animation="slide-up"
-      disabled={props.read_only}
-      calendar={calendar}
-      value={state.value}
-      onChange={this.handleChange}
-    >
-      {
-        ({ value }) => {
-
-          return (isTabular ?
-            <input
-              type="date"
-              readOnly={props.read_only}
-              value={value && value.format(getFormat(state.showTime)) || ''}
-            />
-            :
-            <StyledCustomField
-              placeholder={_meta.tooltip || _meta.synonym}
-              disabled={props.read_only}
-              readOnly
-              value={value && value.format(getFormat(state.showTime)) || ''}
-              _fld={_fld}
-              _meta={_meta}
-              classes={classes}
-              fullWidth={fullWidth}
-            />);
-
-        }
+    let {props, state: {value}, _meta, _type, onChange} = this;
+    const {_obj, _fld, classes, extClasses, className, fullWidth, read_only, InputProps, label_position, bar, isTabular, ...other} = props;
+    const attr = {
+      title: _meta.tooltip || _meta.synonym,
+    }
+    Object.assign(other, {value, onChange});
+    if(_meta.mandatory) {
+      attr.required = true;
+      if(!other.value) {
+        other.inputProps = Object.assign(other.inputProps || {}, {className: classes.required});
       }
-    </DatePicker>);
+    }
+    if(read_only) {
+      other.readOnly = true;
+    }
 
+    return this.isTabular ?
+      <input type={_type} {...attr} {...other}/>
+      :
+      <FormControl
+        className={extClasses && extClasses.control ? '' : cn(classes.formControl, className, props.bar && classes.barInput)}
+        classes={extClasses && extClasses.control ? extClasses.control : null}
+        fullWidth={fullWidth}
+        {...attr}
+      >
+        {label_position != 'hide' &&
+        <InputLabel
+          classes={extClasses && extClasses.label ? extClasses.label : null}
+          shrink
+        >{_meta.synonym}</InputLabel>}
+        <Input
+          type={_type}
+          {...other}
+          classes={
+            Object.assign({
+              input: cn(classes.input, attr.required && !other.value && classes.required)
+            }, extClasses && extClasses.input)
+          }
+        />
+      </FormControl>;
   }
-
 }
 
-export default FieldDate;
+export default withStyles(FieldDate);
