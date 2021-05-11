@@ -115,7 +115,7 @@ export function sync_data(dbid, change) {
 export function data_page(page) {
   return {
     type: DATA_PAGE,
-    payload: page
+    payload: Object.assign({}, page)
   };
 }
 
