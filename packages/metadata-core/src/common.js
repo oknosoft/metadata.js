@@ -163,7 +163,48 @@ class MetaEngine {
    */
   get current_user() {
 
-    const {CatUsers, cat, superlogin, wsql, adapters: {pouch}} = this;
+    const {cat, superlogin, wsql, adapters: {pouch}} = this;
+
+    // заглушка "всё разрешено", если методы acl не переопределены внешним приложением
+    this.patchCatUsers();
+
+    let user_name, user;
+    if (cat && cat.users) {
+
+      if(pouch && pouch.props._user) {
+        user = cat.users.get(pouch.props._user);
+      }
+      else {
+        if (superlogin) {
+          const session = superlogin.getSession();
+          user_name = session ? session.user_id : '';
+        }
+
+        if (!user_name) {
+          user_name = wsql.get_user_param('user_name');
+        }
+
+        user = cat.users.by_id(user_name);
+        if (!user || user.empty()) {
+          if (superlogin) {
+            // если superlogin, всю онформацию о пользователе получаем из sl_users
+            user = superlogin.create_user();
+          }
+          else if(this.job_prm.use_ram !== false) {
+            cat.users.find_rows_remote({
+              _top: 1,
+              id: user_name,
+            });
+          }
+        }
+      }
+    }
+
+    return user && !user.empty() ? user : null;
+  }
+
+  patchCatUsers() {
+    const {CatUsers} = this;
 
     // заглушка "всё разрешено", если методы acl не переопределены внешним приложением
     if (CatUsers && !CatUsers.prototype.hasOwnProperty('role_available')) {
@@ -215,40 +256,6 @@ class MetaEngine {
         },
       });
     }
-
-    let user_name, user;
-    if (cat && cat.users) {
-
-      if(pouch && pouch.props._user) {
-        user = cat.users.get(pouch.props._user);
-      }
-      else {
-        if (superlogin) {
-          const session = superlogin.getSession();
-          user_name = session ? session.user_id : '';
-        }
-
-        if (!user_name) {
-          user_name = wsql.get_user_param('user_name');
-        }
-
-        user = cat.users.by_id(user_name);
-        if (!user || user.empty()) {
-          if (superlogin) {
-            // если superlogin, всю онформацию о пользователе получаем из sl_users
-            user = superlogin.create_user();
-          }
-          else if(this.job_prm.use_ram !== false) {
-            cat.users.find_rows_remote({
-              _top: 1,
-              id: user_name,
-            });
-          }
-        }
-      }
-    }
-
-    return user && !user.empty() ? user : null;
   }
 
   /**

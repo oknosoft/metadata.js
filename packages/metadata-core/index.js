@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.25-beta.1, built:2021-05-09
+ metadata-core v2.0.25-beta.1, built:2021-05-21
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -4836,7 +4836,39 @@ class MetaEngine {
     return msg;
   }
   get current_user() {
-    const {CatUsers, cat, superlogin, wsql, adapters: {pouch}} = this;
+    const {cat, superlogin, wsql, adapters: {pouch}} = this;
+    this.patchCatUsers();
+    let user_name, user;
+    if (cat && cat.users) {
+      if(pouch && pouch.props._user) {
+        user = cat.users.get(pouch.props._user);
+      }
+      else {
+        if (superlogin) {
+          const session = superlogin.getSession();
+          user_name = session ? session.user_id : '';
+        }
+        if (!user_name) {
+          user_name = wsql.get_user_param('user_name');
+        }
+        user = cat.users.by_id(user_name);
+        if (!user || user.empty()) {
+          if (superlogin) {
+            user = superlogin.create_user();
+          }
+          else if(this.job_prm.use_ram !== false) {
+            cat.users.find_rows_remote({
+              _top: 1,
+              id: user_name,
+            });
+          }
+        }
+      }
+    }
+    return user && !user.empty() ? user : null;
+  }
+  patchCatUsers() {
+    const {CatUsers} = this;
     if (CatUsers && !CatUsers.prototype.hasOwnProperty('role_available')) {
       CatUsers.prototype.role_available = function (name) {
         return this.acl_objs ? this.acl_objs._obj.some((row) => row.type == name) : true;
@@ -4866,34 +4898,6 @@ class MetaEngine {
         },
       });
     }
-    let user_name, user;
-    if (cat && cat.users) {
-      if(pouch && pouch.props._user) {
-        user = cat.users.get(pouch.props._user);
-      }
-      else {
-        if (superlogin) {
-          const session = superlogin.getSession();
-          user_name = session ? session.user_id : '';
-        }
-        if (!user_name) {
-          user_name = wsql.get_user_param('user_name');
-        }
-        user = cat.users.by_id(user_name);
-        if (!user || user.empty()) {
-          if (superlogin) {
-            user = superlogin.create_user();
-          }
-          else if(this.job_prm.use_ram !== false) {
-            cat.users.find_rows_remote({
-              _top: 1,
-              id: user_name,
-            });
-          }
-        }
-      }
-    }
-    return user && !user.empty() ? user : null;
   }
   static plugin(obj) {
     if (!obj) {
