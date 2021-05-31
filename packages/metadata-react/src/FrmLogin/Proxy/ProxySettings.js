@@ -158,7 +158,7 @@ class ProxySettings extends React.Component {
       <Autocomplete options={years} value={year} onChange={this.year_change} label="Год" title="База архива" />
       <Autocomplete
         options={branches}
-        value={branch.empty() ? null : branch}
+        value={branch===null||branch.empty() ? null : branch}
         disableClearable={false}
         filterOptions={branch_filter}
         onChange={this.branch_change}
