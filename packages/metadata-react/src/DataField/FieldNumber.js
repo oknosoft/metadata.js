@@ -35,7 +35,10 @@ class FieldNumber extends AbstractField {
   };
 
   handleInputClick = () => {
+    if (!this.read_only){
     this.setState({isCalculatorVisible: true});
+    }
+
   };
 
   handleCalculatorClose = () => {
@@ -80,8 +83,8 @@ class FieldNumber extends AbstractField {
     if(disabled) {
       attr.disabled = true;
     }
-    if(read_only) {
-      other.readOnly = true;
+    if (_meta.read_only || read_only) {
+    other.readOnly = true;
     }
     const v = state.focused && !read_only ? state.value : _obj[_fld];
 
