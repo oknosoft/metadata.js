@@ -24,7 +24,7 @@
     "react-draggable": "^4.4",
     "react-fullscreenable": "^2.5.1-0",
     "react-helmet": "^6.1",
-    "react-onclickoutside": "^6.10",
+    "react-onclickoutside": "^6.11",
     "react-swipeable": "^6.1",
     "react-virtualized-auto-sizer": "^1.0.5",
     "react-window": "^1.8.6",
