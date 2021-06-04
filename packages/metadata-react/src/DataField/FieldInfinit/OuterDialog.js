@@ -46,7 +46,7 @@ class OuterDialog extends React.Component {
     >
       {dialogOpened == 'list' && <DataList _owner={_owner} selectionMode {...otherProps}/>}
       {dialogOpened == 'tree' && <DataTree _owner={_owner} denyAddDel {...otherProps}/>}
-      {dialogOpened == 'obj' && <DataObj match={{params: {ref}}} {...otherProps}/>}
+      {dialogOpened == 'obj' && <DataObj match={{params: {ref}, _owner}} {...otherProps}/>}
 
     </Dialog>;
   }
