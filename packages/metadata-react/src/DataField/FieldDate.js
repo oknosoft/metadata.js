@@ -43,7 +43,7 @@ class FieldDate extends AbstractField {
         other.inputProps = Object.assign(other.inputProps || {}, {className: classes.required});
       }
     }
-    if(read_only) {
+    if(_meta.read_only || read_only) {
       other.readOnly = true;
     }
 
