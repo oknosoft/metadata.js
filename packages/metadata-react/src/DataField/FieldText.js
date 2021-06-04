@@ -16,8 +16,8 @@ import FormControl from '@material-ui/core/FormControl';
 class FieldText extends AbstractField {
 
   render() {
-    const {props, _meta, onChange} = this;
-    const {_obj, _fld, classes, extClasses, className, fullWidth, read_only, InputProps, label_position, bar, isTabular, ...other} = props;
+    const {props, _meta, onChange, read_only} = this;
+    const {_obj, _fld, classes, extClasses, className, fullWidth, InputProps, label_position, bar, isTabular, ...other} = props;
     const attr = {
       title: _meta.tooltip || _meta.synonym,
     }
@@ -28,7 +28,7 @@ class FieldText extends AbstractField {
         other.inputProps = Object.assign(other.inputProps || {}, {className: classes.required});
       }
     }
-    if(_meta.read_only || read_only) {
+    if(read_only) {
       other.readOnly = true;
     }
 

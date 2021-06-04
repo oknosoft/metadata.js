@@ -35,10 +35,9 @@ class FieldNumber extends AbstractField {
   };
 
   handleInputClick = () => {
-    if (!this.read_only){
-    this.setState({isCalculatorVisible: true});
+    if(!this.read_only) {
+      this.setState({isCalculatorVisible: true});
     }
-
   };
 
   handleCalculatorClose = () => {
@@ -61,8 +60,8 @@ class FieldNumber extends AbstractField {
 
   render() {
 
-    const {state, props, _meta} = this;
-    const {_obj, _fld, classes, extClasses, className, read_only, disabled, label_position, fullWidth, isTabular, handleValueChange, ...other} = props;
+    const {state, props, _meta, read_only} = this;
+    const {_obj, _fld, classes, extClasses, className, disabled, label_position, fullWidth, isTabular, handleValueChange, ...other} = props;
     const inputProps={readOnly: Boolean(read_only)};
     let endAdornment;
     if(navigator.userAgent.match(/android|ios|iphone/i)) {
@@ -83,8 +82,8 @@ class FieldNumber extends AbstractField {
     if(disabled) {
       attr.disabled = true;
     }
-    if (_meta.read_only || read_only) {
-    other.readOnly = true;
+    if(read_only) {
+      other.readOnly = true;
     }
     const v = state.focused && !read_only ? state.value : _obj[_fld];
 

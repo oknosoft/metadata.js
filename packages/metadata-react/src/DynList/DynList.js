@@ -582,13 +582,18 @@ class DynList extends MDNRComponent {
     this.props.onRowSelect && this.props.onRowSelect(newState);
   }
 
+  componentDidUpdate() {
+    const {handleFilterChange, props: {registerFilterChange}, state: {scheme}} = this;
+    registerFilterChange && scheme && registerFilterChange(handleFilterChange, scheme);
+  }
+
   render() {
 
     const {state, props, context, sizes, handleFilterChange, handleSchemeChange, frm_key, Toolbar, show_flat} = this;
     const {columns, scheme, confirm_text, info_text, settings_open, rowCount, flat} = state;
     const {
       _mgr: {RepParams, direct_load, _direct_loaded},
-      classes, title, registerFilterChange, width, height, GridRenderer, rowHeight, source_mode, hide_edit, ...others} = props;
+      classes, title, width, height, GridRenderer, rowHeight, source_mode, hide_edit, ...others} = props;
 
     if(!scheme) {
       return <LoadingMessage text="Чтение настроек компоновки..."/>;
@@ -599,8 +604,6 @@ class DynList extends MDNRComponent {
     if(source_mode === 'ram' && direct_load && !_direct_loaded) {
       return <LoadingMessage text="Чтение индекса документов..."/>;
     }
-
-    registerFilterChange && registerFilterChange(handleFilterChange, scheme);
 
     const show_grid = !settings_open || sizes.height > 572;
 

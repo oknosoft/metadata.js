@@ -31,8 +31,8 @@ class FieldDate extends AbstractField {
   };
 
   render() {
-    let {props, state: {value}, _meta, _type, onChange} = this;
-    const {_obj, _fld, classes, extClasses, className, fullWidth, read_only, InputProps, label_position, bar, isTabular, ...other} = props;
+    let {props, state: {value}, _meta, _type, onChange, read_only} = this;
+    const {_obj, _fld, classes, extClasses, className, fullWidth, InputProps, label_position, bar, isTabular, ...other} = props;
     const attr = {
       title: _meta.tooltip || _meta.synonym,
     }
@@ -43,7 +43,7 @@ class FieldDate extends AbstractField {
         other.inputProps = Object.assign(other.inputProps || {}, {className: classes.required});
       }
     }
-    if(_meta.read_only || read_only) {
+    if(read_only) {
       other.readOnly = true;
     }
 
