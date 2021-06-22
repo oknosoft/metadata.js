@@ -1083,7 +1083,7 @@ function adapter({AbstracrAdapter}) {
         return (tObj.is_new() ? Promise.resolve(true) : db.get(tmp._id))
           .then((res) => {
             if(typeof res === 'object') {
-              if(tmp._rev !== res._rev && check_rev !== false) {
+              if(check_rev !== false && tmp._rev && tmp._rev !== res._rev) {
                 const {timestamp} = res;
                 const err = new Error(`Объект ${timestamp && typeof timestamp.user === 'string' ?
                   `изменил ${timestamp.user}<br/>${timestamp.moment}` : 'изменён другим пользователем'}`);
