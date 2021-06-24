@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.25-beta.2, built:2021-06-22
+ metadata-pouchdb v2.0.25-beta.3, built:2021-06-24
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -301,12 +301,22 @@ var proto = ({classes}) => {
     if (!this._metadata().code_length) {
       return Promise.resolve(this);
     }
-    const {organization, _manager} = this;
-    const {current_user, utils} = _manager._owner.$p;
+    const {organization, manager, responsible, _manager} = this;
+    const {utils} = _manager._owner.$p;
     if(this.date === utils.blank.date) {
       this.date = new Date();
     }
     const year = (this.date instanceof Date) ? this.date.getFullYear() : 0;
+    let current_user;
+    if(responsible && !responsible.empty()) {
+      current_user = responsible;
+    }
+    else if(manager && !manager.empty()) {
+      current_user = manager;
+    }
+    else {
+      current_user = _manager._owner.$p.current_user;
+    }
     if (!prefix) {
       prefix = ((current_user && current_user.prefix) || '') + ((organization && organization.prefix) || '');
     }

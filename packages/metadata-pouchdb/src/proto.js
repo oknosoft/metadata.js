@@ -20,13 +20,24 @@ export default ({classes}) => {
       return Promise.resolve(this);
     }
 
-    const {organization, _manager} = this;
-    const {current_user, utils} = _manager._owner.$p;
+    const {organization, manager, responsible, _manager} = this;
+    const {utils} = _manager._owner.$p;
 
     if(this.date === utils.blank.date) {
       this.date = new Date();
     }
     const year = (this.date instanceof Date) ? this.date.getFullYear() : 0
+
+    let current_user;
+    if(responsible && !responsible.empty()) {
+      current_user = responsible;
+    }
+    else if(manager && !manager.empty()) {
+      current_user = manager;
+    }
+    else {
+      current_user = _manager._owner.$p.current_user;
+    }
 
     // если не указан явно, рассчитываем префикс по умолчанию
     if (!prefix) {
