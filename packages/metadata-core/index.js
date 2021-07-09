@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.25-beta.3, built:2021-06-24
+ metadata-core v2.0.25-beta.3, built:2021-07-09
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1163,9 +1163,9 @@ class DataObj extends BaseDataObj {
     add_refs(this, fields);
     for(const tsname in tabular_sections) {
       const meta = tabular_sections[tsname].fields;
-      this[tsname].forEach((row) => {
-        add_refs(row, meta);
-      });
+      for(const row of this[tsname]) {
+        row && add_refs(row, meta);
+      }
     }
     const res = [];
     for(const [adapter, mdb] of adapters) {

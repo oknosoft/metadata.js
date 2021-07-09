@@ -922,9 +922,9 @@ export class DataObj extends BaseDataObj {
     add_refs(this, fields);
     for(const tsname in tabular_sections) {
       const meta = tabular_sections[tsname].fields;
-      this[tsname].forEach((row) => {
-        add_refs(row, meta);
-      });
+      for(const row of this[tsname]) {
+        row && add_refs(row, meta);
+      }
     }
 
     const res = [];
