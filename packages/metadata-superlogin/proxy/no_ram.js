@@ -80,18 +80,39 @@ function stream_load(md, pouch) {
     }
 
     const reader = body.getReader();
-    const decoder = new TextDecoder("utf-8");
+    const decoder = new TextDecoder("utf-8", {fatal: true});
 
     page.add(JSON.parse(headers.get('manifest')));
     page.page && pouch.emit('pouch_load_start', page);
 
-    let chunks = '';
+    let chunks = '', tmp;
     for(;;) {
       const {done, value} = await reader.read();
       if (done) {
         break;
       }
-      const text = decoder.decode(value);
+      let text;
+      if(tmp) {
+        tmp = new Uint8Array([...tmp, ...value]);
+        try {
+          text = decoder.decode(tmp);
+          tmp = null;
+        }
+        catch (e) {
+          continue;
+        }
+      }
+      else {
+        try {
+          text = decoder.decode(value);
+        }
+        catch (e) {
+          tmp = value;
+          continue;
+        }
+      }
+
+
       const parts = text.split('\r\n');
       if(!text.endsWith('\r\n')) {
         if(chunks.length) {
