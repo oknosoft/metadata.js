@@ -79,42 +79,21 @@ function stream_load(md, pouch) {
       throw new Error(`${status}: ${statusText}`);
     }
 
-    const reader = body.getReader();
-    const decoder = new TextDecoder("utf-8", {fatal: true});
+    const stream = body.pipeThrough(new TextDecoderStream('utf-8', {fatal: true}));
+    const reader = stream.getReader();
 
     page.add(JSON.parse(headers.get('manifest')));
     page.page && pouch.emit('pouch_load_start', page);
 
-    let chunks = '', tmp;
+    let chunks = '';
     for(;;) {
       const {done, value} = await reader.read();
       if (done) {
         break;
       }
-      let text;
-      if(tmp) {
-        tmp = new Uint8Array([...tmp, ...value]);
-        try {
-          text = decoder.decode(tmp);
-          tmp = null;
-        }
-        catch (e) {
-          continue;
-        }
-      }
-      else {
-        try {
-          text = decoder.decode(value);
-        }
-        catch (e) {
-          tmp = value;
-          continue;
-        }
-      }
 
-
-      const parts = text.split('\r\n');
-      if(!text.endsWith('\r\n')) {
+      const parts = value.split('\r\n');
+      if(!value.endsWith('\r\n')) {
         if(chunks.length) {
           chunks += parts.shift();
           if(parts.length) {
