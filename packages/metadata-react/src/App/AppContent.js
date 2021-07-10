@@ -6,12 +6,12 @@ import cn from 'classnames';
 import {withStyles} from '@material-ui/styles';
 
 const styles = theme => ({
-  content: theme.mixins.gutters({
+  content: {
     paddingTop: theme.spacing(4),
     flex: '1 1 100%',
     maxWidth: '100%',
     margin: '0 auto',
-  }),
+  },
   [theme.breakpoints.up(980 + theme.spacing(4))]: {
     maxWidth: {
       maxWidth: 980,

@@ -1,13 +1,13 @@
 import {withStyles} from '@material-ui/styles';
 
 export default withStyles(({mixins, custom, spacing, shadows, palette}) => ({
-  root: mixins.gutters({
+  root: {
     maxWidth: 600,
     marginTop: custom && custom.appbar.position == 'fixed' ? 72 : 24,
     marginLeft: 'auto',
     marginRight: 'auto',
     paddingTop: spacing(),
-  }),
+  },
   disabled: {
     pointerEvents: 'none',
     backgroundColor: 'transparent',

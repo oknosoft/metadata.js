@@ -79,21 +79,14 @@ function stream_load(md, pouch) {
       throw new Error(`${status}: ${statusText}`);
     }
 
-    const stream = body.pipeThrough(new TextDecoderStream('utf-8', {fatal: true}));
-    const reader = stream.getReader();
-
     page.add(JSON.parse(headers.get('manifest')));
     page.page && pouch.emit('pouch_load_start', page);
 
-    let chunks = '';
-    for(;;) {
-      const {done, value} = await reader.read();
-      if (done) {
-        break;
-      }
+    let chunks = '', tmp;
 
-      const parts = value.split('\r\n');
-      if(!value.endsWith('\r\n')) {
+    const fin = (text) => {
+      const parts = text.split('\r\n');
+      if(!text.endsWith('\r\n')) {
         if(chunks.length) {
           chunks += parts.shift();
           if(parts.length) {
@@ -116,7 +109,55 @@ function stream_load(md, pouch) {
       for(const part of parts) {
         part && load(part);
       }
+    };
+
+    if (typeof TextDecoderStream === 'function') {
+      const stream = body.pipeThrough(new TextDecoderStream('utf-8', {fatal: true}));
+      const reader = stream.getReader();
+
+      for(;;) {
+        const {done, value} = await reader.read();
+        if (done) {
+          break;
+        }
+        fin(value);
+      }
     }
+    else {
+      const reader = body.getReader();
+      const decoder = new TextDecoder("utf-8", {fatal: true});
+
+      for(;;) {
+        const {done, value} = await reader.read();
+        if (done) {
+          break;
+        }
+        let text;
+        if(tmp) {
+          tmp = new Uint8Array([...tmp, ...value]);
+          try {
+            text = decoder.decode(tmp);
+            tmp = null;
+          }
+          catch (e) {
+            continue;
+          }
+        }
+        else {
+          try {
+            text = decoder.decode(value);
+            //text.includes('\ufffd')
+          }
+          catch (e) {
+            tmp = value;
+            continue;
+          }
+        }
+
+        fin(text);
+      }
+    }
+
 
   };
 }
