@@ -740,10 +740,50 @@ export class DataObj extends BaseDataObj {
   /**
    * ### Проверяет заполненность реквизитов
    * и прочие ограничения, заданные в метаданных
-   * @param [fields] {Array} - массив полей, которые нужно проверить. Если не задан, проверяются все поля
+   * @param [attr.fields] {Array} - массив полей, которые нужно проверить. Если не задан, проверяются все поля
    * @return {boolean}
    */
-  check_mandatory(fields) {
+  check_mandatory(attr) {
+    const {fields, tabular_sections} = this._metadata();
+    const {_manager} = this;
+    const {msg, cch: {properties}, classes} = _manager._owner.$p;
+    const flds = Object.assign({}, fields);
+    if(_manager instanceof classes.CatManager) {
+      flds.name = this._metadata('name') || {};
+      flds.id = this._metadata('id') || {};
+    }
+    for (const mf in flds) {
+      if (flds[mf] && flds[mf].mandatory && (!this._obj[mf] || this._obj[mf] === utils.blank.guid)) {
+        throw {
+          obj: this,
+          title: msg.mandatory_title,
+          type: 'alert-error',
+          text: msg.mandatory_field.replace('%1', this._metadata(mf).synonym)
+        };
+      }
+    }
+    if(properties) {
+      for (const prts of ['extra_fields', 'product_params', 'params']) {
+        if(!tabular_sections[prts]) {
+          continue;
+        }
+        for (const row of this[prts]._obj) {
+          const property = properties.get(row.property || row.param);
+          if(property && property.mandatory) {
+            const {value} = (row._row || row);
+            if(utils.is_data_obj(value) ? value.empty() : !value) {
+              throw {
+                obj: this,
+                row: row._row || row,
+                title: msg.mandatory_title,
+                type: 'alert-error',
+                text: msg.mandatory_field.replace('%1', property.caption || property.name)
+              };
+            }
+          }
+        }
+      }
+    }
     return true;
   }
 
@@ -795,10 +835,17 @@ export class DataObj extends BaseDataObj {
           return this;
         };
 
-
-        // если процедуры перед записью завершились неудачно или запись выполнена нестандартным способом - не продолжаем
+        // если процедуры перед записью завершились неудачно - не продолжаем
         if(before_save_res === false) {
           return Promise.reject(reset_modified());
+        }
+        // если запись переопределена в before_save, выходим без лишних движений
+        else if(before_save_res === null) {
+          return Promise.resolve(reset_modified());
+        }
+        // TODO: обработать bulk_docs
+        else if(Array.isArray(before_save_res)) {
+          ;
         }
 
         // этот код выполняем в случае ошибки незаполненных реквизитов
@@ -835,44 +882,11 @@ export class DataObj extends BaseDataObj {
         }
 
         // если не указаны обязательные реквизиты...
-        const {fields, tabular_sections} = this._metadata();
-        const {msg, md, cch: {properties}, classes} = _manager._owner.$p;
-        const flds = Object.assign({}, fields);
-        if(_manager instanceof classes.CatManager) {
-          flds.name = this._metadata('name') || {};
-          flds.id = this._metadata('id') || {};
+        try {
+          this.check_mandatory();
         }
-        for (const mf in flds) {
-          if (flds[mf] && flds[mf].mandatory && (!this._obj[mf] || this._obj[mf] === utils.blank.guid)) {
-            return reset_mandatory({
-              obj: this,
-              title: msg.mandatory_title,
-              type: 'alert-error',
-              text: msg.mandatory_field.replace('%1', this._metadata(mf).synonym)
-            });
-          }
-        }
-        if(properties) {
-          for (const prts of ['extra_fields', 'product_params', 'params']) {
-            if(!tabular_sections[prts]) {
-              continue;
-            }
-            for (const row of this[prts]._obj) {
-              const property = properties.get(row.property || row.param);
-              if(property && property.mandatory) {
-                const {value} = (row._row || row);
-                if(utils.is_data_obj(value) ? value.empty() : !value) {
-                  return reset_mandatory({
-                    obj: this,
-                    row: row._row || row,
-                    title: msg.mandatory_title,
-                    type: 'alert-error',
-                    text: msg.mandatory_field.replace('%1', property.caption || property.name)
-                  });
-                }
-              }
-            }
-          }
+        catch (e) {
+          return reset_mandatory(e);
         }
 
         // в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе

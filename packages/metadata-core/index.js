@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.25-beta.4, built:2021-07-09
+ metadata-core v2.0.25-beta.4, built:2021-07-11
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1028,7 +1028,47 @@ class DataObj extends BaseDataObj {
     }
     delete this._obj;
   }
-  check_mandatory(fields) {
+  check_mandatory(attr) {
+    const {fields, tabular_sections} = this._metadata();
+    const {_manager} = this;
+    const {msg, cch: {properties}, classes} = _manager._owner.$p;
+    const flds = Object.assign({}, fields);
+    if(_manager instanceof classes.CatManager) {
+      flds.name = this._metadata('name') || {};
+      flds.id = this._metadata('id') || {};
+    }
+    for (const mf in flds) {
+      if (flds[mf] && flds[mf].mandatory && (!this._obj[mf] || this._obj[mf] === utils.blank.guid)) {
+        throw {
+          obj: this,
+          title: msg.mandatory_title,
+          type: 'alert-error',
+          text: msg.mandatory_field.replace('%1', this._metadata(mf).synonym)
+        };
+      }
+    }
+    if(properties) {
+      for (const prts of ['extra_fields', 'product_params', 'params']) {
+        if(!tabular_sections[prts]) {
+          continue;
+        }
+        for (const row of this[prts]._obj) {
+          const property = properties.get(row.property || row.param);
+          if(property && property.mandatory) {
+            const {value} = (row._row || row);
+            if(utils.is_data_obj(value) ? value.empty() : !value) {
+              throw {
+                obj: this,
+                row: row._row || row,
+                title: msg.mandatory_title,
+                type: 'alert-error',
+                text: msg.mandatory_field.replace('%1', property.caption || property.name)
+              };
+            }
+          }
+        }
+      }
+    }
     return true;
   }
   save(post, operational, attachments, attr) {
@@ -1061,6 +1101,10 @@ class DataObj extends BaseDataObj {
         if(before_save_res === false) {
           return Promise.reject(reset_modified());
         }
+        else if(before_save_res === null) {
+          return Promise.resolve(reset_modified());
+        }
+        else ;
         const reset_mandatory = (msg) => {
           before_save_res = false;
           reset_modified();
@@ -1088,44 +1132,11 @@ class DataObj extends BaseDataObj {
             }
           }
         }
-        const {fields, tabular_sections} = this._metadata();
-        const {msg, md, cch: {properties}, classes} = _manager._owner.$p;
-        const flds = Object.assign({}, fields);
-        if(_manager instanceof classes.CatManager) {
-          flds.name = this._metadata('name') || {};
-          flds.id = this._metadata('id') || {};
+        try {
+          this.check_mandatory();
         }
-        for (const mf in flds) {
-          if (flds[mf] && flds[mf].mandatory && (!this._obj[mf] || this._obj[mf] === utils.blank.guid)) {
-            return reset_mandatory({
-              obj: this,
-              title: msg.mandatory_title,
-              type: 'alert-error',
-              text: msg.mandatory_field.replace('%1', this._metadata(mf).synonym)
-            });
-          }
-        }
-        if(properties) {
-          for (const prts of ['extra_fields', 'product_params', 'params']) {
-            if(!tabular_sections[prts]) {
-              continue;
-            }
-            for (const row of this[prts]._obj) {
-              const property = properties.get(row.property || row.param);
-              if(property && property.mandatory) {
-                const {value} = (row._row || row);
-                if(utils.is_data_obj(value) ? value.empty() : !value) {
-                  return reset_mandatory({
-                    obj: this,
-                    row: row._row || row,
-                    title: msg.mandatory_title,
-                    type: 'alert-error',
-                    text: msg.mandatory_field.replace('%1', property.caption || property.name)
-                  });
-                }
-              }
-            }
-          }
+        catch (e) {
+          return reset_mandatory(e);
         }
         return (numerator || Promise.resolve())
           .then(() => _manager.adapter.save_obj(this, Object.assign({post, operational, attachments}, attr)))
@@ -1634,6 +1645,8 @@ class MetaEventEmitter extends EventEmitter__default['default']{
   }
 }
 
+const rp = 'promise';
+const string = 'string';
 class Iterator {
   constructor(by_ref, alatable) {
     this._by_ref = by_ref;
@@ -1987,23 +2000,22 @@ class RefDataManager extends DataManager{
       }
     }
   }
-	get(ref, do_not_create){
-		const rp = 'promise';
-		if(!ref || typeof ref !== 'string'){
+	get(ref, no_create){
+		if(!ref || typeof ref !== string){
       ref = utils.fix_guid(ref);
     }
 		let o = this.by_ref[ref];
 		if(arguments.length == 3){
-			if(do_not_create){
-				do_not_create = rp;
+			if(no_create){
+				no_create = rp;
 			}
 			else {
-				do_not_create = arguments[2];
+				no_create = arguments[2];
 			}
 		}
 		let created;
 		if(!o){
-			if(do_not_create && do_not_create != rp){
+			if(no_create && no_create != rp){
 				return;
 			}
 			else {
@@ -2012,10 +2024,10 @@ class RefDataManager extends DataManager{
 			}
 		}
 		if(ref === utils.blank.guid){
-			return do_not_create == rp ? Promise.resolve(o) : o;
+			return no_create == rp ? Promise.resolve(o) : o;
 		}
 		if(o.is_new()){
-			if(do_not_create == rp){
+			if(no_create == rp){
 				return o.load()
           .then(() => {
             return o.is_new() ? o.after_create() : o;
@@ -2026,7 +2038,7 @@ class RefDataManager extends DataManager{
 				return o;
 			}
 		}else {
-			return do_not_create == rp ? Promise.resolve(o) : o;
+			return no_create == rp ? Promise.resolve(o) : o;
 		}
 	}
 	create(attr, do_after_create, force_obj){
@@ -2312,7 +2324,7 @@ class RefDataManager extends DataManager{
                     s += and + "(_t_." + key + " = '" + val + "') ";
                   }
                 }
-              }else if(typeof sel[key] == "string")
+              }else if(typeof sel[key] === string)
                 s += and + "(_t_." + key + " = '" + sel[key] + "') ";
               else
                 s += and + "(_t_." + key + " = " + sel[key] + ") ";
@@ -2670,7 +2682,7 @@ class RegisterManager extends DataManager{
 	get(attr, return_row) {
 		if (!attr)
 			attr = {};
-		else if (typeof attr == "string")
+		else if (typeof attr == string)
 			attr = {ref: attr};
 		if (attr.ref && return_row)
 			return this.by_ref[attr.ref];
@@ -2787,7 +2799,7 @@ class RegisterManager extends DataManager{
 												s += "\n AND (_t_." + key + " = '" + val.valueOf() + "') ";
 										}
 									}
-									else if(typeof sel[key] == "string")
+									else if(typeof sel[key] === string)
 										s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
 									else
 										s += "\n AND (_t_." + key + " = " + sel[key] + ") ";

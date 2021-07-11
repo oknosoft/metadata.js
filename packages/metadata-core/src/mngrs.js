@@ -36,6 +36,9 @@ import msg from './i18n.ru';
 import {DataObj, EnumObj, DocObj, RegisterRow} from './objs';
 import MetaEventEmitter from './emitter';
 
+const rp = 'promise';
+const string = 'string';
+
 class Iterator {
 
   constructor(by_ref, alatable) {
@@ -626,28 +629,27 @@ export class RefDataManager extends DataManager{
 	 * Возвращает объект по ссылке (читает из датабазы или локального кеша) если идентификатор пуст, создаёт новый объект
 	 * @method get
 	 * @param [ref] {String|Object} - ссылочный идентификатор
-	 * @param [do_not_create] {Boolean} - Не создавать новый. Например, когда поиск элемента выполняется из конструктора
+	 * @param [no_create] {Boolean} - Не создавать новый. Например, когда поиск элемента выполняется из конструктора
 	 * @return {DataObj|undefined}
 	 */
-	get(ref, do_not_create){
+	get(ref, no_create){
 
-		const rp = 'promise';
-		if(!ref || typeof ref !== 'string'){
+		if(!ref || typeof ref !== string){
       ref = utils.fix_guid(ref);
     }
 		let o = this.by_ref[ref];
 
 		if(arguments.length == 3){
-			if(do_not_create){
-				do_not_create = rp;
+			if(no_create){
+				no_create = rp;
 			}
 			else{
-				do_not_create = arguments[2];
+				no_create = arguments[2];
 			}
 		}
 		let created;
 		if(!o){
-			if(do_not_create && do_not_create != rp){
+			if(no_create && no_create != rp){
 				return;
 			}
 			else{
@@ -657,11 +659,11 @@ export class RefDataManager extends DataManager{
 		}
 
 		if(ref === utils.blank.guid){
-			return do_not_create == rp ? Promise.resolve(o) : o;
+			return no_create == rp ? Promise.resolve(o) : o;
 		}
 
 		if(o.is_new()){
-			if(do_not_create == rp){
+			if(no_create == rp){
         // читаем из 1С или иного сервера
 				return o.load()
           .then(() => {
@@ -673,7 +675,7 @@ export class RefDataManager extends DataManager{
 				return o;
 			}
 		}else{
-			return do_not_create == rp ? Promise.resolve(o) : o;
+			return no_create == rp ? Promise.resolve(o) : o;
 		}
 	}
 
@@ -1043,7 +1045,7 @@ export class RefDataManager extends DataManager{
                   }
                 }
 
-              }else if(typeof sel[key] == "string")
+              }else if(typeof sel[key] === string)
                 s += and + "(_t_." + key + " = '" + sel[key] + "') ";
 
               else
@@ -1601,7 +1603,7 @@ export class RegisterManager extends DataManager{
 
 		if (!attr)
 			attr = {};
-		else if (typeof attr == "string")
+		else if (typeof attr == string)
 			attr = {ref: attr};
 
 		if (attr.ref && return_row)
@@ -1773,7 +1775,7 @@ export class RegisterManager extends DataManager{
 										}
 
 									}
-									else if(typeof sel[key] == "string")
+									else if(typeof sel[key] === string)
 										s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
 
 									else
