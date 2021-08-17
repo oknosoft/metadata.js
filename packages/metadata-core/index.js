@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.25-beta.4, built:2021-07-11
+ metadata-core v2.0.25-beta.4, built:2021-08-17
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -327,7 +327,7 @@ class TabularSection {
 		_data._modified = true;
 	}
 	find(val, columns) {
-		const res = utils._find(this._obj, val, columns);
+		const res = utils$1._find(this._obj, val, columns);
 		return res && res._row;
 	}
 	find_rows(selection, callback) {
@@ -348,7 +348,7 @@ class TabularSection {
 		  selection = Object.assign({}, selection);
 		  delete selection[index];
     }
-		return utils._find_rows.call(this, _obj, selection, cb);
+		return utils$1._find_rows.call(this, _obj, selection, cb);
 	}
 	swap(rowid1, rowid2) {
     const {_obj, _owner, _name} = this;
@@ -552,12 +552,12 @@ class TabularSectionRow {
 	}
 	_clone() {
 		const {_owner, _obj} = this;
-		return utils._mixin(_owner._owner._manager.obj_constructor(_owner._name, _owner), _obj)
+		return utils$1._mixin(_owner._owner._manager.obj_constructor(_owner._name, _owner), _obj)
 	}
 	_setter(f, v) {
 		const {_owner, _obj} = this;
 		const _meta = this._metadata(f);
-		if (_obj[f] == v || (!v && _obj[f] == utils.blank.guid)){
+		if (_obj[f] == v || (!v && _obj[f] == utils$1.blank.guid)){
       return;
     }
     const {_manager, _data} = _owner._owner;
@@ -566,7 +566,7 @@ class TabularSectionRow {
 			const prop = _meta.choice_type.path.length == 2 ? this[_meta.choice_type.path[1]] : _owner._owner[_meta.choice_type.path[0]];
 			if (prop && prop.type){
         fetched_type = prop.type;
-        v = utils.fetch_type(v, fetched_type);
+        v = utils$1.fetch_type(v, fetched_type);
       }
 		}
 		if(!_data._loading){
@@ -601,7 +601,7 @@ class BaseDataObj {
     Object.defineProperties(this, {
       _obj: {
         value: direct ? attr : {
-          ref: manager instanceof EnumManager ? attr.name : (manager instanceof RegisterManager ? manager.get_ref(attr) : utils.fix_guid(attr))
+          ref: manager instanceof EnumManager ? attr.name : (manager instanceof RegisterManager ? manager.get_ref(attr) : utils$1.fix_guid(attr))
         },
         configurable: true
       },
@@ -628,32 +628,32 @@ class BaseDataObj {
       if(mf.digits && typeof res === 'number') {
         return res;
       }
-      if(mf.hasOwnProperty('str_len') && !utils.is_guid(res)) {
+      if(mf.hasOwnProperty('str_len') && !utils$1.is_guid(res)) {
         return res;
       }
       const {_manager} = this;
       const mgr = _manager.value_mgr(_obj, f, mf);
       if(mgr) {
-        if(utils.is_data_mgr(mgr)) {
+        if(utils$1.is_data_mgr(mgr)) {
           return mgr.get(res, false, false);
         }
         else {
-          return utils.fetch_type(res, mgr);
+          return utils$1.fetch_type(res, mgr);
         }
       }
       if(res) {
-        typeof utils.debug === 'function' && utils.debug([f, mf, _obj]);
+        typeof utils$1.debug === 'function' && utils$1.debug([f, mf, _obj]);
         return null;
       }
     }
     else if(mf.date_part) {
-      return utils.fix_date(_obj[f], true);
+      return utils$1.fix_date(_obj[f], true);
     }
     else if(mf.digits) {
-      return utils.fix_number(_obj[f], !mf.hasOwnProperty('str_len'));
+      return utils$1.fix_number(_obj[f], !mf.hasOwnProperty('str_len'));
     }
     else if(mf.types[0] == 'boolean') {
-      return utils.fix_boolean(_obj[f]);
+      return utils$1.fix_boolean(_obj[f]);
     }
     else {
       return _obj[f] || '';
@@ -676,13 +676,13 @@ class BaseDataObj {
       _obj[f] = v;
     }
     else if(f === 'ref') {
-      _obj[f] = utils.fix_guid(v);
+      _obj[f] = utils$1.fix_guid(v);
     }
     else if(mf instanceof DataObj || mf instanceof DataManager) {
-      _obj[f] = utils.fix_guid(v, false);
+      _obj[f] = utils$1.fix_guid(v, false);
     }
     else if(mf.is_ref) {
-      if(mf.digits && typeof v === 'number' || mf.hasOwnProperty('str_len') && typeof v === 'string' && !utils.is_guid(v)) {
+      if(mf.digits && typeof v === 'number' || mf.hasOwnProperty('str_len') && typeof v === 'string' && !utils$1.is_guid(v)) {
         _obj[f] = v;
       }
       else if(typeof v === 'boolean' && mf.types.indexOf('boolean') != -1) {
@@ -692,8 +692,8 @@ class BaseDataObj {
         _obj[f] = v;
       }
       else {
-        _obj[f] = utils.fix_guid(v);
-        if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1) ;
+        _obj[f] = utils$1.fix_guid(v);
+        if(utils$1.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1) ;
         else {
           let mgr = this._manager.value_mgr(_obj, f, mf, false, v);
           if(mgr) {
@@ -714,8 +714,8 @@ class BaseDataObj {
               }
               mgr.create(v);
             }
-            else if(!utils.is_data_mgr(mgr)) {
-              _obj[f] = utils.fetch_type(v, mgr);
+            else if(!utils$1.is_data_mgr(mgr)) {
+              _obj[f] = utils$1.fetch_type(v, mgr);
             }
           }
           else {
@@ -727,13 +727,13 @@ class BaseDataObj {
       }
     }
     else if(mf.date_part) {
-      _obj[f] = utils.fix_date(v, !mf.hasOwnProperty('str_len'));
+      _obj[f] = utils$1.fix_date(v, !mf.hasOwnProperty('str_len'));
     }
     else if(mf.digits) {
-      _obj[f] = utils.fix_number(v, !mf.hasOwnProperty('str_len'));
+      _obj[f] = utils$1.fix_number(v, !mf.hasOwnProperty('str_len'));
     }
     else if(mf.types[0] == 'boolean') {
-      _obj[f] = utils.fix_boolean(v);
+      _obj[f] = utils$1.fix_boolean(v);
     }
     else {
       _obj[f] = v;
@@ -784,7 +784,7 @@ class BaseDataObj {
         }
       }
     }
-    return utils.crc32(str);
+    return utils$1.crc32(str);
   }
   valueOf() {
     return this.ref;
@@ -854,7 +854,7 @@ class BaseDataObj {
     return this._obj.class_name = v;
   }
   empty() {
-    return !this._obj || utils.is_empty_guid(this._obj.ref);
+    return !this._obj || utils$1.is_empty_guid(this._obj.ref);
   }
   _mixin(attr, include, exclude, silent) {
     if(Object.isFrozen(this)) {
@@ -870,14 +870,14 @@ class BaseDataObj {
         }
         _data._loading = true;
       }
-      utils._mixin(this, attr, include, exclude);
+      utils$1._mixin(this, attr, include, exclude);
       if(_data._loading) {
         _manager.emit('mixin', this);
       }
       if(silent) {
         _data._loading = false;
       }
-      if(!_not_set_loaded && (_data._loading || (!utils.is_empty_guid(this.ref) && (attr.id || attr.name || attr.number_doc)))) {
+      if(!_not_set_loaded && (_data._loading || (!utils$1.is_empty_guid(this.ref) && (attr.id || attr.name || attr.number_doc)))) {
         this._set_loaded(this.ref);
       }
     }
@@ -897,7 +897,7 @@ class BaseDataObj {
       }
       DataObj.fix_collection(this, _obj, sys_fields);
     }
-    else if(utils.is_doc_obj(this)) {
+    else if(utils$1.is_doc_obj(this)) {
       DataObj.fix_collection(this, _obj, {date: this._metadata('date')});
     }
     for (const ts in tabular_sections) {
@@ -956,11 +956,11 @@ class BaseDataObj {
         }
         if (type.is_ref && typeof _obj[fld] === 'object') {
           if(!(fld === 'type' && obj.class_name && obj.class_name.indexOf('cch.') === 0)) {
-            _obj[fld] = utils.fix_guid(_obj[fld], false);
+            _obj[fld] = utils$1.fix_guid(_obj[fld], false);
           }
         }
         else if (type.date_part && typeof _obj[fld] === 'string') {
-          _obj[fld] = utils.fix_date(_obj[fld], type.types.length === 1);
+          _obj[fld] = utils$1.fix_date(_obj[fld], type.types.length === 1);
         }
       }
     }
@@ -987,7 +987,7 @@ class DataObj extends BaseDataObj {
   }
   load() {
     const {_data} = this;
-    if(this.ref == utils.blank.guid) {
+    if(this.ref == utils$1.blank.guid) {
       if(_data) {
         _data._loading = false;
         _data._modified = false;
@@ -1038,7 +1038,7 @@ class DataObj extends BaseDataObj {
       flds.id = this._metadata('id') || {};
     }
     for (const mf in flds) {
-      if (flds[mf] && flds[mf].mandatory && (!this._obj[mf] || this._obj[mf] === utils.blank.guid)) {
+      if (flds[mf] && flds[mf].mandatory && (!this._obj[mf] || this._obj[mf] === utils$1.blank.guid)) {
         throw {
           obj: this,
           title: msg.mandatory_title,
@@ -1056,7 +1056,7 @@ class DataObj extends BaseDataObj {
           const property = properties.get(row.property || row.param);
           if(property && property.mandatory) {
             const {value} = (row._row || row);
-            if(utils.is_data_obj(value) ? value.empty() : !value) {
+            if(utils$1.is_data_obj(value) ? value.empty() : !value) {
               throw {
                 obj: this,
                 row: row._row || row,
@@ -1072,7 +1072,7 @@ class DataObj extends BaseDataObj {
     return true;
   }
   save(post, operational, attachments, attr) {
-    if(utils.is_empty_guid(this.ref)) {
+    if(utils$1.is_empty_guid(this.ref)) {
       return Promise.resolve(this);
     }
     let initial_posted;
@@ -1114,12 +1114,12 @@ class DataObj extends BaseDataObj {
           return Promise.reject(err);
         };
         if(this._metadata().hierarchical && !this._obj.parent) {
-          this._obj.parent = utils.blank.guid;
+          this._obj.parent = utils$1.blank.guid;
         }
         let numerator;
         if(!this._deleted) {
           if(this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) {
-            if(utils.blank.date == this.date) {
+            if(utils$1.blank.date == this.date) {
               this.date = new Date();
             }
             if(!this.number_doc) {
@@ -1231,7 +1231,7 @@ class DataObj extends BaseDataObj {
     }
     for (const fld in fields) {
       const {type} = fields[fld];
-      if (type.is_ref && _obj.hasOwnProperty(fld) && _obj[fld] && !utils.is_empty_guid(_obj[fld])) {
+      if (type.is_ref && _obj.hasOwnProperty(fld) && _obj[fld] && !utils$1.is_empty_guid(_obj[fld])) {
         const finded = type.types.some((type) => {
           const _mgr = md.mgr_by_class_name(type);
           return _mgr && !_mgr.get(_obj[fld], false, false).is_new();
@@ -1247,7 +1247,7 @@ class DataObj extends BaseDataObj {
         _obj[ts].forEach((row) => {
           for(const fld in fields) {
             const {type} = fields[fld];
-            if (type.is_ref && row.hasOwnProperty(fld) && row[fld] && !utils.is_empty_guid(row[fld])) {
+            if (type.is_ref && row.hasOwnProperty(fld) && row[fld] && !utils$1.is_empty_guid(row[fld])) {
               const finded = type.types.some((type) => {
                 const _mgr = md.mgr_by_class_name(type);
                 return _mgr && !_mgr.get(_obj[fld], false, false).is_new();
@@ -1295,10 +1295,10 @@ class DataObj extends BaseDataObj {
 }
 Object.defineProperty(DataObj.prototype, 'ref', {
   get: function () {
-    return this._obj ? this._obj.ref : utils.blank.guid;
+    return this._obj ? this._obj.ref : utils$1.blank.guid;
   },
   set: function (v) {
-    this._obj.ref = utils.fix_guid(v);
+    this._obj.ref = utils$1.fix_guid(v);
   },
   enumerable: true,
   configurable: true
@@ -1307,7 +1307,7 @@ TabularSectionRow.prototype._getter = DataObj.prototype._getter;
 TabularSectionRow.prototype.__setter = DataObj.prototype.__setter;
 class CatObj extends DataObj {
   constructor(attr, manager, loading) {
-    const direct = loading && attr && utils.is_guid(attr.ref);
+    const direct = loading && attr && utils$1.is_guid(attr.ref);
     super(attr, manager, loading, direct);
     if(direct) {
       this._fix_plain();
@@ -1367,7 +1367,7 @@ class CatObj extends DataObj {
     if(parent && !parent.empty()) {
       return parent._hierarchy(group);
     }
-    return group == utils.blank.guid;
+    return group == utils$1.blank.guid;
   }
 }
 const NumberDocAndDate = (superclass) => class extends superclass {
@@ -1379,16 +1379,16 @@ const NumberDocAndDate = (superclass) => class extends superclass {
     this._obj.number_doc = v;
   }
   get date() {
-    return this._obj.date instanceof Date ? this._obj.date : utils.blank.date;
+    return this._obj.date instanceof Date ? this._obj.date : utils$1.blank.date;
   }
   set date(v) {
     this.__notify('date');
-    this._obj.date = utils.fix_date(v, true);
+    this._obj.date = utils$1.fix_date(v, true);
   }
 };
 class DocObj extends NumberDocAndDate(DataObj) {
   constructor(attr, manager, loading) {
-    const direct = loading && attr && utils.is_guid(attr.ref);
+    const direct = loading && attr && utils$1.is_guid(attr.ref);
     super(attr, manager, loading, direct);
     if(direct) {
       this._fix_plain(this);
@@ -1415,7 +1415,7 @@ class DocObj extends NumberDocAndDate(DataObj) {
   }
   set posted(v) {
     this.__notify('posted');
-    this._obj.posted = utils.fix_boolean(v);
+    this._obj.posted = utils$1.fix_boolean(v);
   }
 }
 class DataProcessorObj extends DataObj {
@@ -1425,7 +1425,7 @@ class DataProcessorObj extends DataObj {
       const {fields, tabular_sections} = manager.metadata();
       for (const fld in fields) {
         if(!attr[fld]) {
-          attr[fld] = utils.fetch_type('', fields[fld].type);
+          attr[fld] = utils$1.fetch_type('', fields[fld].type);
         }
       }
       for (const fld in tabular_sections) {
@@ -1434,7 +1434,7 @@ class DataProcessorObj extends DataObj {
         }
       }
     }
-    utils._mixin(this, attr);
+    utils$1._mixin(this, attr);
   }
 }
 class TaskObj extends NumberDocAndDate(CatObj) {
@@ -1449,7 +1449,7 @@ class EnumObj extends DataObj {
       if(!_obj.ref && _obj.name) {
         _obj.ref = _obj.name;
       }
-      _obj !== attr && utils._mixin(this, attr);
+      _obj !== attr && utils$1._mixin(this, attr);
     }
   }
   get order() {
@@ -1485,7 +1485,7 @@ class RegisterRow extends DataObj {
       if(tref) {
         delete attr.ref;
       }
-      utils._mixin(this, attr);
+      utils$1._mixin(this, attr);
       if(tref) {
         attr.ref = tref;
       }
@@ -1722,7 +1722,7 @@ class DataManager extends MetaEventEmitter{
     return this.class_name.replace('.', '_');
 	}
 	find_rows(selection, callback){
-		return utils._find_rows.call(this, this.by_ref, selection, callback);
+		return utils$1._find_rows.call(this, this.by_ref, selection, callback);
 	}
 	find_rows_remote(selection) {
 		return this.adapter.find_rows(this, selection);
@@ -1777,7 +1777,7 @@ class DataManager extends MetaEventEmitter{
           text: v.presentation,
           value: v.ref
         };
-        if(utils.is_equal(opt.value, val)){
+        if(utils$1.is_equal(opt.value, val)){
           opt.selected = true;
         }
         if(v.class_name == 'cat.property_values' && v.css) {
@@ -1870,7 +1870,7 @@ class DataManager extends MetaEventEmitter{
 					rt.push($p[tnames[0]][tnames[1]]);
 				}
 			});
-			if (rt.length == 1 || row[f] == utils.blank.guid){
+			if (rt.length == 1 || row[f] == utils$1.blank.guid){
 				return mf_mgr(rt[0]);
 			}
 			else if (array_enabled){
@@ -1879,7 +1879,7 @@ class DataManager extends MetaEventEmitter{
 			else if ((property = row[f]) instanceof DataObj){
 				return property._manager;
 			}
-			else if (property && property != utils.blank.guid) {
+			else if (property && property != utils$1.blank.guid) {
 				for (let i in rt) {
 					mgr = rt[i];
 					if (mgr.by_ref[property]){
@@ -1889,16 +1889,16 @@ class DataManager extends MetaEventEmitter{
 			}
 		}
 		else {
-			if (utils.is_data_obj(property)){
+			if (utils$1.is_data_obj(property)){
 				oproperty = property;
 			}
-			else if (utils.is_guid(property)){
+			else if (utils$1.is_guid(property)){
 				oproperty = $p.cch.properties.get(property);
 			}
 			else {
 				return;
 			}
-			if (utils.is_data_obj(oproperty)) {
+			if (utils$1.is_data_obj(oproperty)) {
 				if (oproperty.is_new()){
 					return $p.cat.property_values;
 				}
@@ -1913,7 +1913,7 @@ class DataManager extends MetaEventEmitter{
 						return true
 					}
 				});
-				if(rt.length == 1 || row[f] == utils.blank.guid){
+				if(rt.length == 1 || row[f] == utils$1.blank.guid){
 					return mf_mgr(rt[0]);
 				}
 				else if(array_enabled){
@@ -1922,7 +1922,7 @@ class DataManager extends MetaEventEmitter{
 				else if((property = row[f]) instanceof DataObj){
 					return property._manager;
 				}
-				else if(utils.is_guid(property) && property != utils.blank.guid){
+				else if(utils$1.is_guid(property) && property != utils$1.blank.guid){
 					for(let i in rt){
 						mgr = rt[i];
 						if(mgr.by_ref[property]){
@@ -1992,7 +1992,7 @@ class RefDataManager extends DataManager{
 	}
 	each(fn){
     for (const i in this.by_ref) {
-      if(!i || i === utils.blank.guid) {
+      if(!i || i === utils$1.blank.guid) {
         continue;
       }
       if(fn.call(this, this.by_ref[i]) === true) {
@@ -2002,7 +2002,7 @@ class RefDataManager extends DataManager{
   }
 	get(ref, no_create){
 		if(!ref || typeof ref !== string){
-      ref = utils.fix_guid(ref);
+      ref = utils$1.fix_guid(ref);
     }
 		let o = this.by_ref[ref];
 		if(arguments.length == 3){
@@ -2023,7 +2023,7 @@ class RefDataManager extends DataManager{
         created = true;
 			}
 		}
-		if(ref === utils.blank.guid){
+		if(ref === utils$1.blank.guid){
 			return no_create == rp ? Promise.resolve(o) : o;
 		}
 		if(o.is_new()){
@@ -2045,17 +2045,17 @@ class RefDataManager extends DataManager{
 		if(!attr || typeof attr !== "object"){
 			attr = {};
 		}
-		else if(utils.is_data_obj(attr)){
+		else if(utils$1.is_data_obj(attr)){
 			return Promise.resolve(attr);
 		}
-		if(!attr.ref || !utils.is_guid(attr.ref) || utils.is_empty_guid(attr.ref)){
-			attr.ref = utils.generate_guid();
+		if(!attr.ref || !utils$1.is_guid(attr.ref) || utils$1.is_empty_guid(attr.ref)){
+			attr.ref = utils$1.generate_guid();
 		}
 		let o = this.by_ref[attr.ref];
 		if(!o){
 			o = this.obj_constructor('', [attr, this]);
       const after_create_res = do_after_create === false ? false : o.after_create();
-      if(o instanceof DocObj && o.date == utils.blank.date){
+      if(o instanceof DocObj && o.date == utils$1.blank.date){
         o.date = new Date();
       }
       if(force_obj){
@@ -2088,7 +2088,7 @@ class RefDataManager extends DataManager{
 		return force_obj ? o : Promise.resolve(o);
 	}
 	find(val, columns){
-		return utils._find(this.by_ref, val, columns);
+		return utils$1._find(this.by_ref, val, columns);
 	}
 	load_array(aattr, forse){
 		const res = [];
@@ -2099,7 +2099,7 @@ class RefDataManager extends DataManager{
 		    res.push.apply(res, this.load_array(attr.rows, forse));
 		    continue;
       }
-			let obj = this.by_ref[utils.fix_guid(attr)];
+			let obj = this.by_ref[utils$1.fix_guid(attr)];
 			if(!obj){
         if(forse === 'update_only') {
 					continue;
@@ -2132,7 +2132,7 @@ class RefDataManager extends DataManager{
 	first_folder(owner){
 		for(let i in this.by_ref){
 			const o = this.by_ref[i];
-			if(o.is_folder && (!owner || utils.is_equal(owner, o.owner))) return o;
+			if(o.is_folder && (!owner || utils$1.is_equal(owner, o.owner))) return o;
 		}
 		return this.get();
 	}
@@ -2144,11 +2144,11 @@ class RefDataManager extends DataManager{
 			action = attr && attr.action ? attr.action : "create_table";
 		function sql_selection(){
 			let ignore_parent = !attr.parent,
-				parent = attr.parent || utils.blank.guid,
+				parent = attr.parent || utils$1.blank.guid,
 				owner,
-				initial_value = attr.initial_value || utils.blank.guid,
+				initial_value = attr.initial_value || utils$1.blank.guid,
 				filter = attr.filter || "",
-				set_parent = utils.blank.guid;
+				set_parent = utils$1.blank.guid;
       const and = '\n AND ';
 			function list_flds(){
 				var flds = [], s = "_t_.ref, _t_.`_deleted`";
@@ -2224,13 +2224,13 @@ class RefDataManager extends DataManager{
 				else if(cmd["hierarchical"]){
 					if(cmd.has_owners)
 						s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" +
-							(owner == utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
+							(owner == utils$1.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 					else
 						s = " WHERE (" + (ignore_parent || filter ? 1 : 0) + " OR _t_.parent = '" + parent + "') AND (" + (filter ? 0 : 1);
 				}
 				else {
 					if(cmd.has_owners)
-						s = " WHERE (" + (owner == utils.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
+						s = " WHERE (" + (owner == utils$1.blank.guid ? 1 : 0) + " OR _t_.owner = '" + owner + "') AND (" + (filter ? 0 : 1);
 					else
 						s = " WHERE (" + (filter ? 0 : 1);
 				}
@@ -2246,7 +2246,7 @@ class RefDataManager extends DataManager{
 					if(cmd["code_length"])
 						s += " OR _t_.id LIKE '" + filter + "'";
 				}
-				s += ") AND (_t_.ref != '" + utils.blank.guid + "')";
+				s += ") AND (_t_.ref != '" + utils$1.blank.guid + "')";
 				const sel_el = (sel) => {
           for(let key in sel){
             if(typeof sel[key] == "function"){
@@ -2263,7 +2263,7 @@ class RefDataManager extends DataManager{
                 s += and + "(not _t_." + key + ") ";
               }
               else if(typeof sel[key] == "object"){
-                if(utils.is_data_obj(sel[key]) || utils.is_guid(sel[key])){
+                if(utils$1.is_data_obj(sel[key]) || utils$1.is_guid(sel[key])){
                   s += and + "(_t_." + key + " = '" + sel[key] + "') ";
                 }
                 else {
@@ -2379,9 +2379,9 @@ class RefDataManager extends DataManager{
 						});
 					}
 					if(!owner)
-						owner = utils.blank.guid;
+						owner = utils$1.blank.guid;
 				}
-				if(initial_value !=  utils.blank.guid && ignore_parent){
+				if(initial_value !=  utils$1.blank.guid && ignore_parent){
 					if(cmd["hierarchical"]){
 						on_parent(t.get(initial_value));
 					}else
@@ -2571,7 +2571,7 @@ class EnumManager extends RefDataManager{
 		if(ref instanceof EnumObj){
       return ref;
     }
-		else if(!ref || ref == utils.blank.guid){
+		else if(!ref || ref == utils$1.blank.guid){
       ref = "_";
     }
 		return this[ref] || new EnumObj({name: ref}, this);
@@ -2582,7 +2582,7 @@ class EnumManager extends RefDataManager{
 	}
 	each(fn) {
 		this.alatable.forEach(v => {
-			if(v.ref && v.ref != "_" && v.ref != utils.blank.guid)
+			if(v.ref && v.ref != "_" && v.ref != utils$1.blank.guid)
 				fn.call(this[v.ref]);
 		});
 	}
@@ -2626,7 +2626,7 @@ class EnumManager extends RefDataManager{
           text: v.presentation,
           value: v.ref
         };
-        if(utils.is_equal(v.value, val)){
+        if(utils$1.is_equal(v.value, val)){
           v.selected = true;
         }
         l.push(v);
@@ -2788,7 +2788,7 @@ class RegisterManager extends DataManager{
 									else if(sel[key] === false)
 										s += "\n AND (not _t_." + key + ") ";
 									else if(typeof sel[key] == "object"){
-                    if(utils.is_data_obj(sel[key])) {
+                    if(utils$1.is_data_obj(sel[key])) {
                       s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
                     }
                     else {
@@ -2939,11 +2939,11 @@ class RegisterManager extends DataManager{
 		for(var j in dimensions){
 			key += (key ? "¶" : "");
 			if(dimensions[j].type.is_ref)
-				key += utils.fix_guid(attr[j]);
+				key += utils$1.fix_guid(attr[j]);
 			else if(!attr[j] && dimensions[j].type.digits)
 				key += "0";
 			else if(dimensions[j].date_part)
-				key += moment(attr[j] || utils.blank.date).format(moment.defaultFormatUtc);
+				key += moment(attr[j] || utils$1.blank.date).format(moment.defaultFormatUtc);
 			else if(attr[j]!=undefined)
 				key += String(attr[j]);
 			else
@@ -2992,7 +2992,7 @@ class CatManager extends RefDataManager{
 		if (_meta.hierarchical && _meta.group_hierarchy) {
 			Object.defineProperty(this.obj_constructor('', true).prototype, 'is_folder', {
 				get(){ return this._obj.is_folder || false},
-				set(v){ this._obj.is_folder = utils.fix_boolean(v);},
+				set(v){ this._obj.is_folder = utils$1.fix_boolean(v);},
 				enumerable: true,
 				configurable: true
 			});
@@ -3782,6 +3782,7 @@ utils.__define('blank', {
 	configurable: false,
 	writable: false,
 });
+var utils$1 = utils;
 
 function Aes(default_key) {
 	var Aes = this;
@@ -4075,7 +4076,7 @@ class WSQL {
     const nesessery_params = [
       {p: 'user_name', v: '', t: 'string'},
       {p: 'user_pwd', v: '', t: 'string'},
-      {p: 'browser_uid', v: utils.generate_guid(), t: 'string'},
+      {p: 'browser_uid', v: utils$1.generate_guid(), t: 'string'},
       {p: 'zone', v: job_prm.hasOwnProperty('zone') ? job_prm.zone : 1, t: job_prm.zone_is_string ? 'string' : 'number'},
       {p: 'rest_path', v: '', t: 'string'},
       {p: 'couch_path', v: '', t: 'string'},
@@ -4182,13 +4183,13 @@ class WSQL {
 			return prm;
 		}
 		else if(type == "number"){
-			return utils.fix_number(prm, true);
+			return utils$1.fix_number(prm, true);
 		}
 		else if(type == "date"){
-			return utils.fix_date(prm, true);
+			return utils$1.fix_date(prm, true);
 		}
 		else if(type == "boolean"){
-			return utils.fix_boolean(prm);
+			return utils$1.fix_boolean(prm);
 		}
     else if(type == "string"){
       return prm ? prm.toString() : '';
@@ -4208,11 +4209,11 @@ class Meta extends MetaEventEmitter {
       _m: {value: {}},
       $p: {get() {return $p}},
     });
-    Meta._sys.forEach((patch) => utils._patch(this._m, patch));
+    Meta._sys.forEach((patch) => utils$1._patch(this._m, patch));
     Meta._sys.length = 0;
   }
   init(patch) {
-    return utils._patch(this._m, patch);
+    return utils$1._patch(this._m, patch);
   }
   get(type, field_name) {
     const np = type instanceof DataManager ? [type._owner.name, type.name] : type.split('.');
@@ -4478,7 +4479,7 @@ class Meta extends MetaEventEmitter {
       if(!mfrm.obj.tabular_sections[ts_name]) {
         return;
       }
-      utils._mixin(source, mfrm.obj.tabular_sections[ts_name]);
+      utils$1._mixin(source, mfrm.obj.tabular_sections[ts_name]);
     }
     else {
       if(ts_name === 'contact_information') {
@@ -4841,7 +4842,7 @@ class MetaEngine {
     console && console.log(err);
   }
   get utils() {
-    return utils;
+    return utils$1;
   }
   get msg() {
     return msg;
