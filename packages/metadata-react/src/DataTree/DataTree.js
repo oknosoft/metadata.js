@@ -13,7 +13,7 @@ import {withIface} from 'metadata-redux';
 import control_by_type from 'metadata-abstract-ui/ui';
 import Typography from '@material-ui/core/Typography';
 
-class DataTree extends MDNRComponent {
+export class DataTree extends MDNRComponent {
 
   static COLUMN_DEFAULT_WIDTH = 220;
 

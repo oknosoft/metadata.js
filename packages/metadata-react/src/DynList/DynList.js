@@ -21,7 +21,7 @@ const LIMIT = 50;
 const ROW_HEIGHT = 33;
 //const OVERSCAN_ROW = 2;
 
-class DynList extends MDNRComponent {
+export class DynList extends MDNRComponent {
 
   constructor(props, context) {
     super(props, context);
