@@ -9,7 +9,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import SearchIcon from '@material-ui/icons/Search';
-import {fade} from '@material-ui/core/styles/colorManipulator';
+import {alpha} from '@material-ui/core/styles';
 import {withStyles} from '@material-ui/styles';
 
 const styles = ({typography, palette, transitions, spacing, breakpoints}) => ({
@@ -17,9 +17,9 @@ const styles = ({typography, palette, transitions, spacing, breakpoints}) => ({
     fontFamily: typography.fontFamily,
     position: 'relative',
     alignSelf: 'center',
-    background: fade(palette.common.white, 0.15),
+    background: alpha(palette.common.white, 0.15),
     '&:hover': {
-      background: fade(palette.common.white, 0.25),
+      background: alpha(palette.common.white, 0.25),
       //border: '1px solid #e0e0e0',
     },
     '& $input': {

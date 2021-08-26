@@ -57,7 +57,7 @@ export default function mngrs() {
           if((group_hierarchy && _fld === 'parent') || (_meta && _meta.choice_groups_elm === 'grp')) {
             select.is_folder = true;
           }
-          else if(_meta &&  _meta.choice_groups_elm === 'elm') {
+          else if(group_hierarchy && _meta &&  _meta.choice_groups_elm === 'elm') {
             select.is_folder = false;
           }
         }
