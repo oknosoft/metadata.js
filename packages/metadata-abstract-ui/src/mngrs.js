@@ -53,11 +53,11 @@ export default function mngrs() {
         const select = {};
         const {input_by_string, has_owners, hierarchical, group_hierarchy, fields} = this.metadata();
 
-        if(hierarchical) {
-          if((group_hierarchy && _fld === 'parent') || (_meta && _meta.choice_groups_elm === 'grp')) {
+        if(hierarchical && group_hierarchy) {
+          if((_fld === 'parent') || (_meta && _meta.choice_groups_elm === 'grp')) {
             select.is_folder = true;
           }
-          else if(group_hierarchy && _meta &&  _meta.choice_groups_elm === 'elm') {
+          else if(_meta &&  _meta.choice_groups_elm === 'elm') {
             select.is_folder = false;
           }
         }

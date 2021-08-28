@@ -50,7 +50,7 @@ class FieldAutocomplete extends AbstractField {
       return;
     }
     const {_manager} = value;
-    const select = _manager.get_search_selector({_obj, _fld, _meta, search, top: stopIndex, skip: startIndex});
+    const select = _manager.get_search_selector({_obj, _fld, _meta, search, top: stopIndex, skip: startIndex, source_mode: 'ram'});
     const {docs, count} = $p.utils._find_rows_with_sort.call(_manager, _manager.alatable, select);
     const options = [value];
     let added = 0;
