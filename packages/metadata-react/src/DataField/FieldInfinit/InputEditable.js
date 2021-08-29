@@ -14,6 +14,9 @@ export default function InputEditable({iprops, ...props}) {
   if(_meta.mandatory || mandatory) {
     attr.required = true;
   }
+  if(other.fullWidth === undefined) {
+    other.fullWidth = true;
+  }
 
   if(isTabular) {
     return <InputBase
@@ -29,9 +32,7 @@ export default function InputEditable({iprops, ...props}) {
   return <FormControl
     className={extClasses && extClasses.control ? '' : cn(classes.formControl, className, props.bar && classes.barInput)}
     classes={extClasses && extClasses.control ? extClasses.control : null}
-    fullWidth={fullWidth}
     onDoubleClick={null}
-    fullWidth={fullWidth}
     {...other}
   >
     {props.label_position != 'hide' && <InputLabel
