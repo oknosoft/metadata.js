@@ -27,7 +27,7 @@ import {withMeta} from 'metadata-redux';
 import classnames from 'classnames';
 
 
-class FrmLogin extends React.Component {
+export class FrmLogin extends React.Component {
 
   constructor(props, context) {
     super(props, context);

@@ -25,7 +25,7 @@ const styles = (theme) => ({
     }
   },
   control: {
-    minWidth: 300,
+    minWidth: 180,
     paddingRight: theme.spacing(),
     paddingTop: 2,
     borderBottom: '1px solid #e8e8e8',

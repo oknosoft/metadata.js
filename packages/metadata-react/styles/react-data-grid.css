@@ -32,7 +32,6 @@ input.editor-main:focus, select.editor-main:focus {
   padding: 1px 0 0 2px;
   border: 0;
   font-size: inherit;
-  height: 30px;
 }
 .rdg-editor-container, .react-grid-Container *, input {
   box-sizing: border-box;
