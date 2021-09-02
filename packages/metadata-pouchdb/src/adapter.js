@@ -402,7 +402,7 @@ function adapter({AbstracrAdapter}) {
           this.emit('user_log_stop', username);
         }
         // врезаем асинхронную подписку на событие
-        return this.emit_promise('on_log_in').then(() => info);
+        return this.emit_promise('on_log_in', username).then(() => info);
 
       })
         .then((info) => {
