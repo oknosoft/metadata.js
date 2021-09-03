@@ -248,7 +248,8 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 					_selection = attr.selection;
 
 				_obj = attr.obj;
-				_meta = attr.metadata || typeof _obj._metadata == 'function' ? _obj._metadata().fields : _obj._metadata.fields;
+        const {_metadata} = _obj;
+				_meta = attr.metadata || typeof _metadata == 'function' ? _metadata.call(_obj).fields : _metadata.fields;
 				_mgr = _obj._manager;
 				_tsname = attr.ts || "";
 				_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]);
@@ -295,7 +296,8 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 
 				// заполняем табчасть данными
 				if(_tsname && !attr.ts_title){
-          attr.ts_title = typeof _obj._metadata == 'function' ? _obj._metadata(_tsname).synonym : _obj._metadata.tabular_sections[_tsname].synonym;
+          const {_metadata} = _obj;
+          attr.ts_title = typeof _metadata == 'function' ? _metadata.call(_obj, _tsname).synonym : _metadata.tabular_sections[_tsname].synonym;
         }
 				listener_rows(_obj, {[_tsname]: true});
 

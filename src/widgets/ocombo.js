@@ -210,7 +210,8 @@ function OCombo(attr){
 						_mgr = v.mgr;
 						_obj = tobj;
 						_field = tfield;
-						_meta = typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field];
+            const {_metadata} = _obj;
+						_meta = typeof _metadata == 'function' ? _metadata.call(_obj, _field) : _metadata.fields[_field];
 						_mgr.form_selection({
 							on_select: function (selv) {
 								_obj[_field] = selv;
@@ -374,7 +375,8 @@ function OCombo(attr){
       _meta = attr.metadata;
     }
     else if(_property) {
-      _meta = $p.utils._clone(typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field]);
+      const {_metadata} = _obj;
+      _meta = $p.utils._clone(typeof _metadata == 'function' ? _metadata.call(_obj, _field) : _metadata.fields[_field]);
       _meta.type = _property.type;
       if(_obj.inset && _obj.inset.product_params) {
         const drow = _obj.inset.product_params.find({param: _property});
@@ -387,7 +389,8 @@ function OCombo(attr){
       }
     }
     else {
-      _meta = typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field];
+      const {_metadata} = _obj;
+      _meta = typeof _metadata == 'function' ? _metadata.call(_obj. _field) : _metadata.fields[_field];
     }
 
     t.clearAll();

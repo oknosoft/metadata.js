@@ -1398,7 +1398,8 @@ function OCombo(attr){
 						_mgr = v.mgr;
 						_obj = tobj;
 						_field = tfield;
-						_meta = typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field];
+            const {_metadata} = _obj;
+						_meta = typeof _metadata == 'function' ? _metadata.call(_obj, _field) : _metadata.fields[_field];
 						_mgr.form_selection({
 							on_select: function (selv) {
 								_obj[_field] = selv;
@@ -1562,7 +1563,8 @@ function OCombo(attr){
       _meta = attr.metadata;
     }
     else if(_property) {
-      _meta = $p.utils._clone(typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field]);
+      const {_metadata} = _obj;
+      _meta = $p.utils._clone(typeof _metadata == 'function' ? _metadata.call(_obj, _field) : _metadata.fields[_field]);
       _meta.type = _property.type;
       if(_obj.inset && _obj.inset.product_params) {
         const drow = _obj.inset.product_params.find({param: _property});
@@ -1575,7 +1577,8 @@ function OCombo(attr){
       }
     }
     else {
-      _meta = typeof _obj._metadata == 'function' ? _obj._metadata(_field) : _obj._metadata.fields[_field];
+      const {_metadata} = _obj;
+      _meta = typeof _metadata == 'function' ? _metadata.call(_obj. _field) : _metadata.fields[_field];
     }
 
     t.clearAll();
@@ -2136,7 +2139,8 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 					_selection = attr.selection;
 
 				_obj = attr.obj;
-				_meta = attr.metadata || typeof _obj._metadata == 'function' ? _obj._metadata().fields : _obj._metadata.fields;
+        const {_metadata} = _obj;
+				_meta = attr.metadata || typeof _metadata == 'function' ? _metadata.call(_obj).fields : _metadata.fields;
 				_mgr = _obj._manager;
 				_tsname = attr.ts || "";
 				_extra_fields = _tsname ? _obj[_tsname] : (_obj.extra_fields || _obj["ДополнительныеРеквизиты"]);
@@ -2183,7 +2187,8 @@ dhtmlXCellObject.prototype.attachHeadFields = function(attr) {
 
 				// заполняем табчасть данными
 				if(_tsname && !attr.ts_title){
-          attr.ts_title = typeof _obj._metadata == 'function' ? _obj._metadata(_tsname).synonym : _obj._metadata.tabular_sections[_tsname].synonym;
+          const {_metadata} = _obj;
+          attr.ts_title = typeof _metadata == 'function' ? _metadata.call(_obj, _tsname).synonym : _metadata.tabular_sections[_tsname].synonym;
         }
 				listener_rows(_obj, {[_tsname]: true});
 
@@ -2385,7 +2390,8 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
     }
 
 		if(!silent){
-      const _tssynonym = (typeof _obj._metadata == 'function' ? _obj._metadata(_tsname) : _obj._metadata.tabular_sections[_tsname]).synonym;
+      const {_metadata} = _obj;
+      const _tssynonym = (typeof _metadata == 'function' ? _metadata.call(_obj, _tsname) : _metadata.tabular_sections[_tsname]).synonym;
       $p.msg.show_msg({
         type: "alert-warning",
         text: $p.msg.no_selected_row.replace("%1", _tssynonym || _tsname),

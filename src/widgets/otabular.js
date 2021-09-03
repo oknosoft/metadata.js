@@ -173,7 +173,8 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
     }
 
 		if(!silent){
-      const _tssynonym = (typeof _obj._metadata == 'function' ? _obj._metadata(_tsname) : _obj._metadata.tabular_sections[_tsname]).synonym;
+      const {_metadata} = _obj;
+      const _tssynonym = (typeof _metadata == 'function' ? _metadata.call(_obj, _tsname) : _metadata.tabular_sections[_tsname]).synonym;
       $p.msg.show_msg({
         type: "alert-warning",
         text: $p.msg.no_selected_row.replace("%1", _tssynonym || _tsname),

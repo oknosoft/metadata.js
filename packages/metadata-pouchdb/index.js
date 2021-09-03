@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.25-beta.4, built:2021-08-17
+ metadata-pouchdb v2.0.25-beta.4, built:2021-08-31
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -713,7 +713,7 @@ function adapter({AbstracrAdapter}) {
         else {
           this.emit('user_log_stop', username);
         }
-        return this.emit_promise('on_log_in').then(() => info);
+        return this.emit_promise('on_log_in', username).then(() => info);
       })
         .then((info) => {
           if(props._data_loaded && !props._doc_ram_loading) {
