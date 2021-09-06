@@ -12,7 +12,7 @@ import MarkdownElement from './MarkdownElement';
 //import Demo from 'docs/src/modules/components/Demo';
 import {getHeaders, getContents, getTitle} from './parseMarkdown';
 
-const styles = {
+export const styles = {
   root: {
     marginBottom: 100,
   },
@@ -26,7 +26,7 @@ const styles = {
 
 const demoRegexp = /^demo='(.*)'$/;
 
-function MarkdownDocs(props) {
+export function MarkdownDocs(props) {
   const {classes, demos, markdown, subtitle, sourceLocation: sourceLocationProp, title, htitle, h1, img,
     descr, canonical, footer, handleIfaceState, TopButton} = props;
   const contents = getContents(markdown);

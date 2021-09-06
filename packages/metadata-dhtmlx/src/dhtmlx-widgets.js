@@ -1578,7 +1578,7 @@ function OCombo(attr){
     }
     else {
       const {_metadata} = _obj;
-      _meta = typeof _metadata == 'function' ? _metadata.call(_obj. _field) : _metadata.fields[_field];
+      _meta = typeof _metadata == 'function' ? _metadata.call(_obj, _field) : _metadata.fields[_field];
     }
 
     t.clearAll();

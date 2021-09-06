@@ -33,7 +33,7 @@ export default class DataField extends FieldWithMeta {
     switch (type) {
 
     case 'ocombo':
-      return <FieldInfinit {...props} />;
+      return <FieldInfinit {...props}  />;
 
     case 'oselect':
     case 'dselect':
@@ -60,3 +60,4 @@ export default class DataField extends FieldWithMeta {
     }
   }
 }
+

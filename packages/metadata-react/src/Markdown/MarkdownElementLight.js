@@ -7,7 +7,7 @@ import classNames from 'classnames';
 import withStyles from './styles';
 import {withIface} from 'metadata-redux';
 
-function MarkdownElement(props) {
+export function MarkdownElement(props) {
   const { classes, className, text, mdtitle, title, handleNavigate, handleIfaceState, disconnect, CustomBtn, ...other } = props;
 
   function anchorCkick(evt) {

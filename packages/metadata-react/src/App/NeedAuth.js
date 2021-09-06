@@ -11,7 +11,7 @@ import {withMeta, withPrm} from 'metadata-redux';
 
 const DefaultLogin = compose(withMeta, withPrm)(({classes, ...other}) => < TabsLogin {...other} />);
 
-function NeedAuth(props) {
+export function NeedAuth(props) {
   const {handleNavigate, handleIfaceState, title, idle, user, ComponentLogin} = props;
   const FrmLogin = ComponentLogin || DefaultLogin;
   const margin = {marginTop: 16, marginBottom: 16};

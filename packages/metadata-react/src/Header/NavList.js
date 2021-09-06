@@ -16,7 +16,7 @@ import {withIface} from 'metadata-redux';
 
 import IconExpandMore from '@material-ui/icons/ExpandMore';
 
-class NavList extends Component {
+export class NavList extends Component {
 
   constructor(props) {
     super(props);

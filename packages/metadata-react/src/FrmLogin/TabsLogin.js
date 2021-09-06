@@ -21,7 +21,7 @@ import CnnSettings from './CnnSettings';
 import {withPrm} from 'metadata-redux';
 import withStyles from '../styles/paper600';
 
-class TabsLogin extends Component {
+export class TabsLogin extends Component {
 
   constructor(props) {
     super(props);

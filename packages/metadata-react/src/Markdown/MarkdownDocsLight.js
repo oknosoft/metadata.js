@@ -9,7 +9,7 @@ import AppContent from '../App/AppContent';
 import MarkdownElement from './MarkdownElementLight';
 import {getContents, getTitle} from './parseMarkdown';
 
-const styles = {
+export const styles = {
   root: {
     marginBottom: 100,
   },
@@ -21,7 +21,7 @@ const styles = {
   }
 };
 
-function MarkdownDocs(props) {
+export function MarkdownDocs(props) {
   const {classes, markdown, subtitle, title, htitle, h1, img,
     descr, canonical, footer, handleIfaceState, TopButton} = props;
   const contents = getContents(markdown);

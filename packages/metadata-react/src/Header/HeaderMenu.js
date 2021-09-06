@@ -13,7 +13,7 @@ import {withIface} from 'metadata-redux';
 import NavList from './NavList';
 
 
-class NavDrawer extends Component {
+export class NavDrawer extends Component {
 
   constructor(props, context) {
     super(props, context);

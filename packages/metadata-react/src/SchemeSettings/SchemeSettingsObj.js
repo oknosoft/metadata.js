@@ -7,7 +7,7 @@ import LoadingMessage from '../DumbLoader/LoadingMessage';
 
 const stub = () => null;
 
-class SchemeSettingsObj extends DataObj {
+export class SchemeSettingsObj extends DataObj {
   render() {
     const {_obj} = this.state;
     return _obj ? <SchemeSettingsTabs

@@ -66,6 +66,7 @@ packages/metadata-react/MetaDesigner/
 packages/metadata-react/MetaList/
 packages/metadata-react/MetaTree/
 packages/metadata-react/Notifications/
+packages/metadata-react/Resize/
 packages/metadata-react/SchemeSettings/
 packages/metadata-react/SplitPane/
 packages/metadata-react/TabularSection/

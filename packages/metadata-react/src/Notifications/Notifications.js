@@ -21,7 +21,7 @@ import classnames from 'classnames';
 import {withIface} from 'metadata-redux';
 import withStyles from '../Header/toolbar';
 
-class Notifications extends Component {
+export class Notifications extends Component {
 
   constructor(props, context) {
     super(props, context);

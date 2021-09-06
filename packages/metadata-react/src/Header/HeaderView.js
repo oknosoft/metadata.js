@@ -15,7 +15,7 @@ import HeaderMenu from './HeaderMenu';
 
 import withStyles from './toolbar';
 
-class Header extends Component {
+export class Header extends Component {
 
   render() {
 

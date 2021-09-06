@@ -40,7 +40,7 @@ import {compose} from 'redux';
 
 import {withIface} from 'metadata-redux';
 
-class Settings extends React.Component {
+export class Settings extends React.Component {
 
   state = {
     open: false,

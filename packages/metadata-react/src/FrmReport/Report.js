@@ -9,7 +9,7 @@ import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
 import {Helmet} from 'react-helmet';
 import {withIface} from 'metadata-redux';
 
-class Report extends MDNRComponent {
+export class Report extends MDNRComponent {
 
   constructor(props, context) {
 
