@@ -166,12 +166,12 @@ export class TabularSection {
       return;
     }
 
-		_obj.splice(index, 1);
+		const drows = _obj.splice(index, 1);
 
 		_obj.forEach((row, index) => row.row = index + 1);
 
     // триггер
-    !_data._loading && _owner.after_del_row(_name);
+    !_data._loading && _owner.after_del_row(_name, drows);
 
     // obj, {ts_name: null}
     !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});

@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.26-beta.1, built:2021-09-06
+ metadata-core v2.0.26-beta.2, built:2021-09-07
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -320,9 +320,9 @@ class TabularSection {
     if(!_data._loading && _owner.del_row(_obj[index]._row) === false){
       return;
     }
-		_obj.splice(index, 1);
+		const drows = _obj.splice(index, 1);
 		_obj.forEach((row, index) => row.row = index + 1);
-    !_data._loading && _owner.after_del_row(_name);
+    !_data._loading && _owner.after_del_row(_name, drows);
     !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
 		_data._modified = true;
 	}
@@ -4832,7 +4832,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.26-beta.1";
+    return "2.0.26-beta.2";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
