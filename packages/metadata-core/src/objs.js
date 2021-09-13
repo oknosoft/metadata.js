@@ -117,6 +117,9 @@ export class BaseDataObj {
     else if(mf.types[0] == 'boolean') {
       return utils.fix_boolean(_obj[f]);
     }
+    else if(mf.types[0] == 'json') {
+      return typeof res === 'object' ? res : {};
+    }
     else {
       return _obj[f] || '';
     }
@@ -214,6 +217,22 @@ export class BaseDataObj {
     }
     else if(mf.types[0] == 'boolean') {
       _obj[f] = utils.fix_boolean(v);
+    }
+    else if(mf.types[0] == 'json') {
+      if(typeof v === 'string') {
+        try {
+          v = JSON.parse(v);
+        }
+        catch (e) {}
+      }
+      if(typeof v === 'object') {
+        if(typeof _obj[f] === 'object') {
+          Object.assign(_obj[f], v);
+        }
+        else {
+          _obj[f] = v;
+        }
+      }
     }
     else {
       _obj[f] = v;
