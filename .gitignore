@@ -1,0 +1,25 @@
+tmp
+.DS_Store
+.idea/
+
+# npm files
+*.lock
+*.log
+
+packages/metadata-core/index.js
+packages/metadata-core/index.js.map
+packages/metadata-core/index.min.js
+
+packages/metadata-pouchdb/index.js
+packages/metadata-pouchdb/index.js.map
+packages/metadata-pouchdb/index.min.js
+
+packages/metadata-postgres/index.js
+packages/metadata-postgres/index.js.map
+packages/metadata-postgres/index.min.js
+
+packages/metadata-ui/plugin.js
+packages/metadata-ui/plugin.min.js
+packages/metadata-ui/common/
+packages/metadata-ui/App/
+
