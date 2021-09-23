@@ -86,16 +86,18 @@ class FieldSelect extends AbstractField {
   };
 
   renderOptions() {
+    const {empty_text} = this.props;
     return this.state.options.map((v) => {
       const key = v.valueOf();
-      return <option key={key} value={key}>{suggestionText(v)}</option>;
+      const text = empty_text && v.empty && v.empty() ? empty_text : suggestionText(v);
+      return <option key={key} value={key}>{text}</option>;
     });
   }
 
   render() {
 
     const {props, _meta, onChange} = this;
-    const {classes, extClasses, fullWidth, read_only, disabled, isTabular, get_ref, ...other} = props;
+    const {classes, extClasses, fullWidth, read_only, disabled, isTabular, get_ref, empty_text, ...other} = props;
     const value = this.typedValue(props);
     const attr = {
       title: _meta.tooltip || _meta.synonym,
