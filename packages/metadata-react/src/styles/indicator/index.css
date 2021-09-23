@@ -1,6 +1,7 @@
 /* зачки состояния объекта: папка, элемент, пометка удаления, проведён */
 .cell_ref_folder {padding-left: 26px !important; background: url(./folderClosed.gif) no-repeat left center;}
 .cell_ref_folder_deleted {padding-left: 26px !important; background: url(./folderDeleted.gif) no-repeat left center;}
+.cell_ref_folder_open {padding-left: 26px !important; background: url(./folderOpen.gif) no-repeat left center; font-style: italic;}
 .cell_ref_elm {padding-left: 26px !important; background: url(./catelm.gif) no-repeat left center;}
 .cell_ref_elm_deleted {padding-left: 26px !important; background: url(./catelmDeleted.gif) no-repeat left center;}
 .cell_doc_posted {padding-left: 26px !important; background: url(./doc_posted.png) no-repeat left center;}

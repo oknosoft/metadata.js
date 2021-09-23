@@ -63,7 +63,7 @@ export class DynList extends MDNRComponent {
     this.show_flat = this._meta.hierarchical;
     this.frm_key = `frm_${class_name.replace('.', '_')}_${frm_key}`;
 
-    if(!parent && this._meta.hierarchical && this._meta.cachable === 'ram') {
+    if(!parent && _ref && this._meta.hierarchical && this._meta.cachable === 'ram') {
       const v = _mgr.get(_ref, true);
       if(v) {
         parent = v.parent;
@@ -81,6 +81,7 @@ export class DynList extends MDNRComponent {
       const ov = (_owner._obj || _owner.props && _owner.props._obj)[_owner.props._fld];
       if(ov && !ov.empty()) {
         newState.parent = ov.parent;
+        newState.ref = ov.ref;
       }
     }
 
@@ -204,8 +205,8 @@ export class DynList extends MDNRComponent {
           flat,
           parent,
         });
-        if(selector.top < LIMIT / 2) {
-          selector.top = LIMIT / 2;
+        if(selector._top < LIMIT / 2) {
+          selector._top = LIMIT / 2;
         }
 
         //
@@ -255,7 +256,8 @@ export class DynList extends MDNRComponent {
             if(!flat && parent && !startIndex) {
               let prnt = parent;
               do {
-                docs.unshift(prnt.toJSON());
+                const raw = Object.assign({_open: true}, prnt.toJSON());
+                docs.unshift(raw);
                 count++;
                 prnt = prnt.parent;
               } while (!prnt.empty());

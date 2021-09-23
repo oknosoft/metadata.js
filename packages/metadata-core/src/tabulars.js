@@ -115,18 +115,17 @@ export class TabularSection {
 	 *     ts.clear();
 	 *
 	 */
-	clear(selection) {
-		const {_obj, _owner, _name} = this;
-    if(!selection){
+  clear(selection) {
+    if(selection) {
+      this.find_rows(selection).forEach((row) => this.del(row.row - 1));
+    }
+    else {
+      const {_obj, _owner, _name} = this;
       _obj.length = 0;
-      // obj, ts_name
       !_owner._data._loading && _owner._manager.emit_async('rows', _owner, {[_name]: true});
     }
-    else{
-      this.find_rows(selection).forEach((row) => this.del(row.row-1))
-    }
-		return this;
-	}
+    return this;
+  }
 
 	/**
 	 * ### Удаляет строку табличной части
@@ -200,9 +199,7 @@ export class TabularSection {
 	 * @return {Array}
 	 */
 	find_rows(selection, callback) {
-		const cb = callback ? (row) => {
-			return callback.call(this, row._row);
-		} : null;
+		const cb = callback ? (row) => callback.call(this, row._row) : null;
 
 		// поддержка индекса
 		let {_obj, _owner, _name, _index} = this;

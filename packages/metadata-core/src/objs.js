@@ -219,14 +219,14 @@ export class BaseDataObj {
       _obj[f] = utils.fix_boolean(v);
     }
     else if(mf.types[0] == 'json') {
-      if(typeof v === 'string') {
+      if(v && typeof v === 'string') {
         try {
           v = JSON.parse(v);
         }
         catch (e) {}
       }
-      if(typeof v === 'object') {
-        if(typeof _obj[f] === 'object') {
+      else if(typeof v === 'object') {
+        if(v && typeof _obj[f] === 'object') {
           Object.assign(_obj[f], v);
         }
         else {

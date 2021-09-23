@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.26-beta.2, built:2021-09-13
+ metadata-core v2.0.26-beta.2, built:2021-09-23
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -282,17 +282,17 @@ class TabularSection {
   count() {
     return this._obj.length;
   }
-	clear(selection) {
-		const {_obj, _owner, _name} = this;
-    if(!selection){
+  clear(selection) {
+    if(selection) {
+      this.find_rows(selection).forEach((row) => this.del(row.row - 1));
+    }
+    else {
+      const {_obj, _owner, _name} = this;
       _obj.length = 0;
       !_owner._data._loading && _owner._manager.emit_async('rows', _owner, {[_name]: true});
     }
-    else {
-      this.find_rows(selection).forEach((row) => this.del(row.row-1));
-    }
-		return this;
-	}
+    return this;
+  }
 	del(val) {
 		const {_obj, _owner, _name} = this;
     const {_data, _manager} = _owner;
@@ -331,9 +331,7 @@ class TabularSection {
 		return res && res._row;
 	}
 	find_rows(selection, callback) {
-		const cb = callback ? (row) => {
-			return callback.call(this, row._row);
-		} : null;
+		const cb = callback ? (row) => callback.call(this, row._row) : null;
 		let {_obj, _owner, _name, _index} = this;
 		const {index} = _owner._metadata(_name);
 		if(index && selection.hasOwnProperty(index)) {
@@ -739,14 +737,14 @@ class BaseDataObj {
       _obj[f] = utils$1.fix_boolean(v);
     }
     else if(mf.types[0] == 'json') {
-      if(typeof v === 'string') {
+      if(v && typeof v === 'string') {
         try {
           v = JSON.parse(v);
         }
         catch (e) {}
       }
-      if(typeof v === 'object') {
-        if(typeof _obj[f] === 'object') {
+      else if(typeof v === 'object') {
+        if(v && typeof _obj[f] === 'object') {
           Object.assign(_obj[f], v);
         }
         else {

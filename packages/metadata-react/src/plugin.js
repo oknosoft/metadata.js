@@ -73,6 +73,9 @@ function rx_columns({utils: {moment}, enm, md}) {
     if(row.deleted) {
       indicator = is_doc ? 'cell_doc_deleted' : 'cell_ref_elm_deleted';
     }
+    else if(row._open) {
+      indicator = 'cell_ref_folder_open';
+    }
     else if(row.is_folder) {
       indicator = 'cell_ref_folder';
     }
