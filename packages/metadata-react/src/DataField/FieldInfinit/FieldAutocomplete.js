@@ -32,12 +32,32 @@ class FieldAutocomplete extends AbstractField {
 
   constructor(props, context) {
     super(props, context);
-    const {value} = this.state;
+
+
     Object.assign(this.state, {
       open: false,
       dialogOpened: '',
-      options: [value],
+      options: [this.masked_value()],
     })
+  }
+
+  masked_value() {
+    let {state: {value}, props: {empty_text}} = this;
+    if(empty_text && value && value.empty && value.empty()) {
+      value = {
+        ref: value.ref,
+        get presentation() {
+          return empty_text;
+        },
+        valueOf() {
+          return this.ref;
+        },
+        toString() {
+          return this.presentation;
+        }
+      };
+    }
+    return value;
   }
 
   getChildContext() {
@@ -51,8 +71,11 @@ class FieldAutocomplete extends AbstractField {
     }
     const {_manager} = value;
     const select = _manager.get_search_selector({_obj, _fld, _meta, search, top: stopIndex, skip: startIndex, source_mode: 'ram'});
+    if(_manager.metadata().main_presentation_name) {
+      select._sort = [{field: 'name', direction: 'asc'}];
+    }
     const {docs, count} = $p.utils._find_rows_with_sort.call(_manager, _manager.alatable, select);
-    const options = [value];
+    const options = [this.masked_value()];
     let added = 0;
     for (const {ref} of docs) {
       const o = _manager.by_ref[ref];
@@ -132,14 +155,14 @@ class FieldAutocomplete extends AbstractField {
   };
 
   renderInput = (iprops) => {
-    const {props: {classes, extClasses, fullWidth, className,  mandatory}, state: {value}, _meta, isTabular, read_only} = this;
-    const props = {_meta, isTabular, classes, extClasses, className, fullWidth, mandatory, value};
+    const {props: {classes, extClasses, fullWidth, className,  mandatory}, _meta, isTabular, read_only} = this;
+    const props = {_meta, isTabular, classes, extClasses, className, fullWidth, mandatory, value: this.masked_value()};
     return <InputEditable {...props} iprops={Object.assign({}, iprops, {fullWidth})} />;
   };
 
   render() {
 
-    const {props, state: {options, value, open, dialogOpened}, _meta, isTabular, read_only} = this;
+    const {props, state: {options, open, dialogOpened}, _meta, isTabular, read_only} = this;
     const {classes, extClasses, fullWidth, _obj, _fld} = props;
 
     return (
@@ -149,7 +172,7 @@ class FieldAutocomplete extends AbstractField {
           classes={classes}
           extClasses={extClasses}
           fullWidth={fullWidth}
-          inputValue={suggestionText(value)}
+          inputValue={suggestionText(this.masked_value())}
           label_position={props.label_position}
         />
         :
@@ -158,7 +181,7 @@ class FieldAutocomplete extends AbstractField {
             //blurOnSelect
             disableClearable
             open={open}
-            value={value}
+            value={this.masked_value()}
             options={options}
             getOptionLabel={suggestionText}
             onOpen={this.onOpen}
