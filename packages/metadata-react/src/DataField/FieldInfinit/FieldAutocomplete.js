@@ -87,6 +87,12 @@ class FieldAutocomplete extends AbstractField {
     this.setState({options});
   };
 
+  filter = (event, value, reason) => {
+    if(reason === 'input') {
+      this.loadMoreRows(value.trim().toLowerCase());
+    }
+  };
+
   onKeyDown = (evt) => {
     const {key} = evt;
     if(break_keys.all.includes(key) || (this.state.open && this.isTabular && break_keys.open.includes(key))) {
@@ -192,6 +198,8 @@ class FieldAutocomplete extends AbstractField {
             classes={{popper: classes.popper}}
             renderInput={this.renderInput}
             renderOption={(option) => <Typography noWrap>{suggestionText(option)}</Typography>}
+            filterOptions={(options) => options}
+            onInputChange={this.filter}
           />
           {dialogOpened && <OuterDialog
             _obj={_obj}
