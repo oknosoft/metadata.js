@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.26-beta.3, built:2021-09-26
+ metadata-core v2.0.26-beta.3, built:2021-10-25
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1869,42 +1869,44 @@ class DataManager extends MetaEventEmitter{
 			return mgr;
 		}
 		if (mf.types.length == 1) {
-			tnames = mf.types[0].split(".");
-			if (tnames.length > 1 && $p[tnames[0]])
-				return mf_mgr($p[tnames[0]][tnames[1]]);
-		}
+      tnames = mf.types[0].split('.');
+      if(tnames.length > 1 && $p[tnames[0]]) {
+        return mf_mgr($p[tnames[0]][tnames[1]]);
+      }
+    }
 		else if (v && v.type) {
-			tnames = v.type.split(".");
-			if (tnames.length > 1 && $p[tnames[0]])
-				return mf_mgr($p[tnames[0]][tnames[1]]);
-		}
+      tnames = v.type.split('.');
+      if(tnames.length > 1 && $p[tnames[0]]) {
+        return mf_mgr($p[tnames[0]][tnames[1]]);
+      }
+    }
 		property = row.property || row.param;
-		if (f != "value" || !property) {
-			rt = [];
-			mf.types.forEach(function (v) {
-				tnames = v.split(".");
-				if (tnames.length > 1 && $p[tnames[0]][tnames[1]]){
-					rt.push($p[tnames[0]][tnames[1]]);
-				}
-			});
-			if (rt.length == 1 || row[f] == utils$1.blank.guid){
-				return mf_mgr(rt[0]);
-			}
-			else if (array_enabled){
-				return rt;
-			}
-			else if ((property = row[f]) instanceof DataObj){
-				return property._manager;
-			}
-			else if (property && property != utils$1.blank.guid) {
-				for (let i in rt) {
-					mgr = rt[i];
-					if (mgr.by_ref[property]){
-						return mgr;
-					}
-				}
-			}
-		}
+    if(f != 'value' || !property) {
+      rt = [];
+      mf.types.forEach(function (v) {
+        tnames = v.split('.');
+        if(tnames.length > 1 && $p[tnames[0]][tnames[1]]) {
+          rt.push($p[tnames[0]][tnames[1]]);
+        }
+      });
+      if(rt.length == 1 || row[f] == utils$1.blank.guid) {
+        return mf_mgr(rt[0]);
+      }
+      else if(array_enabled) {
+        return rt;
+      }
+      else if((property = row[f]) instanceof DataObj) {
+        return property._manager;
+      }
+      else if(property && property != utils$1.blank.guid) {
+        for (let i in rt) {
+          mgr = rt[i];
+          if(mgr.by_ref[property]) {
+            return mgr;
+          }
+        }
+      }
+    }
 		else {
 			if (utils$1.is_data_obj(property)){
 				oproperty = property;
@@ -1920,16 +1922,16 @@ class DataManager extends MetaEventEmitter{
 					return $p.cat.property_values;
 				}
 				rt = [];
-				oproperty.type.types.some((v) => {
-					tnames = v.split(".");
-					if(tnames.length > 1 && $p[tnames[0]][tnames[1]]){
-						rt.push($p[tnames[0]][tnames[1]]);
-					}
-					else if(v == "boolean"){
-						rt.push({types: ["boolean"]});
-						return true
-					}
-				});
+        oproperty.type.types.some((v) => {
+          tnames = v.split('.');
+          if(tnames.length > 1 && $p[tnames[0]][tnames[1]]) {
+            rt.push($p[tnames[0]][tnames[1]]);
+          }
+          else if(v == 'boolean') {
+            rt.push({types: ['boolean']});
+            return true;
+          }
+        });
 				if(rt.length == 1 || row[f] == utils$1.blank.guid){
 					return mf_mgr(rt[0]);
 				}

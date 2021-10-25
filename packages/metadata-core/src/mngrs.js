@@ -420,44 +420,46 @@ export class DataManager extends MetaEventEmitter{
 		}
 
 		if (mf.types.length == 1) {
-			tnames = mf.types[0].split(".");
-			if (tnames.length > 1 && $p[tnames[0]])
-				return mf_mgr($p[tnames[0]][tnames[1]]);
-		}
+      tnames = mf.types[0].split('.');
+      if(tnames.length > 1 && $p[tnames[0]]) {
+        return mf_mgr($p[tnames[0]][tnames[1]]);
+      }
+    }
 		else if (v && v.type) {
-			tnames = v.type.split(".");
-			if (tnames.length > 1 && $p[tnames[0]])
-				return mf_mgr($p[tnames[0]][tnames[1]]);
-		}
+      tnames = v.type.split('.');
+      if(tnames.length > 1 && $p[tnames[0]]) {
+        return mf_mgr($p[tnames[0]][tnames[1]]);
+      }
+    }
 
 		property = row.property || row.param;
-		if (f != "value" || !property) {
+    if(f != 'value' || !property) {
 
-			rt = [];
-			mf.types.forEach(function (v) {
-				tnames = v.split(".");
-				if (tnames.length > 1 && $p[tnames[0]][tnames[1]]){
-					rt.push($p[tnames[0]][tnames[1]]);
-				}
-			});
-			if (rt.length == 1 || row[f] == utils.blank.guid){
-				return mf_mgr(rt[0]);
-			}
-			else if (array_enabled){
-				return rt;
-			}
-			else if ((property = row[f]) instanceof DataObj){
-				return property._manager;
-			}
-			else if (property && property != utils.blank.guid) {
-				for (let i in rt) {
-					mgr = rt[i];
-					if (mgr.by_ref[property]){
-						return mgr;
-					}
-				}
-			}
-		}
+      rt = [];
+      mf.types.forEach(function (v) {
+        tnames = v.split('.');
+        if(tnames.length > 1 && $p[tnames[0]][tnames[1]]) {
+          rt.push($p[tnames[0]][tnames[1]]);
+        }
+      });
+      if(rt.length == 1 || row[f] == utils.blank.guid) {
+        return mf_mgr(rt[0]);
+      }
+      else if(array_enabled) {
+        return rt;
+      }
+      else if((property = row[f]) instanceof DataObj) {
+        return property._manager;
+      }
+      else if(property && property != utils.blank.guid) {
+        for (let i in rt) {
+          mgr = rt[i];
+          if(mgr.by_ref[property]) {
+            return mgr;
+          }
+        }
+      }
+    }
 		else {
 
 			// Получаем объект свойства
@@ -479,16 +481,16 @@ export class DataManager extends MetaEventEmitter{
 
 				// и через его тип выходми на мнеджера значения
 				rt = [];
-				oproperty.type.types.some((v) => {
-					tnames = v.split(".");
-					if(tnames.length > 1 && $p[tnames[0]][tnames[1]]){
-						rt.push($p[tnames[0]][tnames[1]]);
-					}
-					else if(v == "boolean"){
-						rt.push({types: ["boolean"]});
-						return true
-					}
-				});
+        oproperty.type.types.some((v) => {
+          tnames = v.split('.');
+          if(tnames.length > 1 && $p[tnames[0]][tnames[1]]) {
+            rt.push($p[tnames[0]][tnames[1]]);
+          }
+          else if(v == 'boolean') {
+            rt.push({types: ['boolean']});
+            return true;
+          }
+        });
 				if(rt.length == 1 || row[f] == utils.blank.guid){
 					return mf_mgr(rt[0]);
 				}
