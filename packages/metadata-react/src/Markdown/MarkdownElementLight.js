@@ -5,7 +5,6 @@ import marked from 'marked';
 
 import classNames from 'classnames';
 import withStyles from './styles';
-import {withIface} from 'metadata-redux';
 
 export function MarkdownElement(props) {
   const { classes, className, text, mdtitle, title, handleNavigate, handleIfaceState, disconnect, CustomBtn, ...other } = props;
@@ -45,4 +44,4 @@ MarkdownElement.propTypes = {
 
 }
 
-export default withStyles(withIface(MarkdownElement));
+export default withStyles(MarkdownElement);

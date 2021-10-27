@@ -23,7 +23,7 @@ export const styles = {
 
 export function MarkdownDocs(props) {
   const {classes, markdown, subtitle, title, htitle, h1, img,
-    descr, canonical, footer, handleIfaceState, TopButton} = props;
+    descr, canonical, footer, handleIfaceState, handleNavigate, TopButton} = props;
   const contents = getContents(markdown);
 
   const ltitle = htitle || `${getTitle(markdown)}${subtitle ? ' - ' + subtitle : ''}`;
@@ -52,7 +52,13 @@ export function MarkdownDocs(props) {
         </div>
       }
 
-      {contents.map(content => <MarkdownElement key={content} text={content}/>)}
+      {contents.map(content => <MarkdownElement
+        key={content}
+        title={title}
+        handleNavigate={handleNavigate}
+        handleIfaceState={handleIfaceState}
+        text={content}/>)
+      }
 
       {
         footer

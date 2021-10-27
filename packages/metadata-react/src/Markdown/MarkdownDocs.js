@@ -92,7 +92,12 @@ export function MarkdownDocs(props) {
           //return <Demo key={content} js={demos[name].js} raw={demos[name].raw}/>;
         }
 
-        return <MarkdownElement key={content} text={content}/>;
+        return <MarkdownElement
+          key={content}
+          title={title}
+          handleNavigate={handleNavigate}
+          handleIfaceState={handleIfaceState}
+          text={content}/>;
       })}
 
       {headers.components.length > 0 ? (
@@ -104,6 +109,8 @@ ${headers.components
             .map(component => `- [&lt;${component} /&gt;](/api/${kebabCase(component)})`)
             .join('\n')}
           `}
+          handleNavigate={handleNavigate}
+          handleIfaceState={handleIfaceState}
         />
       ) : null}
 

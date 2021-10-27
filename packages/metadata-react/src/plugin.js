@@ -18,6 +18,7 @@ import {Editors, Formatters} from 'react-data-grid-addons';
 import DataGrid from 'react-data-grid';
 import {withStyles} from '@material-ui/styles';
 import * as muiCore from '@material-ui/core';
+import classnames from 'classnames';
 import SchemeSettingsObj from './SchemeSettings/SchemeSettingsLazyObj';
 
 const {CheckboxEditor, DropDownEditor, SimpleTextEditor} = Editors;
@@ -368,7 +369,7 @@ export default {
 
     // публичные методы ui
     Object.defineProperty(this, 'ui', {
-      value: {dialogs, React, ReactDOM, withStyles, ...muiCore}
+      value: {dialogs, React, ReactDOM, withStyles, ...muiCore, classnames}
     });
 
     // форма по умолчанию для scheme_settings

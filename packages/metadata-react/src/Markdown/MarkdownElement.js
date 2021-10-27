@@ -6,7 +6,6 @@ import Diagrams from '../Diagrams/Diagrams';
 
 import classNames from 'classnames';
 import withStyles from './styles';
-import {withIface} from 'metadata-redux';
 
 // const renderer = new marked.Renderer();
 // renderer.html = function(html) {
@@ -126,4 +125,4 @@ MarkdownElement.propTypes = {
 
 }
 
-export default withStyles(withIface(MarkdownElement));
+export default withStyles(MarkdownElement);
