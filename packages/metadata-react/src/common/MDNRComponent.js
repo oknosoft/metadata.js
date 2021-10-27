@@ -18,7 +18,7 @@ export default class MDNRComponent extends MComponent {
     customComponents: PropTypes.object,
   };
 
-  shouldComponentUpdate({_mgr, _meta, title, handleIfaceState}) {
+  shouldComponentUpdate({_mgr, _meta, title, handlers, handleIfaceState}) {
 
     let res = true;
 
@@ -32,6 +32,9 @@ export default class MDNRComponent extends MComponent {
 
     // если мы не в диалоге, меняем заголовок приложения
     if (!context.dnr && ltitle && title != ltitle && !props.ignoreTitle) {
+      if(!handleIfaceState && handlers) {
+        handleIfaceState = handlers.handleIfaceState;
+      }
       handleIfaceState && handleIfaceState({
         component: '',
         name: 'title',

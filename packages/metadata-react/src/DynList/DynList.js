@@ -9,7 +9,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import MDNRComponent from '../common/MDNRComponent';
-import {withIface} from 'metadata-redux';
+
 import ReactDataGrid from 'react-data-grid';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 import DataListToolbar from './DataListToolbar';
@@ -267,7 +267,7 @@ export class DynList extends MDNRComponent {
             }
             this.updateList(docs, startIndex, count);
             if(!startIndex && docs.length) {
-              this.setState({selectedRow: this.rows.get(0)}, () => this.grid.selectCell({rowIdx: 0, idx: 0}));
+              this.setState({selectedRow: this.rows.get(0)}, () => this.grid && this.grid.selectCell({rowIdx: 0, idx: 0}));
             }
           });
       }
@@ -731,4 +731,4 @@ DynList.contextTypes = {
   dnr: PropTypes.object
 };
 
-export default withIface(DynList);
+export default DynList;
