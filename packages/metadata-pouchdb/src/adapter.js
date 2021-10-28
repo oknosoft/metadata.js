@@ -610,9 +610,6 @@ function adapter({AbstracrAdapter}) {
         return (job_prm.pg_path.startsWith('/') && !wsql.alasql.utils.isNode ? location.origin + job_prm.pg_path : job_prm.pg_path) + zone;
       }
       else {
-        if(name === 'doc' && job_prm.couch_doc) {
-          return job_prm.couch_doc;
-        }
         return path + zone + '_' + name + (_suffix ? '_' + _suffix : '');
       }
     }

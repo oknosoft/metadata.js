@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.26-beta.3, built:2021-10-25
+ metadata-core v2.0.26-beta.4, built:2021-10-28
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1549,7 +1549,7 @@ var data_objs = /*#__PURE__*/Object.freeze({
 	RegisterRow: RegisterRow
 });
 
-class MetaEventEmitter extends EventEmitter__default['default']{
+class MetaEventEmitter extends EventEmitter__default["default"]{
   constructor() {
     super();
     this.setMaxListeners(20);
@@ -4851,7 +4851,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.26-beta.3";
+    return "2.0.26-beta.4";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

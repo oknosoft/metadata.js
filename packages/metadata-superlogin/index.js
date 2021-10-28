@@ -1,5 +1,5 @@
 /*!
- metadata-superlogin v2.0.26-beta.3, built:2021-09-26
+ metadata-superlogin v2.0.26-beta.4, built:2021-10-28
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -76,17 +76,17 @@ const memoryStorage = {
 	},
 	storage: new Map()
 };
-class Superlogin extends EventEmitter2__default['default'] {
+class Superlogin extends EventEmitter2__default["default"] {
 	constructor() {
 		super();
 		this._oauthComplete = false;
 		this._config = {};
 		this._refreshInProgress = false;
-		this._http = axios__default['default'].create();
+		this._http = axios__default["default"].create();
 	}
 	configure(config = {}) {
 		if (config.serverUrl) {
-			this._http = axios__default['default'].create({
+			this._http = axios__default["default"].create({
 				baseURL: config.serverUrl,
 				timeout: config.timeout
 			});
