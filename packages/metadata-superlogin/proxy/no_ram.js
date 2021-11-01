@@ -51,7 +51,7 @@ export function load_common({adapters: {pouch}, md, msg}, types) {
   return pouch.fetch(`/couchdb/mdm/${zone}/common`, {headers})
     .then(stream_load(md, pouch))
     .catch((err) => {
-      pouch.emit('user_log_fault', {message: 'custom', text: msg.error_proxy});
+      pouch.emit('user_log_fault', {message: 'custom', text: err.message.includes('406') ? err.message : msg.error_proxy});
       return err;
     })
     .then((err) => {
@@ -73,10 +73,16 @@ function stream_load(md, pouch) {
     pouch.emit('pouch_data_page', page);
   }
 
-  return async function stream_load({body, headers, status, statusText}) {
+  return async function stream_load(res) {
+    const {body, headers, status, statusText} = res;
 
     if(status > 200) {
-      throw new Error(`${status}: ${statusText}`);
+      let descr;
+      try {
+        descr = await res.json();
+      }
+      catch (e) {}
+      throw new Error(`${status}: ${descr.message || statusText}`);
     }
 
     page.add(JSON.parse(headers.get('manifest')));
