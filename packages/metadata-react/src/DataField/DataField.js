@@ -27,8 +27,12 @@ export default class DataField extends FieldWithMeta {
   render() {
 
     const {_meta, props} = this;
-    const {_obj, _fld, ctrl_type} = props;
-    const type = ctrl_type || control_by_type(_meta.type, _obj[_fld], _meta.list);
+    const {_obj, _fld, ctrl_type: Component} = props;
+    if(typeof Component === 'function') {
+      return <Component {...props}  />;
+    }
+
+    const type = Component || control_by_type(_meta.type, _obj[_fld], _meta.list);
 
     switch (type) {
 

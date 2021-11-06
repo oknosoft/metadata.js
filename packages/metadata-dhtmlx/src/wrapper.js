@@ -7,7 +7,10 @@ export default ($p) => {
 	$p.moment = $p.utils.moment;
 
   function xmlentities(str) {
-    return str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    if(typeof str !== 'string') {
+      str = str ? str.toString() : '';
+    }
+    return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
 	/**
