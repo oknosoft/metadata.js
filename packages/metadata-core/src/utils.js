@@ -719,24 +719,30 @@ const utils = {
         return left <= right;
       case nin:
         if(Array.isArray(left) && !Array.isArray(right)) {
-          return left.indexOf(right) == -1;
+          return !left.includes(right);
         }
         else if(!Array.isArray(left) && Array.isArray(right)) {
-          return right.indexOf(left) == -1;
+          return !right.includes(left);
         }
         else if(!Array.isArray(left) && !Array.isArray(right)) {
           return right != left;
         }
+        else if(Array.isArray(left) && Array.isArray(right)) {
+          return right.every((val) => !left.includes(val));
+        }
         break;
       case comparison_types.in:
         if(Array.isArray(left) && !Array.isArray(right)) {
-          return left.indexOf(right) != -1;
+          return left.includes(right);
         }
         else if(!Array.isArray(left) && Array.isArray(right)) {
-          return right.indexOf(left) != -1;
+          return right.includes(left);
         }
         else if(!Array.isArray(left) && !Array.isArray(right)) {
           return left == right;
+        }
+        else if(Array.isArray(left) && Array.isArray(right)) {
+          return right.some((val) => left.includes(val));
         }
         break;
       case inh:

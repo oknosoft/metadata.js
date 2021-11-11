@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.26-beta.4, built:2021-11-06
+ metadata-core v2.0.26-beta.4, built:2021-11-11
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3480,24 +3480,30 @@ const utils = {
         return left <= right;
       case nin:
         if(Array.isArray(left) && !Array.isArray(right)) {
-          return left.indexOf(right) == -1;
+          return !left.includes(right);
         }
         else if(!Array.isArray(left) && Array.isArray(right)) {
-          return right.indexOf(left) == -1;
+          return !right.includes(left);
         }
         else if(!Array.isArray(left) && !Array.isArray(right)) {
           return right != left;
         }
+        else if(Array.isArray(left) && Array.isArray(right)) {
+          return right.every((val) => !left.includes(val));
+        }
         break;
       case comparison_types.in:
         if(Array.isArray(left) && !Array.isArray(right)) {
-          return left.indexOf(right) != -1;
+          return left.includes(right);
         }
         else if(!Array.isArray(left) && Array.isArray(right)) {
-          return right.indexOf(left) != -1;
+          return right.includes(left);
         }
         else if(!Array.isArray(left) && !Array.isArray(right)) {
           return left == right;
+        }
+        else if(Array.isArray(left) && Array.isArray(right)) {
+          return right.some((val) => left.includes(val));
         }
         break;
       case inh:
