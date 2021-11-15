@@ -19,7 +19,7 @@
     "metadata-abstract-ui": "^2.0.26-beta.4",
     "metadata-redux": "^2.0.26-beta.4",
     "rc-calendar": "^9.15",
-    "rc-cascader": "^1.5",
+    "rc-cascader": "^2.1",
     "react-data-grid": "^6.1",
     "react-data-grid-addons": "^6.1",
     "react-draggable": "^4.4",

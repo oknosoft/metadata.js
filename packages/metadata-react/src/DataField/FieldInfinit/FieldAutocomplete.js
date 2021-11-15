@@ -42,7 +42,8 @@ class FieldAutocomplete extends AbstractField {
   }
 
   masked_value() {
-    let {state: {value}, props: {empty_text}} = this;
+    const {empty_text, _obj, _fld} = this.props;
+    let value = _obj[_fld];
     if(empty_text && value && value.empty && value.empty()) {
       value = {
         ref: value.ref,
