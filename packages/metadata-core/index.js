@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.26-beta.4, built:2021-11-11
+ metadata-core v2.0.26-beta.4, built:2021-11-16
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3166,6 +3166,45 @@ const utils = {
       }
       return this.rnds16[this.counter];
     },
+  },
+  deflate: {
+    base64ToBufferAsync(base64) {
+      const dataUrl = 'data:application/octet-binary;base64,' + base64;
+      return fetch(dataUrl)
+        .then(res => res.arrayBuffer())
+        .then(buffer => new Uint8Array(buffer));
+    },
+    bufferToBase64Async(buffer) {
+      return new Promise((resolve) => {
+        const fileReader = new FileReader();
+        fileReader.onload = function (r) {
+          const dataUrl = fileReader.result;
+          const base64 = dataUrl.substr(dataUrl.indexOf(',') + 1);
+          resolve(base64);
+        };
+        const blob = new Blob([buffer], {type: 'application/octet-binary'});
+        fileReader.readAsDataURL(blob);
+      });
+    },
+    compress(string) {
+      const byteArray = new TextEncoder().encode(string);
+      const cs = new CompressionStream('deflate');
+      const writer = cs.writable.getWriter();
+      writer.write(byteArray);
+      writer.close();
+      return new Response(cs.readable)
+        .arrayBuffer()
+        .then((buffer) => new Uint8Array(buffer));
+    },
+    decompress(byteArray) {
+      const cs = new DecompressionStream('deflate');
+      const writer = cs.writable.getWriter();
+      writer.write(byteArray);
+      writer.close();
+      return new Response(cs.readable)
+        .arrayBuffer()
+        .then((arrayBuffer) => new TextDecoder().decode(arrayBuffer));
+    }
   },
   load_script(src, type, callback) {
     return new Promise((resolve, reject) => {

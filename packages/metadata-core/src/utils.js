@@ -163,6 +163,61 @@ const utils = {
 
   },
 
+  deflate: {
+    // base64 to buffer
+    base64ToBufferAsync(base64) {
+      const dataUrl = 'data:application/octet-binary;base64,' + base64;
+      return fetch(dataUrl)
+        .then(res => res.arrayBuffer())
+        .then(buffer => new Uint8Array(buffer));
+    },
+    // buffer to base64
+    bufferToBase64Async(buffer) {
+      return new Promise((resolve) => {
+        const fileReader = new FileReader();
+        fileReader.onload = function (r) {
+          const dataUrl = fileReader.result;
+          const base64 = dataUrl.substr(dataUrl.indexOf(',') + 1);
+          resolve(base64);
+        };
+        const blob = new Blob([buffer], {type: 'application/octet-binary'});
+        fileReader.readAsDataURL(blob);
+      });
+    },
+
+    /**
+     * Сжимает строку в Uint8Array
+     * @param string {String}
+     * @return {Promise<Uint8Array>}
+     */
+    compress(string) {
+      const byteArray = new TextEncoder().encode(string);
+      const cs = new CompressionStream('deflate');
+      const writer = cs.writable.getWriter();
+      writer.write(byteArray);
+      writer.close();
+      return new Response(cs.readable)
+        .arrayBuffer()
+        .then((buffer) => new Uint8Array(buffer));
+    },
+
+    /**
+     * Извлекает строку из сжатого Uint8Array
+     * @param byteArray {Uint8Array}
+     * @return {Promise<string>}
+     */
+    decompress(byteArray) {
+      const cs = new DecompressionStream('deflate');
+      const writer = cs.writable.getWriter();
+      writer.write(byteArray);
+      writer.close();
+      return new Response(cs.readable)
+        .arrayBuffer()
+        .then((arrayBuffer) => new TextDecoder().decode(arrayBuffer));
+    }
+
+  },
+
   /**
    * Загружает скрипты и стили синхронно и асинхронно
    * @method load_script
