@@ -7,7 +7,7 @@ import classNames from 'classnames';
 import withStyles from './styles';
 
 export function MarkdownElement(props) {
-  const { classes, className, text, mdtitle, title, handleNavigate, handleIfaceState, disconnect, CustomBtn, ...other } = props;
+  const { classes, className, text, mdtitle, title, handleNavigate, handleIfaceState, CustomBtn, ...other } = props;
 
   function anchorCkick(evt) {
     if(evt.target.tagName === 'A') {

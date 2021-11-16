@@ -32,12 +32,12 @@ export default {
 
   /**
    * ### Диалог ввода значения
-   * @param title
-   * @param text
-   * @param timeout
-   * @param type
-   * @param list
-   * @param initialValue
+   * @param [title] {String} - заголовое диалога
+   * @param [text] {String} - если задано, будет показан текст
+   * @param [timeout] {Number} - секунд до автозакрытия
+   * @param [type] {String} - имя типа значение (например, 'cat.clrs')
+   * @param [list] {Array} - список значений
+   * @param [initialValue] - начальной значение выбора
    * @return {Promise}
    */
   input_value({
@@ -177,12 +177,14 @@ export default {
 
   /**
    * Диалог Ок, Отмена
-   * @param title
-   * @param text
-   * @param timeout
+   * @param [title] {String} - заголовое диалога
+   * @param [text] {String} - если задано, будет показан текст
+   * @param [html] {String} - если задано, будет показан htlm
+   * @param [initFullScreen] {Boolean} - открывать распахнутым
+   * @param [timeout] {Number} - секунд до автозакрытия
    * @return {Promise}
    */
-  confirm({title = 'Внимание', text, html, initFullScreen, timeout = 30000, ...other}) {
+  confirm({title = 'Внимание', timeout = 30000, ...other}) {
     if(!this.handleIfaceState) {
       return Promise.reject('init');
     }
@@ -215,7 +217,7 @@ export default {
       this.handleIfaceState({
         component: '',
         name: 'confirm',
-        value: {open: true, title, text, html, initFullScreen, handleOk: close_confirm, handleCancel: reject_confirm, ...other}
+        value: {open: true, title, handleOk: close_confirm, handleCancel: reject_confirm, ...other}
       });
 
     });
@@ -223,12 +225,17 @@ export default {
 
   /**
    * Диалог alert
-   * @param title
-   * @param text
-   * @param timeout
+   * @param [title] {String} - заголовое диалога
+   * @param [text] {String} - если задано, будет показан текст
+   * @param [html] {String} - если задано, будет показан htlm
+   * @param [markdown] {String} - если задано, будет показан markdown
+   * @param [initFullScreen] {Boolean} - открывать распахнутым
+   * @param [Component] {NodeType} - произвольный компонент для рендеринга сожержимого диалога
+   * @param [timeout] {Number} - секунд до автозакрытия
+   * @param [props] {Object} - дополнительные свойства для передачи в Component
    * @return {Promise}
    */
-  alert({title = 'Внимание', text, html, initFullScreen, Component, props, timeout = 30000, ...other}) {
+  alert({title = 'Внимание', timeout = 30000, ...other}) {
     if(!this.handleIfaceState) {
       return Promise.reject('init');
     }
@@ -252,7 +259,7 @@ export default {
       this.handleIfaceState({
         component: '',
         name: 'alert',
-        value: {open: true, title, text, html, initFullScreen, Component, props, handleOk: close_confirm, ...other}
+        value: {open: true, title, handleOk: close_confirm, handleIfaceState: this.handleIfaceState, handleNavigate: this.handleNavigate, ...other}
       });
 
     });
