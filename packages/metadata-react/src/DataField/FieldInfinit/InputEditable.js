@@ -6,7 +6,7 @@ import Input from '@material-ui/core/Input';
 import cn from 'classnames';
 
 export default function InputEditable({iprops, ...props}) {
-  const {_meta, isTabular, classes, extClasses, className, fullWidth, mandatory, value} = props;
+  const {_meta, isTabular, classes, extClasses, className, fullWidth, mandatory, onClick, value} = props;
   const {inputProps, InputProps, InputLabelProps, id, ...other} = iprops;
   const attr = {
     title: _meta.tooltip || _meta.synonym,
@@ -33,6 +33,7 @@ export default function InputEditable({iprops, ...props}) {
     className={extClasses && extClasses.control ? '' : cn(classes.formControl, className, props.bar && classes.barInput)}
     classes={extClasses && extClasses.control ? extClasses.control : null}
     onDoubleClick={null}
+    onClick={onClick}
     {...other}
   >
     {props.label_position != 'hide' && <InputLabel
