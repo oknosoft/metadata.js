@@ -27,41 +27,47 @@ export default class DataField extends FieldWithMeta {
   render() {
 
     const {_meta, props} = this;
-    const {_obj, _fld, ctrl_type: Component} = props;
-    if(typeof Component === 'function') {
-      return <Component {...props}  />;
+    let {_obj, _fld, ctrl_type: Component} = props;
+    if(!Component && _meta.Editor) {
+      Component = _meta.Editor;
     }
-
-    const type = Component || control_by_type(_meta.type, _obj[_fld], _meta.list);
-
-    switch (type) {
-
-    case 'ocombo':
-      return <FieldInfinit {...props}  />;
-
-    case 'oselect':
-    case 'dselect':
-      return <FieldSelect {...props} />;
-
-    case 'calck':
-      return <FieldNumber {...props} />;
-
-    case 'dhxCalendar':
-      return <FieldDate {...props} />;
-
-    case 'ch':
-      return <FieldToggle {...props} />;
-
-    case 'cb':
-      return <FieldCheckbox {...props} />;
-
-    case 'threestate':
-      return <FieldThreeState {...props} />;
-
-    default:
-      return <FieldText {...props} />;
-
+    if(!Component || (typeof Component !== 'function' && typeof Component.Naked !== 'function')) {
+      const value = _obj[_fld];
+      if(!Component && value && value._manager && value._manager.Editor) {
+        Component = value._manager.Editor;
+      }
+      else {
+        const type = Component || control_by_type(_meta.type, value, _meta.list);
+        switch (type) {
+        case 'ocombo':
+          Component = FieldInfinit;
+          break;
+        case 'oselect':
+        case 'dselect':
+          Component = FieldSelect;
+          break;
+        case 'calck':
+          Component = FieldNumber;
+          break;
+        case 'dhxCalendar':
+          Component = FieldDate;
+          break;
+        case 'ch':
+          Component = FieldToggle;
+          break;
+        case 'cb':
+          Component = FieldCheckbox;
+          break;
+        case 'threestate':
+          Component = FieldThreeState;
+          break;
+        default:
+          Component = FieldText;
+        }
+      }
     }
+    return <Component {...props} _meta={_meta} />;
+
   }
 }
 
