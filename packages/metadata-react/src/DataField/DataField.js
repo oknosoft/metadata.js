@@ -21,6 +21,13 @@ import FieldThreeState from './FieldThreeState';
 
 import control_by_type from 'metadata-abstract-ui/ui';
 
+function isComponent(x) {
+  if(!x) return false;
+  if(typeof x === 'function') return true;
+  if(typeof x === 'object' && x.$$typeof && x.render) {
+    return true;
+  }
+}
 
 export default class DataField extends FieldWithMeta {
 
@@ -31,7 +38,7 @@ export default class DataField extends FieldWithMeta {
     if(!Component && _meta.Editor) {
       Component = _meta.Editor;
     }
-    if(!Component || (typeof Component !== 'function' && typeof Component.Naked !== 'function')) {
+    if(!isComponent(Component)) {
       const value = _obj[_fld];
       if(!Component && value && value._manager && value._manager.Editor) {
         Component = value._manager.Editor;
