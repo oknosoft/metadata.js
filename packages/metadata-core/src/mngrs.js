@@ -1411,7 +1411,10 @@ export class EnumManager extends RefDataManager{
 	constructor(owner, class_name) {
 		super(owner, class_name);
 		for(var v of owner.$p.md.get(class_name)){
-			new EnumObj(v, this);
+      const value = new EnumObj(v, this);
+      if(v.latin) {
+        Object.defineProperty(this, v.latin, {value});
+      }
 		}
 	}
 

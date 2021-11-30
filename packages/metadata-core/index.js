@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.26-beta.4, built:2021-11-28
+ metadata-core v2.0.26-beta.4, built:2021-11-30
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1466,7 +1466,7 @@ class EnumObj extends DataObj {
       if(!_obj.ref && _obj.name) {
         _obj.ref = _obj.name;
       }
-      _obj !== attr && utils$1._mixin(this, attr);
+      _obj !== attr && utils$1._mixin(this, attr, null, ['latin']);
     }
   }
   get order() {
@@ -2576,7 +2576,10 @@ class EnumManager extends RefDataManager{
 	constructor(owner, class_name) {
 		super(owner, class_name);
 		for(var v of owner.$p.md.get(class_name)){
-			new EnumObj(v, this);
+      const value = new EnumObj(v, this);
+      if(v.latin) {
+        Object.defineProperty(this, v.latin, {value});
+      }
 		}
 	}
   metadata(field_name) {

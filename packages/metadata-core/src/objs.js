@@ -1447,7 +1447,7 @@ export class EnumObj extends DataObj {
       if(!_obj.ref && _obj.name) {
         _obj.ref = _obj.name;
       }
-      _obj !== attr && utils._mixin(this, attr);
+      _obj !== attr && utils._mixin(this, attr, null, ['latin']);
     }
 
   }

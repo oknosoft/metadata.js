@@ -129,7 +129,7 @@ class SimpleDialog extends React.Component {
   };
 
   render() {
-    const {open, fullScreen, top, disablePortal, noSpace, title, actions, toolbtns, children, classes, onClose, minheight, large} = this.props;
+    const {open, fullScreen, top, disablePortal, disableFullScreen, noSpace, title, actions, toolbtns, children, classes, onClose, minheight, large} = this.props;
     const stateFullScreen = fullScreen || this.state.fullScreen;
     return <Dialog
       disablePortal={disablePortal}
@@ -152,7 +152,7 @@ class SimpleDialog extends React.Component {
         <Typography className={classes.title} variant="h6" color="inherit" noWrap>{title}</Typography>
         {toolbtns}
         {
-          !fullScreen && <IconButton
+          !fullScreen && !disableFullScreen && <IconButton
             title={stateFullScreen ? 'Свернуть' : 'Развернуть'}
             onClick={this.toggleFullScreen}>
             {stateFullScreen ? <FullscreenExitIcon/> : <FullscreenIcon/>}
@@ -176,6 +176,7 @@ SimpleDialog.propTypes = {
   fullScreen: PropTypes.bool,
   disablePortal: PropTypes.bool,
   initFullScreen: PropTypes.bool,
+  disableFullScreen: PropTypes.bool,
   toggleFullScreen: PropTypes.func,
   title: PropTypes.node.isRequired,
   actions: PropTypes.node,
