@@ -140,11 +140,9 @@ class TabularSection extends MComponent {
     const {_tabular, selected} = this.state;
     if(selected && selected.hasOwnProperty('rowIdx') && selected.rowIdx > 0) {
       const rows = this.getRows();
-      if(row.row > 0) {
-        _tabular.swap(rows[selected.rowIdx], rows[selected.rowIdx - 1]);
-        selected.rowIdx = selected.rowIdx - 1;
-        this.setState({selected});
-      }
+      _tabular.swap(rows[selected.rowIdx], rows[selected.rowIdx - 1]);
+      this.cache_actual = false;
+      this._grid.selectCell({rowIdx: selected.rowIdx - 1, idx: selected.idx}, false);
     }
   };
 
@@ -152,10 +150,10 @@ class TabularSection extends MComponent {
     const {_tabular, selected} = this.state;
     if(selected && selected.hasOwnProperty('rowIdx')) {
       const rows = this.getRows();
-      if(selected.rowIdx < rows.length - 2) {
+      if(selected.rowIdx <= rows.length - 2) {
         _tabular.swap(rows[selected.rowIdx], rows[selected.rowIdx + 1]);
-        selected.rowIdx = selected.rowIdx + 1;
-        this.setState({selected});
+        this.cache_actual = false;
+        this._grid.selectCell({rowIdx: selected.rowIdx + 1, idx: selected.idx}, false);
       }
     }
   };
