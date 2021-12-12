@@ -61,8 +61,8 @@ class TabularSection extends MComponent {
   }
 
   getRows() {
-    const {props: {filter}, state: {scheme, _tabular}, cache_actual} = this;
-    if(!cache_actual) {
+    const {props: {filter, disable_cache}, state: {scheme, _tabular}, cache_actual} = this;
+    if(!cache_actual || disable_cache) {
       this._rows = this.searchFilter(
         typeof filter === 'function' ? filter(_tabular) : (scheme ? scheme.filter(_tabular) : [])
       );
@@ -352,6 +352,8 @@ TabularSection.propTypes = {
   _tabular: PropTypes.string.isRequired,
   _meta: PropTypes.object,
   scheme: PropTypes.object,             // Вариант настроек
+  disable_cache: PropTypes.bool,        // Не кешировать отбор строк
+  filter: PropTypes.func,               // Внешняя функция отбора строк (вместо фильтра по схеме)
 
   read_only: PropTypes.bool,            // Элемент только для чтения
   hideToolbar: PropTypes.bool,          // Указывает не выводить toolbar
