@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.26-beta.5, built:2021-12-09
+ metadata-core v2.0.26-beta.5, built:2021-12-12
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2575,10 +2575,15 @@ class DataProcessorsManager extends DataManager{
 class EnumManager extends RefDataManager{
 	constructor(owner, class_name) {
 		super(owner, class_name);
-		for(var v of owner.$p.md.get(class_name)){
-      const value = new EnumObj(v, this);
-      if(v.latin) {
-        Object.defineProperty(this, v.latin, {value});
+		for(var v of this.metadata()){
+      if('order' in v && v.name) {
+        const value = new EnumObj(v, this);
+        if(v.latin) {
+          Object.defineProperty(this, v.latin, {value});
+        }
+      }
+      else if(v.default) {
+        Object.defineProperty(this, '_', {value: this.get(v.default)});
       }
 		}
 	}
