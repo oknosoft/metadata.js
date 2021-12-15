@@ -1,12 +1,12 @@
 {
   "name": "metadata-react",
   "description": "React UI components for metadata.js",
-  "version": "2.0.26-beta.5",
+  "version": "2.0.27-beta.1",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
-    "node": "^12.18",
-    "npm": "^6.14"
+    "node": "^16.13",
+    "yarn": "^1.22"
   },
   "dependencies": {
     "@material-ui/core": "^4.12",
@@ -16,10 +16,10 @@
     "font-awesome": "^4.7.0",
     "hammerjs": "^2.0.8",
     "marked": "^3.0",
-    "metadata-abstract-ui": "^2.0.26-beta.5",
-    "metadata-redux": "^2.0.26-beta.5",
+    "metadata-abstract-ui": "^2.0.27-beta.1",
+    "metadata-redux": "^2.0.27-beta.1",
     "rc-calendar": "^9.15",
-    "rc-cascader": "^2.1",
+    "rc-cascader": "^2.3",
     "react-data-grid": "^6.1",
     "react-data-grid-addons": "^6.1",
     "react-draggable": "^4.4",
@@ -33,8 +33,8 @@
     "yamljs": "^0.3"
   },
   "peerDependencies": {
-    "react": "^16.14",
-    "react-dom": "^16.14"
+    "react": "^17.0",
+    "react-dom": "^17.0"
   },
   "scripts": {
     "build:es": "cross-env NODE_ENV=production BABEL_ENV=es babel --config-file ./babel.config.js ./src --out-dir . && node ./copy-files",

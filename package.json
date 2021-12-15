@@ -4,8 +4,8 @@
   "version": "0.12.231",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "engines": {
-    "node": "^12.18",
-    "npm": "^6.14"
+    "node": "^16.13",
+    "yarn": "^1.22"
   },
   "directories": {
     "example": "examples",
@@ -31,7 +31,7 @@
     "pouchdb-mapreduce": "^7.2.2",
     "pouchdb-replication": "^7.2.2",
     "rc-calendar": "^9.15.11",
-    "rc-cascader": "^2.1",
+    "rc-cascader": "^2.3",
     "react-draggable": "^4.4.4",
     "superlogin-client": "^0.8.0",
     "uuid": "^8.3.2"
@@ -97,20 +97,20 @@
     "redux-dynamic-middlewares": "^2.0",
     "redux-thunk": "^2.4",
     "rimraf": "^3.0.2",
-    "rollup": "^2.60",
+    "rollup": "^2.61",
     "rollup-plugin-cleanup": "^3.2.1",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-replace": "^2.2.0",
     "unzip-stream": "^0.3.1",
-    "webpack": "^5.64",
-    "yargs": "^17.1",
+    "webpack": "^5.65",
+    "yargs": "^17.3",
     "yuidoc-bootstrap-theme": "^1.0.6",
     "yuidocjs": "^0.10.2"
   },
   "peerDependecies": {
-    "react": "^16.14",
-    "react-dom": "^16.14"
+    "react": "^17.0",
+    "react-dom": "^17.0"
   },
   "scripts": {
     "build:core": "node ./packages/metadata-core/build.js",
