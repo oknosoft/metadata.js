@@ -10,16 +10,22 @@ import {withStyles} from '@material-ui/styles';
 
 const styles = (theme) => ({
   lshrink: {
-    transform: 'translate(0, 10px)',
+    transform: 'translate(0, 12px)',
   },
   lformControl: {
     top: 0,
     left: 0,
     position: 'absolute',
-    transform: 'translate(0, 10px)',
+    transform: 'translate(0, 12px)',
     width: '40%',
-    wordBreak: 'break-all',
-    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
+    '&:hover': {
+      whiteSpace: 'normal',
+      background: 'white',
+      transform: 'translate(0, 8px)',
+    },
   },
   iroot: {
     marginLeft: '40%',
