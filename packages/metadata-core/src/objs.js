@@ -871,7 +871,7 @@ export class DataObj extends BaseDataObj {
         const reset_mandatory = (msg) => {
           before_save_res = false;
           reset_modified();
-          md.emit('alert', msg);
+          _manager._owner.$p.md.emit('alert', msg);
           const err = new Error(msg.text);
           err.msg = msg;
           return Promise.reject(err);

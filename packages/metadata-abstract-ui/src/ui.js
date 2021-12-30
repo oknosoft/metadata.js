@@ -13,7 +13,7 @@ export default function control_by_type (type, val, list) {
   if(Array.isArray(list) && list.length) {
     ft = "dselect";
   }
-  else if (typeof val == "boolean" && type.types.indexOf("boolean") != -1) {
+  else if (type.types.includes("boolean") && (typeof val == "boolean" || type.types.length === 1)) {
     ft = "ch";
   }
   else if (typeof val == "number" && type.digits) {

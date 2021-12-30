@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.27-beta.1, built:2021-12-15
+ metadata-core v2.0.27-beta.1, built:2021-12-24
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1125,7 +1125,7 @@ class DataObj extends BaseDataObj {
         const reset_mandatory = (msg) => {
           before_save_res = false;
           reset_modified();
-          md.emit('alert', msg);
+          _manager._owner.$p.md.emit('alert', msg);
           const err = new Error(msg.text);
           err.msg = msg;
           return Promise.reject(err);

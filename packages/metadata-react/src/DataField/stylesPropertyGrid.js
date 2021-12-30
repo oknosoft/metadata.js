@@ -10,13 +10,16 @@ import {withStyles} from '@material-ui/styles';
 
 const styles = (theme) => ({
   lshrink: {
-    transform: 'translate(0, 12px)',
+    transform: 'translate(0, 10px)',
   },
   lformControl: {
     top: 0,
     left: 0,
     position: 'absolute',
-    transform: 'translate(0, 12px)',
+    transform: 'translate(0, 10px)',
+    width: '40%',
+    wordBreak: 'break-all',
+    cursor: 'pointer',
   },
   iroot: {
     marginLeft: '40%',
