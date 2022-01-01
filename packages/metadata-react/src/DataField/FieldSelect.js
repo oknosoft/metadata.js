@@ -102,8 +102,8 @@ class FieldSelect extends AbstractField {
     const attr = {
       title: _meta.tooltip || _meta.synonym,
     }
-    if(_meta.mandatory) {
-      attr.required = true;
+    if(_meta.mandatory && (!value || value.empty())) {
+      attr.error = true;
     }
     if(read_only || disabled) {
       other.disabled = true;
@@ -130,10 +130,7 @@ class FieldSelect extends AbstractField {
           native
           value={value && value.valueOf()}
           onChange={onChange}
-          input={<Input classes={
-            Object.assign(
-              {input: cn(classes.input, attr.required && (!value || value.empty()) && classes.required)}, extClasses && extClasses.input)
-          }/>}
+          input={<Input classes={Object.assign({input: classes.input}, extClasses && extClasses.input)}/>}
           {...other}
         >
           {this.renderOptions()}
