@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import kebabCase from 'lodash/kebabCase';
 import warning from 'warning';
 import {Helmet} from 'react-helmet';
-import {withStyles} from '@material-ui/styles';
+import {withStyles} from '@mui/styles';
 import {withIface} from 'metadata-redux';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 
 import AppContent from '../App/AppContent';
 import MarkdownElement from './MarkdownElement';

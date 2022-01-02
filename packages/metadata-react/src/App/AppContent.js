@@ -3,7 +3,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import cn from 'classnames';
-import {withStyles} from '@material-ui/styles';
+import {withStyles} from '@mui/styles';
 
 const styles = theme => ({
   content: {

@@ -9,12 +9,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import IconButton from '@material-ui/core/IconButton';
-import NotificationsIcon from '@material-ui/icons/Notifications';
-import NotificationsIconActive from '@material-ui/icons/NotificationsActive';
-import NotificationsIconNone from '@material-ui/icons/NotificationsNone';
-import Badge from '@material-ui/core/Badge';
-import {withStyles} from '@material-ui/styles';
+import IconButton from '@mui/material/IconButton';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import NotificationsIconActive from '@mui/icons-material/NotificationsActive';
+import NotificationsIconNone from '@mui/icons-material/NotificationsNone';
+import Badge from '@mui/material/Badge';
+import {withStyles} from '@mui/styles';
 
 const styles = ({palette, spacing}) => ({
   badge: {

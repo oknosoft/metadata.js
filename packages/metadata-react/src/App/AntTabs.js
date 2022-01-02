@@ -1,6 +1,6 @@
-import {withStyles} from '@material-ui/core/styles';
-import TabsBase from '@material-ui/core/Tabs';
-import TabBase from '@material-ui/core/Tab';
+import {withStyles} from '@mui/material/styles';
+import TabsBase from '@mui/material/Tabs';
+import TabBase from '@mui/material/Tab';
 
 export const Tabs = withStyles({
   root: {

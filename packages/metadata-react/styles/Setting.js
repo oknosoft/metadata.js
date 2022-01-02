@@ -2,7 +2,7 @@ function _extends() { _extends = Object.assign || function (target) { for (var i
 
 // @flow weak
 import React from 'react';
-import SvgIcon from '@material-ui/core/SvgIcon';
+import SvgIcon from '@mui/material/SvgIcon';
 export default function Setting(props) {
   /* eslint-disable-next-line */
   return /*#__PURE__*/React.createElement(SvgIcon, _extends({}, props, {

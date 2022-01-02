@@ -6,16 +6,16 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import IconButton from '@material-ui/core/IconButton';
-import IconSettings from '@material-ui/icons/Settings';
-import IconSettingsCancel from '@material-ui/icons/HighlightOff';
-import IconSettingsDone from '@material-ui/icons/Done';
+import IconButton from '@mui/material/IconButton';
+import IconSettings from '@mui/icons-material/Settings';
+import IconSettingsCancel from '@mui/icons-material/HighlightOff';
+import IconSettingsDone from '@mui/icons-material/Done';
 
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import Typography from '@material-ui/core/Typography';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
 
 import SearchBox from './SearchBox';
 

@@ -9,11 +9,11 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import Popover from '@material-ui/core/Popover';
-import TextField from '@material-ui/core/TextField';
-import DialogActions from '@material-ui/core/DialogActions';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Popover from '@mui/material/Popover';
+import TextField from '@mui/material/TextField';
+import DialogActions from '@mui/material/DialogActions';
 
 class Fogot extends Component {
 

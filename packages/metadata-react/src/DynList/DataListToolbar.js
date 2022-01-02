@@ -1,23 +1,23 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Toolbar from '@material-ui/core/Toolbar';
-import IconButton from '@material-ui/core/IconButton';
-import Button from '@material-ui/core/Button';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
+import Toolbar from '@mui/material/Toolbar';
+import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
 
-import AddIcon from '@material-ui/icons/AddCircleOutline';
-import RemoveIcon from '@material-ui/icons/DeleteOutline';
-import EditIcon from '@material-ui/icons/Edit';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import AttachIcon from '@material-ui/icons/AttachFile';
-import HistoryIcon from '@material-ui/icons/History';
-import SelectIcon from '@material-ui/icons/PlaylistAddCheck';
-import SettingsIcon from '@material-ui/icons/Settings';
-import TreeIcon from '@material-ui/icons/AccountTree';
-import ListIcon from '@material-ui/icons/List';
+import AddIcon from '@mui/icons-material/AddCircleOutline';
+import RemoveIcon from '@mui/icons-material/DeleteOutline';
+import EditIcon from '@mui/icons-material/Edit';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import AttachIcon from '@mui/icons-material/AttachFile';
+import HistoryIcon from '@mui/icons-material/History';
+import SelectIcon from '@mui/icons-material/PlaylistAddCheck';
+import SettingsIcon from '@mui/icons-material/Settings';
+import TreeIcon from '@mui/icons-material/AccountTree';
+import ListIcon from '@mui/icons-material/List';
 
 import SchemeSettingsButtons from '../SchemeSettings/SchemeSettingsButtons';
 import SearchBox from '../SchemeSettings/SearchBox';
@@ -26,7 +26,7 @@ import DateRange from '../SchemeSettings/DateRange';
 import {compose} from 'redux';
 import classnames from 'classnames';
 import withStyles from '../Header/toolbar';
-import withWidth, {isWidthUp} from '@material-ui/core/withWidth';
+import withWidth, {isWidthUp} from '@mui/material/withWidth';
 
 import MenuPrint from './MenuPrint';
 

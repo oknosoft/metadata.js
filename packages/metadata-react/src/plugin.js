@@ -16,8 +16,8 @@ import PropsFieldCell from 'metadata-react/DataField/FieldPropsCell';
 import dialogs from 'metadata-react/App/dialogs';
 import {Editors, Formatters} from 'react-data-grid-addons';
 import DataGrid from 'react-data-grid';
-import {withStyles} from '@material-ui/styles';
-import * as muiCore from '@material-ui/core';
+import {withStyles} from '@mui/styles';
+import * as muiCore from '@mui/material';
 import classnames from 'classnames';
 import SchemeSettingsObj from './SchemeSettings/SchemeSettingsLazyObj';
 

@@ -8,19 +8,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import Paper from '@material-ui/core/Paper';
-import Popper from '@material-ui/core/Popper';
-import Divider from '@material-ui/core/Divider';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
+import Paper from '@mui/material/Paper';
+import Popper from '@mui/material/Popper';
+import Divider from '@mui/material/Divider';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 import Downshift from 'downshift';
 
-import OpenInNew from '@material-ui/icons/OpenInNew';
-import AddIcon from '@material-ui/icons/AddCircleOutline';
-import TitleIcon from '@material-ui/icons/Title';
-import ClearIcon from '@material-ui/icons/Clear';
+import OpenInNew from '@mui/icons-material/OpenInNew';
+import AddIcon from '@mui/icons-material/AddCircleOutline';
+import TitleIcon from '@mui/icons-material/Title';
+import ClearIcon from '@mui/icons-material/Clear';
 
 // окно диалога для показа всплывающей формы
 import InfiniteList, {prevent} from './InfiniteList';

@@ -8,7 +8,7 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 import AbstractField from './AbstractField';
 import withStyles from './styles';

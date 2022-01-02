@@ -2,11 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import MDNRComponent from '../common/MDNRComponent';
 
-import FormGroup from '@material-ui/core/FormGroup';
-import Divider from '@material-ui/core/Divider';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
+import FormGroup from '@mui/material/FormGroup';
+import Divider from '@mui/material/Divider';
+import AppBar from '@mui/material/AppBar';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 // окно диалога, чтобы показать всплывающие формы
 import Dialog from '../App/Dialog';

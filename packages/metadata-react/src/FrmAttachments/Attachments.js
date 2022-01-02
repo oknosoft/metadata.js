@@ -14,8 +14,8 @@ import LoadingMessage from '../DumbLoader/LoadingMessage';
 import AttachmentsToolbar from './AttachmentsToolbar';
 import AttachmentsList from './AttachmentsList';
 import Dialog from '../App/Dialog';
-import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 class Attachments extends MDNRComponent {
 

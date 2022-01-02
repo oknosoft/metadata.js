@@ -1,8 +1,8 @@
 /* eslint-disable */
 
 import React from 'react';
-import SvgIcon from '@material-ui/core/SvgIcon';
-import {blue, red} from '@material-ui/core/colors';
+import SvgIcon from '@mui/material/SvgIcon';
+import {blue, red} from '@mui/material/colors';
 
 
 export const GoogleIcon = (props) => (

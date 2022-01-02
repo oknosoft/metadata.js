@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import TextField from '@material-ui/core/TextField';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Input from '@material-ui/core/Input';
-import Autocomplete from '@material-ui/lab/Autocomplete';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import Typography from '@material-ui/core/Typography';
+import TextField from '@mui/material/TextField';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Input from '@mui/material/Input';
+import Autocomplete from '@mui/material/Autocomplete';
+import ListSubheader from '@mui/material/ListSubheader';
+import Typography from '@mui/material/Typography';
 
 import ListboxComponent from './ListboxComponent';
 import withStyles, {extClasses} from '../../DataField/stylesPropertyGrid';

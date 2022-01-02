@@ -8,8 +8,8 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import Autocomplete from '@material-ui/lab/Autocomplete';
-import TextField from '@material-ui/core/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 const filter = (options, {inputValue}) => {
   const text = inputValue.trim().toLowerCase();

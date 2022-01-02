@@ -8,8 +8,8 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import IconButton from '@material-ui/core/IconButton';
-import IconDateRange from '@material-ui/icons/DateRange';
+import IconButton from '@mui/material/IconButton';
+import IconDateRange from '@mui/icons-material/DateRange';
 
 import Picker from 'rc-calendar/lib/Picker';
 import RangeCalendar from 'rc-calendar/lib/RangeCalendar';

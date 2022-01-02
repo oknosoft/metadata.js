@@ -1,20 +1,20 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import List from '@material-ui/core/List';
-import ListItem  from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
-import Collapse from '@material-ui/core/Collapse';
+import List from '@mui/material/List';
+import ListItem  from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import Collapse from '@mui/material/Collapse';
 
 import classnames from 'classnames';
 import withStyles from './menu';
 import {withIface} from 'metadata-redux';
 
-import IconExpandMore from '@material-ui/icons/ExpandMore';
+import IconExpandMore from '@mui/icons-material/ExpandMore';
 
 export class NavList extends Component {
 

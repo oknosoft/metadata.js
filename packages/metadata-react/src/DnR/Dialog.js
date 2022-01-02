@@ -8,7 +8,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Portal from '@material-ui/core/Portal';
+import Portal from '@mui/material/Portal';
 import DnR from './DnR';
 import {WindowsTheme} from './themes';
 

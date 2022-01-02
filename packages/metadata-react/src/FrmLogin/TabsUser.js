@@ -1,13 +1,13 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Paper from '@material-ui/core/Paper';
-import Button from '@material-ui/core/Button';
-import Divider from '@material-ui/core/Divider';
-import FormGroup from '@material-ui/core/FormGroup';
-import DialogActions from '@material-ui/core/DialogActions';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
+import FormGroup from '@mui/material/FormGroup';
+import DialogActions from '@mui/material/DialogActions';
 import {Helmet} from 'react-helmet';
 import DataField from '../DataField';
 import CnnSettings from './CnnSettings';

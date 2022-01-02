@@ -1,5 +1,5 @@
-import {withStyles} from '@material-ui/styles';
-//import colors from '@material-ui/core/colors/common';
+import {withStyles} from '@mui/styles';
+//import colors from '@mui/material/colors/common';
 
 export default withStyles(({palette, breakpoints}) => ({
   cell: {

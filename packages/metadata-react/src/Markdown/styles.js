@@ -1,4 +1,4 @@
-import {withStyles} from '@material-ui/styles';
+import {withStyles} from '@mui/styles';
 
 const anchorLinkStyle = (theme, size) => ({
   '& .anchor-link-style': {

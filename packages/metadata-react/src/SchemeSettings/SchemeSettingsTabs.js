@@ -10,18 +10,18 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import AppBar from '@material-ui/core/AppBar';
-import Button from '@material-ui/core/Button';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import FormGroup from '@material-ui/core/FormGroup';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
+import AppBar from '@mui/material/AppBar';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import FormGroup from '@mui/material/FormGroup';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 import TabularSection from '../TabularSection';
 import SchemeSettingsSelect from './SchemeSettingsSelect';
 import DataField, {FieldSelect} from '../DataField';
-import Divider from '@material-ui/core/Divider';
+import Divider from '@mui/material/Divider';
 
 
 /**

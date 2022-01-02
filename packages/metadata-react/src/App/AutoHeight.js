@@ -8,7 +8,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {getDisplayName} from '@material-ui/utils';
+import {getDisplayName} from '@mui/utils';
 
 const WithAutoHeight = (BaseComponent) => class extends React.Component {
 

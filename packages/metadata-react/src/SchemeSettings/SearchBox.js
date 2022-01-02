@@ -8,9 +8,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import SearchIcon from '@material-ui/icons/Search';
-import {alpha} from '@material-ui/core/styles';
-import {withStyles} from '@material-ui/styles';
+import SearchIcon from '@mui/icons-material/Search';
+import {alpha} from '@mui/material/styles';
+import {withStyles} from '@mui/styles';
 
 const styles = ({typography, palette, transitions, spacing, breakpoints}) => ({
   wrapper: {

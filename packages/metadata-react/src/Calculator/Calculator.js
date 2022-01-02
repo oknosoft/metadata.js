@@ -1,12 +1,12 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import PlayArrow from '@material-ui/icons/PlayArrow';
-import ArrowBack from '@material-ui/icons/ArrowBack';
+import PlayArrow from '@mui/icons-material/PlayArrow';
+import ArrowBack from '@mui/icons-material/ArrowBack';
 import CalculatorInput from './CalculatorInput';
 import CalculatorButton from './CalculatorButton';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import ReactClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
 

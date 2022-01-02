@@ -1,14 +1,14 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 
-import DownloadIcon from '@material-ui/icons/CloudDownload';
-import UploadIcon from '@material-ui/icons/CloudUpload';
-import RemoveIcon from '@material-ui/icons/Delete';
-import CloseIcon from '@material-ui/icons/Close';
+import DownloadIcon from '@mui/icons-material/CloudDownload';
+import UploadIcon from '@mui/icons-material/CloudUpload';
+import RemoveIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
 
 import withStyles from '../Header/toolbar';
 import classnames from 'classnames';

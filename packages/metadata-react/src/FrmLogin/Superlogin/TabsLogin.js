@@ -1,27 +1,27 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import FormGroup from '@material-ui/core/FormGroup';
-import DialogActions from '@material-ui/core/DialogActions';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import FormGroup from '@mui/material/FormGroup';
+import DialogActions from '@mui/material/DialogActions';
 import {Helmet} from 'react-helmet';
-import Grid from '@material-ui/core/Grid';
-import Divider from '@material-ui/core/Divider';
-import Typography from '@material-ui/core/Typography';
-import TextField from '@material-ui/core/TextField';
-import Input from '@material-ui/core/Input';
-import InputLabel from '@material-ui/core/InputLabel';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import FormControl from '@material-ui/core/FormControl';
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
-import IconError from '@material-ui/icons/ErrorOutline';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import Grid from '@mui/material/Grid';
+import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import Input from '@mui/material/Input';
+import InputLabel from '@mui/material/InputLabel';
+import InputAdornment from '@mui/material/InputAdornment';
+import FormControl from '@mui/material/FormControl';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import IconError from '@mui/icons-material/ErrorOutline';
+import CircularProgress from '@mui/material/CircularProgress';
 
-import {blue, red} from '@material-ui/core/colors';
+import {blue, red} from '@mui/material/colors';
 import {FacebookIcon, GitHubIcon, GoogleIcon, YandexIcon} from './assets/icons';
 
 import withStyles from '../../styles/paper600';

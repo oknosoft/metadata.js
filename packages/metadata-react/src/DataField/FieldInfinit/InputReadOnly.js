@@ -1,7 +1,7 @@
 import React from 'react';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Input from '@material-ui/core/Input';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Input from '@mui/material/Input';
 import cn from 'classnames';
 
 export default function InputReadOnly(props) {

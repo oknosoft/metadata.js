@@ -8,18 +8,18 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import Paper from '@material-ui/core/Paper';
-import Divider from '@material-ui/core/Divider';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import OpenInNew from '@material-ui/icons/OpenInNew';
-import AddIcon from '@material-ui/icons/AddCircleOutline';
-import TitleIcon from '@material-ui/icons/Title';
-import ClearIcon from '@material-ui/icons/Clear';
+import Paper from '@mui/material/Paper';
+import Divider from '@mui/material/Divider';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import OpenInNew from '@mui/icons-material/OpenInNew';
+import AddIcon from '@mui/icons-material/AddCircleOutline';
+import TitleIcon from '@mui/icons-material/Title';
+import ClearIcon from '@mui/icons-material/Clear';
 
-import {withStyles} from '@material-ui/styles';
+import {withStyles} from '@mui/styles';
 
 export function prevent(evt) {
   evt.stopPropagation();

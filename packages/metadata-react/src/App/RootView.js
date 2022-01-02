@@ -12,7 +12,7 @@ import BrowserCompatibility, {browser_compatible} from './BrowserCompatibility';
 import SecondInstance from './SecondInstance';
 
 // тема для material-ui
-import {ThemeProvider} from '@material-ui/styles';
+import {ThemeProvider} from '@mui/styles';
 
 class RootView extends Component {
 

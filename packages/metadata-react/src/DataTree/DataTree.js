@@ -11,7 +11,7 @@ import Confirm from '../App/Confirm';
 import withStyles from './styles';
 import {withIface} from 'metadata-redux';
 import control_by_type from 'metadata-abstract-ui/ui';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 
 export class DataTree extends MDNRComponent {
 

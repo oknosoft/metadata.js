@@ -6,7 +6,7 @@
  * Created by Evgeniy Malyarov on 19.02.2020.
  */
 
-import {withStyles} from '@material-ui/styles';
+import {withStyles} from '@mui/styles';
 
 const styles = (theme) => ({
   lshrink: {

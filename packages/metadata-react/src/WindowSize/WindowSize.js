@@ -3,7 +3,7 @@
 // export default windowSize(Component);
 
 import React, {Component} from 'react';
-import {getDisplayName} from '@material-ui/utils';
+import {getDisplayName} from '@mui/utils';
 
 export default (BaseComponent) => class extends Component {
 

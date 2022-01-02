@@ -8,8 +8,8 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import Switch from '@material-ui/core/Switch';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 import AbstractField from './AbstractField';
 import withStyles from './styles';

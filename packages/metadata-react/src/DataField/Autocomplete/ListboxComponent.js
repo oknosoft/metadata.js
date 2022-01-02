@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import {useTheme} from '@material-ui/core/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import ListSubheader from '@mui/material/ListSubheader';
+import {useTheme} from '@mui/material/styles';
 import {VariableSizeList} from 'react-window';
 
 const LISTBOX_PADDING = 4; // px

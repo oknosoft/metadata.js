@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Button from '@material-ui/core/Button';
-import DialogContentText from '@material-ui/core/DialogContentText';
+import Button from '@mui/material/Button';
+import DialogContentText from '@mui/material/DialogContentText';
 import Dialog from './Dialog';
 import MarkdownElement from '../Markdown/MarkdownElementLight';
 

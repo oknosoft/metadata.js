@@ -1,19 +1,19 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Paper from '@material-ui/core/Paper';
-import TextField from '@material-ui/core/TextField';
-import BaseButton from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import DialogActions from '@material-ui/core/DialogActions';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Paper from '@mui/material/Paper';
+import TextField from '@mui/material/TextField';
+import BaseButton from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import DialogActions from '@mui/material/DialogActions';
 import {Helmet} from 'react-helmet';
-import Typography from '@material-ui/core/Typography';
-import IconError from '@material-ui/icons/ErrorOutline';
-import Input from '@material-ui/core/Input';
-import FormGroup from '@material-ui/core/FormGroup';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import Typography from '@mui/material/Typography';
+import IconError from '@mui/icons-material/ErrorOutline';
+import Input from '@mui/material/Input';
+import FormGroup from '@mui/material/FormGroup';
+import CircularProgress from '@mui/material/CircularProgress';
 import classnames from 'classnames';
 
 import Creditales from './Creditales';

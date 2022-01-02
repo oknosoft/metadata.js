@@ -1,8 +1,8 @@
 import React from 'react';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import InputBase from '@material-ui/core/InputBase';
-import Input from '@material-ui/core/Input';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import InputBase from '@mui/material/InputBase';
+import Input from '@mui/material/Input';
 import cn from 'classnames';
 
 export default function InputEditable({iprops, ...props}) {

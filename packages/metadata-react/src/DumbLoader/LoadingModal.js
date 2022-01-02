@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Modal from '@material-ui/core/Modal';
+import CircularProgress from '@mui/material/CircularProgress';
+import Modal from '@mui/material/Modal';
 import withStyles from './styles';
 
 function LoadingModal({classes, text, open, handleClose}) {

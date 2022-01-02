@@ -7,14 +7,14 @@
  */
 
 import React, {Component} from 'react';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Checkbox from '@material-ui/core/Checkbox';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Checkbox from '@mui/material/Checkbox';
 
 import AbstractField from './AbstractField';
 import withStyles from './styles';
 import cn from 'classnames';
-import Switch from '@material-ui/core/Switch';
+import Switch from '@mui/material/Switch';
 
 
 class FieldCheckbox extends AbstractField {

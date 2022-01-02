@@ -1,6 +1,6 @@
-import {withStyles} from '@material-ui/styles';
-import {light} from '@material-ui/core/styles/createPalette';
-import transitions from '@material-ui/core/styles/transitions';
+import {withStyles} from '@mui/styles';
+import {light} from '@mui/material/styles/createPalette';
+import transitions from '@mui/material/styles/transitions';
 
 export default withStyles(theme => ({
   list: {

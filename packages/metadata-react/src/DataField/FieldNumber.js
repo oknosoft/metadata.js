@@ -6,12 +6,12 @@
  * Created 22.09.2016
  */
 import React from 'react';
-import InputLabel from '@material-ui/core/InputLabel';
-import Input from '@material-ui/core/Input';
-import FormControl from '@material-ui/core/FormControl';
-import IconButton from '@material-ui/core/IconButton';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import Keyboard from '@material-ui/icons/Keyboard';
+import InputLabel from '@mui/material/InputLabel';
+import Input from '@mui/material/Input';
+import FormControl from '@mui/material/FormControl';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import Keyboard from '@mui/icons-material/Keyboard';
 import cn from 'classnames';
 
 import Calculator from '../Calculator';

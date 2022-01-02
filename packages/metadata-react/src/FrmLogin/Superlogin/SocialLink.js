@@ -1,10 +1,10 @@
 import React from 'react';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
-import {red, blue} from '@material-ui/core/colors';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import {red, blue} from '@mui/material/colors';
 import {YandexIcon, GoogleIcon, GitHubIcon, FacebookIcon} from './assets/icons';
 
 import superlogin from './client';

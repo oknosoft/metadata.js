@@ -10,9 +10,9 @@ import React from 'react';
 import AbstractField from './AbstractField';
 import withStyles from './styles';
 import cn from 'classnames';
-import InputLabel from '@material-ui/core/InputLabel';
-import Input from '@material-ui/core/Input';
-import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Input from '@mui/material/Input';
+import FormControl from '@mui/material/FormControl';
 
 class FieldDate extends AbstractField {
 

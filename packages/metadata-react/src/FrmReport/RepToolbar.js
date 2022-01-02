@@ -1,20 +1,20 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
-import IconButton from '@material-ui/core/IconButton';
-import Button from '@material-ui/core/Button';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
+import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 
-import RunIcon from '@material-ui/icons/PlayArrow';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import PrintIcon from '@material-ui/icons/Print';
-import CopyIcon from '@material-ui/icons/FileCopy';
-import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
-import FileDownloadIcon from '@material-ui/icons/ArrowDropDownCircle';
+import RunIcon from '@mui/icons-material/PlayArrow';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import PrintIcon from '@mui/icons-material/Print';
+import CopyIcon from '@mui/icons-material/FileCopy';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import FileDownloadIcon from '@mui/icons-material/ArrowDropDownCircle';
 
 import {export_handlers} from '../plugin';
 

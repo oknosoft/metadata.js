@@ -1,7 +1,7 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
-import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
+import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
 import CalculatorButton from './CalculatorButton';
 import classnames from 'classnames';
 import withStyles from './styles';

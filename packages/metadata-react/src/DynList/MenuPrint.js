@@ -8,12 +8,12 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import IconButton from '@material-ui/core/IconButton';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import PrintIcon from '@material-ui/icons/Print';
-import ChevronLeft from '@material-ui/icons/ChevronLeft';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import IconButton from '@mui/material/IconButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import PrintIcon from '@mui/icons-material/Print';
+import ChevronLeft from '@mui/icons-material/ChevronLeft';
 
 class SubMenu extends React.Component {
   state = {anchorEl: null};

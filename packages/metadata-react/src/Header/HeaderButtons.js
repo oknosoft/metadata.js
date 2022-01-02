@@ -6,14 +6,14 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import IconButton from '@material-ui/core/IconButton';
+import IconButton from '@mui/material/IconButton';
 
-import CloudQueue from '@material-ui/icons/CloudQueue';
-import CloudOff from '@material-ui/icons/CloudOff';
+import CloudQueue from '@mui/icons-material/CloudQueue';
+import CloudOff from '@mui/icons-material/CloudOff';
 
-import SyncIcon from '@material-ui/icons/Sync';
-import SyncIconDisabled from '@material-ui/icons/SyncDisabled';
-import PersonOutline from '@material-ui/icons/PersonOutline';
+import SyncIcon from '@mui/icons-material/Sync';
+import SyncIconDisabled from '@mui/icons-material/SyncDisabled';
+import PersonOutline from '@mui/icons-material/PersonOutline';
 import AccountOff from './AccountOff';
 
 import Notifications from '../Notifications';
@@ -21,7 +21,7 @@ import Notifications from '../Notifications';
 import {compose} from 'redux';
 import classnames from 'classnames';
 import withStyles from './toolbar';
-import withWidth, {isWidthUp} from '@material-ui/core/withWidth';
+import withWidth, {isWidthUp} from '@mui/material/withWidth';
 
 function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavigate, width, compact, barColor, CustomBtn}) {
 

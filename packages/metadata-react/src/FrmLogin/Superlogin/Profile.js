@@ -1,28 +1,28 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Button from '@material-ui/core/Button';
-import Divider from '@material-ui/core/Divider';
-import FormGroup from '@material-ui/core/FormGroup';
-import DialogActions from '@material-ui/core/DialogActions';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
+import FormGroup from '@mui/material/FormGroup';
+import DialogActions from '@mui/material/DialogActions';
 import {Helmet} from 'react-helmet';
-import Grid from '@material-ui/core/Grid';
+import Grid from '@mui/material/Grid';
 import DataField from '../../DataField';
-import Typography from '@material-ui/core/Typography';
-import TextField from '@material-ui/core/TextField';
-import {blue, red} from '@material-ui/core/colors';
+import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import {blue, red} from '@mui/material/colors';
 import {FacebookIcon, GitHubIcon, GoogleIcon, YandexIcon} from './assets/icons';
 
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import LinkIcon from '@material-ui/icons/Link';
-import LinkOffIcon from '@material-ui/icons/LinkOff';
-import Avatar from '@material-ui/core/Avatar';
+import ExpansionPanel from '@mui/material/ExpansionPanel';
+import ExpansionPanelSummary from '@mui/material/ExpansionPanelSummary';
+import ExpansionPanelDetails from '@mui/material/ExpansionPanelDetails';
+import ExpansionPanelActions from '@mui/material/ExpansionPanelActions';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import LinkIcon from '@mui/icons-material/Link';
+import LinkOffIcon from '@mui/icons-material/LinkOff';
+import Avatar from '@mui/material/Avatar';
 
 import withStyles from '../../styles/paper600';
 import connect from './connect';
@@ -30,7 +30,7 @@ import classnames from 'classnames';
 
 import YAML from 'yamljs';
 import Fogot from './Fogot';
-import IconError from '@material-ui/core/SvgIcon/SvgIcon';
+import IconError from '@mui/material/SvgIcon/SvgIcon';
 
 class UserObj extends Component {
 

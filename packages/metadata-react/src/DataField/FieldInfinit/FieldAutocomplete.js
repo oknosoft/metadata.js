@@ -9,12 +9,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Input from '@material-ui/core/Input';
-import InputBase from '@material-ui/core/InputBase';
-import Typography from '@material-ui/core/Typography';
-import Autocomplete from '@material-ui/lab/Autocomplete';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Input from '@mui/material/Input';
+import InputBase from '@mui/material/InputBase';
+import Typography from '@mui/material/Typography';
+import Autocomplete from '@mui/material/Autocomplete';
 import cn from 'classnames';
 
 import InputReadOnly from './InputReadOnly';
@@ -23,7 +23,6 @@ import OuterDialog from './OuterDialog';
 import PaperComponent, {prevent} from './PaperComponent';
 import AbstractField, {suggestionText} from '../AbstractField';
 import withStyles from '../styles';
-import ReactCalendar from 'rc-calendar';
 
 const break_keys = {all: ['ArrowUp', 'ArrowDown'], open: ['Tab', 'Enter']} ;
 

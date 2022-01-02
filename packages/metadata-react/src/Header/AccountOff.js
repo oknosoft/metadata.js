@@ -9,7 +9,7 @@ exports.default = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
-var _createSvgIcon = _interopRequireDefault(require("@material-ui/icons/utils/createSvgIcon"));
+var _createSvgIcon = _interopRequireDefault(require("@mui/icons-material/utils/createSvgIcon"));
 
 var _default = (0, _createSvgIcon.default)(_react.default.createElement(_react.default.Fragment, null, _react.default.createElement("path", {
   fill: "none",
