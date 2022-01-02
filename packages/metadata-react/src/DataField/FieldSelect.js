@@ -38,12 +38,29 @@ class FieldSelect extends AbstractField {
     return v;
   }
 
-  shouldComponentUpdate({_obj}) {
-    if(this.props._obj != _obj) {
+  shouldComponentUpdate({_obj, _meta}) {
+    if(this.props._obj !== _obj) {
+      this.loadOptions(_obj);
+      return false;
+    }
+    if(_meta && this.props._meta !== _meta) {
+      this._meta = _meta;
       this.loadOptions(_obj);
       return false;
     }
     return true;
+  }
+
+  setOptions(options, v) {
+    if(!options.includes(v)) {
+      options.unshift(v);
+    }
+    if(this._mounted) {
+      this.setState({options});
+    }
+    else {
+      Object.assign(this.state, {options});
+    }
   }
 
   loadOptions(_obj) {
@@ -53,6 +70,11 @@ class FieldSelect extends AbstractField {
     const v = this.typedValue({_obj, _fld});
     const _manager = v && v._manager || _meta.type._mgr;
 
+    if(_meta.list && _meta.list.length && _meta.list[0]._manager === _manager) {
+      this.setOptions([..._meta.list], v);
+      return;
+    }
+
     const select = _manager ? _manager.get_search_selector({_obj, _meta, top: 999, skip: 0}) : {};
 
     if(_meta.list) {
@@ -60,29 +82,14 @@ class FieldSelect extends AbstractField {
         select.ref = {in: _meta.list};
       }
       else {
-        const opt = {options: _meta.list};
-        if(this._mounted) {
-          this.setState(opt);
-        }
-        else {
-          Object.assign(state, opt);
-        }
+        this.setOptions([..._meta.list], v);
         return;
       }
     }
 
-    _manager.get_option_list(select)
-      .then((options) => {
-        if(!options.includes(v)) {
-          options.unshift(v);
-        }
-        if(this._mounted) {
-          this.setState({options});
-        }
-        else {
-          Object.assign(state, {options});
-        }
-      });
+    _manager
+      .get_option_list(select)
+      .then((options) => this.setOptions(options, v));
   };
 
   renderOptions() {
