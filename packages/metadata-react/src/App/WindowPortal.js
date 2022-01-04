@@ -12,7 +12,7 @@ import PropTypes from 'prop-types';
 
 function copyStyles(sourceDoc, targetDoc) {
   Array.from(sourceDoc.styleSheets).forEach(styleSheet => {
-    if (styleSheet.cssRules) { // true for inline styles
+    if(styleSheet.cssRules) { // true for inline styles
       const newStyleEl = targetDoc.createElement('style');
 
       Array.from(styleSheet.cssRules).forEach(cssRule => {
@@ -20,7 +20,8 @@ function copyStyles(sourceDoc, targetDoc) {
       });
 
       targetDoc.head.appendChild(newStyleEl);
-    } else if (styleSheet.href) { // true for stylesheets loaded from a URL
+    }
+    else if(styleSheet.href) { // true for stylesheets loaded from a URL
       const newLinkEl = targetDoc.createElement('link');
 
       newLinkEl.rel = 'stylesheet';
@@ -62,7 +63,7 @@ export default class WindowPortal extends React.PureComponent {
       });
 
       this.setState({containerEl}, () => {
-        this.externalWindow && copyStyles(document, this.externalWindow.document);
+        this.externalWindow && !this.skip_css && this.copyStyles();
         if(this.props.print) {
           setTimeout(() => this.externalWindow && this.externalWindow.print(), 1000);
         }
@@ -83,6 +84,16 @@ export default class WindowPortal extends React.PureComponent {
     return Promise.resolve().then(() => this.externalWindow && this.externalWindow.print());
   }
 
+  skipCss = () => {
+    this.skip_css = true;
+  };
+
+  copyStyles = () => {
+    this.externalWindow && Promise.resolve().then(() => {
+      copyStyles(document, this.externalWindow.document);
+    });
+  };
+
   render() {
     // The first render occurs before componentDidMount (where we open
     // the new window), so our container may be null, in this case
@@ -95,7 +106,8 @@ export default class WindowPortal extends React.PureComponent {
     const {Component, children, obj, attr} = this.props;
 
     // Append props.children to the container <div> in the new window
-    return ReactDOM.createPortal(Component ? <Component print={this.print} obj={obj} attr={attr}/> : children, containerEl);
+    return ReactDOM.createPortal(Component ?
+      <Component print={this.print} obj={obj} attr={attr} skipCss={this.skipCss} copyStyles={this.copyStyles}/> : children, containerEl);
   }
 }
 
