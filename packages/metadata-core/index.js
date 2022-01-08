@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.27-beta.1, built:2021-12-24
+ metadata-core v2.0.27-beta.2, built:2022-01-08
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1002,7 +1002,7 @@ class DataObj extends BaseDataObj {
   }
   set _rev(v) {
   }
-  load() {
+  load(attr) {
     const {_data} = this;
     if(this.ref == utils$1.blank.guid) {
       if(_data) {
@@ -1014,13 +1014,13 @@ class DataObj extends BaseDataObj {
     else if(_data._loading) {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          resolve(_data._loading ? this.load() : this);
+          resolve(_data._loading ? this.load(attr) : this);
         }, 1000);
       });
     }
     else {
       _data._loading = true;
-      return this._manager.adapter.load_obj(this)
+      return this._manager.adapter.load_obj(this, attr)
         .then(() => {
           _data._loading = false;
           _data._modified = false;
@@ -3214,6 +3214,47 @@ const utils = {
         .then((arrayBuffer) => new TextDecoder().decode(arrayBuffer));
     }
   },
+  debounce(func, wait = 166) {
+    let timeout;
+    function debounced(...args) {
+      const that = this;
+      const later = () => {
+        func.apply(that, args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    }
+    debounced.clear = () => {
+      clearTimeout(timeout);
+    };
+    return debounced;
+  },
+  sort(fld, desc) {
+    return desc ?
+      (a, b) => {
+        if(a[fld] < b[fld]) {
+          return 1;
+        }
+        else if(a[fld] > b[fld]) {
+          return -1;
+        }
+        else {
+          return 0;
+        }
+      }
+      :
+      (a, b) => {
+        if(a[fld] < b[fld]) {
+          return -1;
+        }
+        else if(a[fld] > b[fld]) {
+          return 1;
+        }
+        else {
+          return 0;
+        }
+      };
+  },
   load_script(src, type, callback) {
     return new Promise((resolve, reject) => {
       const r = setTimeout(reject, 20000);
@@ -4907,7 +4948,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.27-beta.1";
+    return "2.0.27-beta.2";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

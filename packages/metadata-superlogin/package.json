@@ -1,7 +1,7 @@
 {
   "name": "metadata-superlogin",
   "description": "Social auth & session manager for metadata.js",
-  "version": "2.0.27-beta.1",
+  "version": "2.0.27-beta.2",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "engines": {
     "node": "^16.13",
@@ -9,11 +9,11 @@
   },
   "dependencies": {
     "body-parser": "^1.19",
-    "metadata-redux": "^2.0.27-beta.1",
+    "metadata-redux": "^2.0.27-beta.2",
     "passport-facebook": "^3.0",
     "passport-github": "^1.1",
     "passport-google-oauth": "^2.0",
-    "passport-saml": "^2.2",
+    "passport-saml": "^3.2",
     "passport-vkontakte": "^0.5",
     "passport-yandex": "0.0.5",
     "superlogin": "github:unpete/superlogin#2fff64a7829dd36f0f96b263f4f6619fe81a2b88",

@@ -163,6 +163,9 @@ const utils = {
 
   },
 
+  /**
+   * методы создания и чтения сжатых данных
+   */
   deflate: {
     // base64 to buffer
     base64ToBufferAsync(base64) {
@@ -215,7 +218,66 @@ const utils = {
         .arrayBuffer()
         .then((arrayBuffer) => new TextDecoder().decode(arrayBuffer));
     }
+  },
 
+  /**
+   * Отложенное выполнение с подавлением дребезга
+   * @param func {Function}
+   * @param wait {Number}
+   * @return {debounced}
+   */
+  debounce(func, wait = 166) {
+    let timeout;
+
+    function debounced(...args) {
+      // eslint-disable-next-line consistent-this
+      const that = this;
+
+      const later = () => {
+        func.apply(that, args);
+      };
+
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    }
+
+    debounced.clear = () => {
+      clearTimeout(timeout);
+    };
+
+    return debounced;
+  },
+
+  /**
+   * Возвращает функцию для сортировки массива объектов по полю fld
+   * @param fld {String}
+   * @return {(function(*, *): (number))|*}
+   */
+  sort(fld, desc) {
+    return desc ?
+      (a, b) => {
+        if(a[fld] < b[fld]) {
+          return 1;
+        }
+        else if(a[fld] > b[fld]) {
+          return -1;
+        }
+        else {
+          return 0;
+        }
+      }
+      :
+      (a, b) => {
+        if(a[fld] < b[fld]) {
+          return -1;
+        }
+        else if(a[fld] > b[fld]) {
+          return 1;
+        }
+        else {
+          return 0;
+        }
+      };
   },
 
   /**

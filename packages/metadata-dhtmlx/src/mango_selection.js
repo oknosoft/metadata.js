@@ -374,7 +374,11 @@ class MangoSelection {
       limit: count
     };
 
-    const _index = eflt.custom_selection._index || _attr._index;
+    let _index = eflt.custom_selection._index || _attr._index;
+    // если вместо индекса нам подсунули функцию...
+    if(typeof _index === 'function') {
+      _index = eflt.custom_selection._index(start, count);
+    }
     // если вместо индекса нам подсунули промис...
     if(_index instanceof Promise) {
       return _index;

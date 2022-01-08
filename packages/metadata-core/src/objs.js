@@ -702,10 +702,11 @@ export class DataObj extends BaseDataObj {
    * В отличии от _mgr.get(), принудительно перезаполняет объект сохранёнными данными
    * @method load
    * @for DataObj
+   * @param attr {Object} - дополнительные параметры чтения, например, db
    * @return {Promise.<DataObj>} - промис с результатом выполнения операции
    * @async
    */
-  load() {
+  load(attr) {
     const {_data} = this;
     if(this.ref == utils.blank.guid) {
       if(_data) {
@@ -717,13 +718,13 @@ export class DataObj extends BaseDataObj {
     else if(_data._loading) {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          resolve(_data._loading ? this.load() : this);
+          resolve(_data._loading ? this.load(attr) : this);
         }, 1000);
       });
     }
     else {
       _data._loading = true;
-      return this._manager.adapter.load_obj(this)
+      return this._manager.adapter.load_obj(this, attr)
         .then(() => {
           _data._loading = false;
           _data._modified = false;
