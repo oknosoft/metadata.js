@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.27-beta.1, built:2021-12-30
+ metadata-abstract-ui v2.0.27-beta.2, built:2022-01-08
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -440,9 +440,7 @@ var meta = {
         scheme_settings: {
           name: 'scheme_settings',
           synonym: 'Настройки отчетов и списков',
-          input_by_string: [
-            'name'
-          ],
+          input_by_string: ['name'],
           hierarchical: false,
           has_owners: false,
           group_hierarchy: true,
@@ -951,7 +949,7 @@ var meta = {
               }
             }
           },
-          cachable: 'doc'
+          cachable: 'ram'
         }
       },
       dp: {

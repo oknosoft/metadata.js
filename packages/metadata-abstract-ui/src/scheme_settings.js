@@ -52,38 +52,30 @@ export default function scheme_settings() {
      * @return {*|{value}|Promise.<Array>}
      */
     find_schemas(class_name) {
-      if(this.cachable === 'ram') {
-        return Promise.resolve(
-          this.find_rows({obj: class_name})
-            .sort((a, b) => {
-              if(a.user > b.user) {
-                return 1;
-              }
-              if (a.user < b.user) {
-                return -1;
-              }
-              if (a.name.endsWith('main') && !b.name.endsWith('main')) {
-                return -1;
-              }
-              if (b.name.endsWith('main') && !a.name.endsWith('main')) {
-                return 1;
-              }
-              return a.name > b.name;
-            })
-        );
-      }
-
-      const opt = {
-        _view: 'doc/scheme_settings',
-        _top: 100,
-        _skip: 0,
-        _key: {
-          startkey: [class_name, 0],
-          endkey: [class_name, 9999],
-        },
-      };
-      const {adapter} = this;
-      return this.adapter.find_rows(this, opt);
+      return Promise.resolve(
+        this.find_rows({obj: class_name})
+          .sort((a, b) => {
+            if(a.user > b.user) {
+              return 1;
+            }
+            if (a.user < b.user) {
+              return -1;
+            }
+            if (a.name.endsWith('main') && !b.name.endsWith('main')) {
+              return -1;
+            }
+            if (b.name.endsWith('main') && !a.name.endsWith('main')) {
+              return 1;
+            }
+            if(a.name > b.name) {
+              return 1;
+            }
+            if (a.name < b.name) {
+              return -1;
+            }
+            return 0;
+          })
+      );
     }
 
     /**
@@ -248,9 +240,9 @@ export default function scheme_settings() {
 
     save(post, operational, attachments, attr = {}) {
       if(!attr.db) {
-        attr.db = this._manager.adapter.db({cachable: 'doc'});
+        attr.db = this._manager.adapter.db({cachable: 'ram'});
       }
-      super.save(post, operational, attachments, attr);
+      return super.save(post, operational, attachments, attr);
     }
 
     set_standard_period(once) {

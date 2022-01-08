@@ -443,9 +443,7 @@ export default {
         scheme_settings: {
           name: 'scheme_settings',
           synonym: 'Настройки отчетов и списков',
-          input_by_string: [
-            'name'
-          ],
+          input_by_string: ['name'],
           hierarchical: false,
           has_owners: false,
           group_hierarchy: true,
@@ -957,7 +955,7 @@ export default {
               }
             }
           },
-          cachable: 'doc'
+          cachable: 'ram'
         }
       },
       dp: {
