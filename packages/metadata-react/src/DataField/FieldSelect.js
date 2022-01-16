@@ -52,9 +52,10 @@ class FieldSelect extends AbstractField {
   }
 
   setOptions(options, v) {
-    if(!options.includes(v)) {
+    if(v && !options.includes(v)) {
       options.unshift(v);
     }
+    options = Array.from(new Set(options.filter((v) => v)));
     if(this._mounted) {
       this.setState({options});
     }
