@@ -104,7 +104,7 @@ export class FrmLogin extends React.Component {
   footer() {
     let {state: {provider, error, reload}, props: {classes, user, idle, handleLogOut, handleUnLock, _obj}} = this;
 
-    if(user.log_error && user.log_error.includes('proxy:')) {
+    if(user.log_error && (user.log_error.includes('proxy:') || user.log_error.includes('406:'))) {
       reload = true;
     }
 
