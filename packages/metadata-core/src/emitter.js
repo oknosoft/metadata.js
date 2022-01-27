@@ -121,7 +121,8 @@ export default class MetaEventEmitter extends EventEmitter{
   /**
    * Инициирует отложенный emit
    * @param type
-   * @param args
+   * @param [obj]
+   * @param [fields]
    */
   emit_async(type, ...args) {
     if (!this._events || !this._events[type]){
@@ -142,7 +143,8 @@ export default class MetaEventEmitter extends EventEmitter{
   /**
    * Реализует асинхронную обработку событий
    * @param type
-   * @param args
+   * @param [obj]
+   * @param [fields]
    */
   emit_promise(type, ...args) {
     return this.listeners(type).reduce((acc, curr) => acc.then(curr.bind(this, ...args)), Promise.resolve());

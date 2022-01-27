@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.27-beta.2, built:2022-01-08
+ metadata-core v2.0.27-beta.2, built:2022-01-27
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2299,7 +2299,7 @@ class RefDataManager extends DataManager{
                   else if(keys[0] == "in"){
                     if(Array.isArray(attr.params)) {
                       s += and +  "(_t_." + key + " in @(?))";
-                      attr.params.push(Array.isArray(val) ? val : [val]);
+                      attr.params.push(Array.isArray(val) ? val.map(v => v && v.valueOf()) : [val && val.valueOf()]);
                     }
                     else {
                       s += and +  "(_t_." + key + " in (" + (Array.isArray(val) ? val : [val]).reduce((sum, val) => {

@@ -1001,7 +1001,7 @@ export class RefDataManager extends DataManager{
                   else if(keys[0] == "in"){
                     if(Array.isArray(attr.params)) {
                       s += and +  "(_t_." + key + " in @(?))";
-                      attr.params.push(Array.isArray(val) ? val : [val]);
+                      attr.params.push(Array.isArray(val) ? val.map(v => v && v.valueOf()) : [val && val.valueOf()]);
                     }
                     else {
                       s += and +  "(_t_." + key + " in (" + (Array.isArray(val) ? val : [val]).reduce((sum, val) => {
