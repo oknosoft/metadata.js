@@ -84,7 +84,7 @@ class FieldAutocomplete extends AbstractField {
   }
 
   getOptionSelected(option, value) {
-    return option == value;
+    return option.valueOf() == value.valueOf();
   }
 
   getChildContext() {
