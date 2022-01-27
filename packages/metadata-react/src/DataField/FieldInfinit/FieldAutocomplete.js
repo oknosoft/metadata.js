@@ -33,16 +33,16 @@ class FieldAutocomplete extends AbstractField {
   constructor(props, context) {
     super(props, context);
 
-
     Object.assign(this.state, {
       open: false,
       dialogOpened: '',
-      options: [this.masked_value()],
+      options: [this.masked_value(props)],
+      error: false,
     })
   }
 
-  masked_value() {
-    const {empty_text, _obj, _fld} = this.props;
+  masked_value(props) {
+    const {empty_text, _obj, _fld} = (props || this.props);
     let value = _obj[_fld];
     if(empty_text && value && value.empty && value.empty()) {
       value = {
@@ -59,6 +59,32 @@ class FieldAutocomplete extends AbstractField {
       };
     }
     return value;
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    const value = this.masked_value(nextProps);
+    const {props, state} = this;
+    if(!state.error && !state.options.some((opt) => this.getOptionSelected(opt, value))) {
+      const options = [...state.options];
+      options.unshift(value);
+      this.setState({error: false, options});
+      return false;
+    }
+    for(const fld of ['open', 'dialogOpened', 'options']) {
+      if(state[fld] !== nextState[fld]) {
+        return true;
+      }
+    }
+    for(const fld in nextProps) {
+      if(nextProps[fld] !== props[fld]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  getOptionSelected(option, value) {
+    return option == value;
   }
 
   getChildContext() {
@@ -85,7 +111,7 @@ class FieldAutocomplete extends AbstractField {
         added++;
       }
     }
-    this.setState({options});
+    this.setState({options, error: false});
   };
 
   filter = (event, value, reason) => {
@@ -162,8 +188,8 @@ class FieldAutocomplete extends AbstractField {
   };
 
   renderInput = (iprops) => {
-    const {props: {classes, extClasses, fullWidth, className,  mandatory, onClick}, _meta, isTabular, read_only} = this;
-    const props = {_meta, isTabular, classes, extClasses, className, fullWidth, mandatory, onClick, value: this.masked_value()};
+    const {props: {classes, extClasses, fullWidth, className,  mandatory, onClick}, state: {error}, _meta, isTabular, read_only} = this;
+    const props = {_meta, isTabular, classes, extClasses, className, fullWidth, mandatory, onClick, error, value: this.masked_value()};
     return <InputEditable {...props} iprops={Object.assign({}, iprops, {fullWidth})} />;
   };
 
@@ -191,6 +217,7 @@ class FieldAutocomplete extends AbstractField {
             value={this.masked_value()}
             options={options}
             getOptionLabel={suggestionText}
+            getOptionSelected={this.getOptionSelected}
             onOpen={this.onOpen}
             onClose={this.onClose}
             onChange={this.onChange}

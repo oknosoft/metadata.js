@@ -6,7 +6,7 @@ import Input from '@material-ui/core/Input';
 import cn from 'classnames';
 
 export default function InputEditable({iprops, ...props}) {
-  const {_meta, isTabular, classes, extClasses, className, fullWidth, mandatory, onClick, value} = props;
+  const {_meta, isTabular, classes, extClasses, className, fullWidth, mandatory, onClick, value, error} = props;
   const {inputProps, InputProps, InputLabelProps, id, ...other} = iprops;
   const attr = {
     title: _meta.tooltip || _meta.synonym,
@@ -16,6 +16,9 @@ export default function InputEditable({iprops, ...props}) {
   }
   if(other.fullWidth === undefined) {
     other.fullWidth = true;
+  }
+  if(error) {
+    other.error = true;
   }
 
   if(isTabular) {

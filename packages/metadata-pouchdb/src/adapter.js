@@ -2047,7 +2047,7 @@ function adapter({AbstracrAdapter}) {
         }
       }
 
-      if(typeof sessionStorage === "object" && sessionStorage.key('zone')) {
+      if(typeof sessionStorage === 'object' && sessionStorage.key('zone')) {
         const zone = sessionStorage.getItem('zone');
         if(zone) {
           url = url.replace(/_\d\d_/, `_${zone}_`);
