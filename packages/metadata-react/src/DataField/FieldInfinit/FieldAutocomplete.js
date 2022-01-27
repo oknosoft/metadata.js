@@ -84,7 +84,9 @@ class FieldAutocomplete extends AbstractField {
   }
 
   getOptionSelected(option, value) {
-    return option.valueOf() == value.valueOf();
+    const left = option ? option.valueOf() : option;
+    const right = value ? value.valueOf() : value;
+    return left == right;
   }
 
   getChildContext() {
