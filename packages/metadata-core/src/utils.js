@@ -587,6 +587,9 @@ const utils = {
 		else if (typeof v1 === typeof v2) {
 			return false;
 		}
+    else if (v2 === false && !v1 || v1 === false && !v2 || v2 === true && v1 || v1 === true && v2) {
+      return true;
+    }
 		return (this.fix_guid(v1, false) == this.fix_guid(v2, false));
 	},
 

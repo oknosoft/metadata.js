@@ -666,7 +666,7 @@ export class RefDataManager extends DataManager{
 
 		if(o.is_new()){
 			if(no_create == rp){
-        // читаем из 1С или иного сервера
+        // читаем из базы
 				return o.load()
           .then(() => {
             return o.is_new() ? o.after_create() : o;
