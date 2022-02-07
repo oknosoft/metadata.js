@@ -581,14 +581,15 @@ const utils = {
 		if (v1 == v2) {
 			return true;
 		}
-		else if (typeof v1 === 'string' && typeof v2 === 'string' && v1.trim() === v2.trim()) {
+    const tv1 = typeof v1,  tv2 = typeof v2;
+		if (tv1 === 'string' && tv2 === 'string' && v1.trim() === v2.trim()) {
 			return true;
 		}
-		else if (typeof v1 === typeof v2) {
+		if (tv1 === tv2) {
 			return false;
 		}
-    else if (v2 === false && !v1 || v1 === false && !v2 || v2 === true && v1 || v1 === true && v2) {
-      return true;
+    if (tv1 === 'boolean' || tv2 === 'boolean') {
+      return Boolean(v1) === Boolean(v2);
     }
 		return (this.fix_guid(v1, false) == this.fix_guid(v2, false));
 	},
