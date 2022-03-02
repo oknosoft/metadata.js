@@ -71,8 +71,8 @@ class NotiList extends Component {
         count={rows.length}
         rowsPerPage={rowsPerPage}
         page={page}
-        onChangePage={this.handleChangePage}
-        onChangeRowsPerPage={this.handleChangeRowsPerPage}
+        onPageChange={this.handleChangePage}
+        onRowsPerPageChange={this.handleChangeRowsPerPage}
       />
     </div>;
   }
