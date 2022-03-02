@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.27-beta.2, built:2022-02-07
+ metadata-core v2.0.27-beta.2, built:2022-02-14
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1695,6 +1695,9 @@ class DataManager extends MetaEventEmitter{
 	toString(){
 		return msg.meta_mgrs[this._owner.name]
 	}
+  toJSON() {
+    return {type: 'DataManager', class_name: this.class_name};
+  }
 	metadata(field_name) {
 	  const {md} = this._owner.$p;
 	  const _meta = md.get(this) || {};

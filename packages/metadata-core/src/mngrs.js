@@ -103,6 +103,14 @@ export class DataManager extends MetaEventEmitter{
 		return msg.meta_mgrs[this._owner.name]
 	}
 
+  /**
+   * ### toJSON
+   * для сериализации возвращаем внутренний _obj
+   */
+  toJSON() {
+    return {type: 'DataManager', class_name: this.class_name};
+  }
+
 	/**
 	 * ### Метаданные объекта
 	 * указатель на фрагмент глобальных метаданных, относящийся к текущему классу данных
