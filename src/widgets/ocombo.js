@@ -102,7 +102,7 @@ function OCombo(attr){
 	});
 
 	function get_filter(text){
-		var filter = {_top: 50, _dhtmlx: true};
+		var filter = {_top: 50, _dhtmlx: true, _attr: attr};
 
     if(_mgr && _mgr.metadata().hierarchical && _mgr.metadata().group_hierarchy) {
       if(_meta.choice_groups_elm == 'elm') {
