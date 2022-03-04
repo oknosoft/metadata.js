@@ -836,8 +836,10 @@ export class DataObj extends BaseDataObj {
     // выполняем обработчик перед записью
     const {_data, _manager} = this;
     _data._saving_trans = true;
-    return _manager.emit_promise('before_save', this)
-      .then(() => this.before_save())
+    return _manager.emit_promise('before_save', this, attr)
+      .then(() => {
+        return this.before_save(attr);
+      })
       .then((before_save_res) => {
 
         // этот код выполним в самом конце, после записи
