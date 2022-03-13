@@ -366,6 +366,17 @@ DataManager.prototype.form_obj = function(pwnd, attr){
           title: 'Документ изменён',
         });
       });
+      wnd.elmnts.vault.attachEvent('onBeforeFileRemove', (file) => {
+        if(o && !o._modified && !o.is_new()) {
+          return true;
+        }
+        $p.msg.show_msg({
+          type: 'alert-warning',
+          text: 'Перед удалением вложения, выполните команду "Записать"',
+          title: 'Документ изменён',
+        });
+      });
+
 
 		}
 	}
