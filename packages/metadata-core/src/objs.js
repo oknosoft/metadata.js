@@ -225,12 +225,13 @@ export class BaseDataObj {
         }
         catch (e) {}
       }
-      else if(typeof v === 'object') {
-        if(v && typeof _obj[f] === 'object') {
-          Object.assign(_obj[f], v);
+      if(typeof v === 'object') {
+        const tmp = utils._clone(v);
+        if(tmp && typeof _obj[f] === 'object') {
+          Object.assign(_obj[f], tmp);
         }
         else {
-          _obj[f] = v;
+          _obj[f] = tmp;
         }
       }
     }

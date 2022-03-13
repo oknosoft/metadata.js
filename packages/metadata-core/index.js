@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.27-beta.3, built:2022-03-04
+ metadata-core v2.0.27-beta.3, built:2022-03-09
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -743,12 +743,13 @@ class BaseDataObj {
         }
         catch (e) {}
       }
-      else if(typeof v === 'object') {
-        if(v && typeof _obj[f] === 'object') {
-          Object.assign(_obj[f], v);
+      if(typeof v === 'object') {
+        const tmp = utils$1._clone(v);
+        if(tmp && typeof _obj[f] === 'object') {
+          Object.assign(_obj[f], tmp);
         }
         else {
-          _obj[f] = v;
+          _obj[f] = tmp;
         }
       }
     }
@@ -1100,7 +1101,9 @@ class DataObj extends BaseDataObj {
     const {_data, _manager} = this;
     _data._saving_trans = true;
     return _manager.emit_promise('before_save', this, attr)
-      .then(() => this.before_save(attr))
+      .then(() => {
+        return this.before_save(attr);
+      })
       .then((before_save_res) => {
         const reset_modified = () => {
           if(before_save_res === false) {
