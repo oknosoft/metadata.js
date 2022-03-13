@@ -348,14 +348,25 @@ DataManager.prototype.form_obj = function(pwnd, attr){
 
 		if (!wnd.elmnts.vault) {
 
-			wnd.elmnts.vault = wnd.elmnts.vault_pop.attachVault(400, 250, {
-				_obj:  o,
-				buttonClear: false,
-				autoStart: true,
-				filesLimit: 10,
-				mode: "pouch"
-			});
-			wnd.elmnts.vault.conf.wnd = wnd;
+      wnd.elmnts.vault = wnd.elmnts.vault_pop.attachVault(400, 250, {
+        _obj: o,
+        buttonClear: false,
+        autoStart: true,
+        filesLimit: 10,
+        mode: 'pouch'
+      });
+      wnd.elmnts.vault.conf.wnd = wnd;
+      wnd.elmnts.vault.attachEvent('onBeforeFileAdd', (file) => {
+        if(o && !o._modified && !o.is_new()) {
+          return true;
+        }
+        $p.msg.show_msg({
+          type: 'alert-warning',
+          text: 'Перед добавлением вложения, выполните команду "Записать"',
+          title: 'Документ изменён',
+        });
+      });
+
 		}
 	}
 

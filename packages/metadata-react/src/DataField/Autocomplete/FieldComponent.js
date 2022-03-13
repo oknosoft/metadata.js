@@ -37,7 +37,7 @@ function FieldComponent({classes, label, fullWidth, disableClearable, ...other})
       disableListWrap
       disableClearable={disableClearable}
       ListboxComponent={ListboxComponent}
-      getOptionLabel={(v) => (v && v.name) || ''}
+      getOptionLabel={(v) => v?.name || ''}
       renderInput={({inputProps, InputProps, InputLabelProps, id, ...other}) => (
         <FormControl classes={ext.control} fullWidth={fullWidth} {...other}>
           <InputLabel classes={ext.label} {...InputLabelProps}>{label}</InputLabel>
