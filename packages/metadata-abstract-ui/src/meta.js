@@ -72,22 +72,32 @@ export default {
             synonym: 'Не в списке'
           },
           {
-            order: 8,
+            'order': 8,
+            'name': 'inh',
+            'synonym': 'В группе'
+          },
+          {
+            order: 9,
+            name: 'ninh',
+            synonym: 'Не в группе'
+          },
+          {
+            order: 10,
             name: 'lke',
             synonym: 'Содержит '
           },
           {
-            order: 9,
+            order: 11,
             name: 'nlk',
             synonym: 'Не содержит'
           },
           {
-            order: 10,
+            order: 12,
             name: 'filled',
             synonym: 'Заполнено '
           },
           {
-            order: 11,
+            order: 13,
             name: 'nfilled',
             synonym: 'Не заполнено'
           }

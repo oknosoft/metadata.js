@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.27-beta.3, built:2022-03-03
+ metadata-abstract-ui v2.0.27-beta.3, built:2022-03-17
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -69,22 +69,32 @@ var meta = {
             synonym: 'Не в списке'
           },
           {
-            order: 8,
+            'order': 8,
+            'name': 'inh',
+            'synonym': 'В группе'
+          },
+          {
+            order: 9,
+            name: 'ninh',
+            synonym: 'Не в группе'
+          },
+          {
+            order: 10,
             name: 'lke',
             synonym: 'Содержит '
           },
           {
-            order: 9,
+            order: 11,
             name: 'nlk',
             synonym: 'Не содержит'
           },
           {
-            order: 10,
+            order: 12,
             name: 'filled',
             synonym: 'Заполнено '
           },
           {
-            order: 11,
+            order: 13,
             name: 'nfilled',
             synonym: 'Не заполнено'
           }
