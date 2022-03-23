@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.27-beta.3, built:2022-03-09
+ metadata-core v2.0.27-beta.3, built:2022-03-23
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3351,6 +3351,9 @@ const utils = {
 	      str = type.default || '';
       }
       type = type.type;
+    }
+    if(this.is_data_obj(str) && type?.types.includes(str.class_name)) {
+      return str;
     }
 		if (type.is_ref) {
       if(type.types && type.types.some((type) => type.startsWith('enm') || type.startsWith('string'))){

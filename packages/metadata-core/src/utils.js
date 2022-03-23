@@ -433,6 +433,9 @@ const utils = {
       }
       type = type.type;
     }
+    if(this.is_data_obj(str) && type?.types.includes(str.class_name)) {
+      return str;
+    }
 		if (type.is_ref) {
       if(type.types && type.types.some((type) => type.startsWith('enm') || type.startsWith('string'))){
         return str;
