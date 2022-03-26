@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.27-beta.4, built:2022-03-25
+ metadata-core v2.0.27-beta.4, built:2022-03-26
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1282,17 +1282,19 @@ class DataObj extends BaseDataObj {
     }
     return res;
   }
-  _extra(name, value) {
+  _extra(property, value) {
     const {extra_fields, _manager: {_owner}} = this;
     const {cch, md} = _owner.$p;
     if(!extra_fields || !cch.properties) {
       return;
     }
-    const property = cch.properties.predefined(name);
+    if(typeof property === 'string') {
+      property = cch.properties.predefined(property);
+    }
     if(!property) {
       return;
     }
-    const row = extra_fields.find(property.ref, 'property');
+    const row = extra_fields.find({property});
     if(value !== undefined) {
       if(row) {
         row.value = value;
@@ -1905,6 +1907,13 @@ class DataManager extends MetaEventEmitter{
         return property._manager;
       }
       else if(property && property != utils$1.blank.guid) {
+        for (let i in rt) {
+          mgr = rt[i];
+          const v = mgr.by_ref[property];
+          if(v && !v.is_new()) {
+            return mgr;
+          }
+        }
         for (let i in rt) {
           mgr = rt[i];
           if(mgr.by_ref[property]) {

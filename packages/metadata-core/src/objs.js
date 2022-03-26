@@ -1091,21 +1091,23 @@ export class DataObj extends BaseDataObj {
 
   /**
    * ### Значение допреквизита по имени
-   * @param name {String} - имя параметра
+   * @param name {String|CchProperties} - имя параметра
    * @param [value] {Any} - если задано, устанавливает
    */
-  _extra(name, value) {
+  _extra(property, value) {
     const {extra_fields, _manager: {_owner}} = this;
     const {cch, md} = _owner.$p;
     if(!extra_fields || !cch.properties) {
       return;
     }
-    const property = cch.properties.predefined(name);
+    if(typeof property === 'string') {
+      property = cch.properties.predefined(property);
+    }
     if(!property) {
       return;
     }
 
-    const row = extra_fields.find(property.ref, 'property');
+    const row = extra_fields.find({property});
     if(value !== undefined) {
       if(row) {
         row.value = value;
