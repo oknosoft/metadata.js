@@ -462,6 +462,13 @@ export class DataManager extends MetaEventEmitter{
       else if(property && property != utils.blank.guid) {
         for (let i in rt) {
           mgr = rt[i];
+          const v = mgr.by_ref[property];
+          if(v && !v.is_new()) {
+            return mgr;
+          }
+        }
+        for (let i in rt) {
+          mgr = rt[i];
           if(mgr.by_ref[property]) {
             return mgr;
           }
