@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.27-beta.4, built:2022-03-26
+ metadata-core v2.0.27-beta.4, built:2022-04-11
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3424,7 +3424,7 @@ const utils = {
     return v instanceof EnumManager;
   },
   is_tabular(v) {
-    return v instanceof TabularSectionRow || v instanceof TabularSection;
+    return v instanceof TabularSectionRow || v instanceof TabularSection || v?._row instanceof TabularSectionRow;
   },
 	is_equal(v1, v2) {
 		if (v1 == v2) {

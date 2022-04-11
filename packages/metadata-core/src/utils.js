@@ -569,7 +569,7 @@ const utils = {
    * @return {Boolean} - true, если значение является табличной частью
    */
   is_tabular(v) {
-    return v instanceof TabularSectionRow || v instanceof TabularSection;
+    return v instanceof TabularSectionRow || v instanceof TabularSection || v?._row instanceof TabularSectionRow;
   },
 
 	/**
