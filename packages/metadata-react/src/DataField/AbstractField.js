@@ -33,7 +33,7 @@ export class FieldWithMeta extends MComponent {
   constructor(props, context) {
     super(props, context);
     const {_obj, _fld, _meta} = props;
-    this._meta = _meta || _obj._metadata(_fld) || {type: {types: ['string']}};
+    this._meta = _meta || (typeof _obj._metadata === 'function' ? _obj._metadata(_fld) : _obj._metadata?.fields[_fld]) || {type: {types: ['string']}};
 
     if(!this._meta.synonym) {
       if(_fld === 'parent') {

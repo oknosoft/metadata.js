@@ -9,7 +9,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Fullscreenable from 'react-fullscreenable';
+//import Fullscreenable from 'react-fullscreenable';
 import Grid from '@material-ui/core/Grid';
 import Diagram from './Diagram';
 
@@ -127,4 +127,5 @@ DiagramsArray.propTypes = {
   isFullscreen: PropTypes.bool,
 };
 
-export default Fullscreenable()(DiagramsArray);
+//export default Fullscreenable()(DiagramsArray);
+export default DiagramsArray;
