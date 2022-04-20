@@ -11,6 +11,7 @@
   "dependencies": {
     "pouchdb-adapter-http": "7.3",
     "pouchdb-adapter-idb": "7.3",
+    "pouchdb-adapter-indexeddb": "7.3",
     "pouchdb-adapter-memory": "7.3",
     "pouchdb-core": "7.3",
     "pouchdb-find": "7.3",
