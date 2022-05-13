@@ -212,7 +212,7 @@ export default {
         reject();
       };
 
-      let timer = setTimeout(reject_confirm, timeout);
+      let timer = timeout && setTimeout(reject_confirm, timeout);
 
       this.handleIfaceState({
         component: '',

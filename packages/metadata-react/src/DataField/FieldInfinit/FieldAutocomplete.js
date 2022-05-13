@@ -190,8 +190,8 @@ class FieldAutocomplete extends AbstractField {
   };
 
   renderInput = (iprops) => {
-    const {props: {classes, extClasses, fullWidth, className,  mandatory, onClick}, state: {error}, _meta, isTabular, read_only} = this;
-    const props = {_meta, isTabular, classes, extClasses, className, fullWidth, mandatory, onClick, error, value: this.masked_value()};
+    const {props: {classes, extClasses, fullWidth, className, mandatory, error: perror, onClick}, state: {error}, _meta, isTabular, read_only} = this;
+    const props = {_meta, isTabular, classes, extClasses, className, fullWidth, mandatory, onClick, error: error || perror, value: this.masked_value()};
     return <InputEditable {...props} iprops={Object.assign({}, iprops, {fullWidth})} />;
   };
 
