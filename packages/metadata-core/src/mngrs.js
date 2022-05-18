@@ -223,7 +223,7 @@ export class DataManager extends MetaEventEmitter{
 	 * @return {Array}
 	 */
 	find_rows(selection, callback){
-		return utils._find_rows.call(this, this.by_ref, selection, callback);
+		return utils._find_rows.call(this, this, selection, callback);
 	}
 
 	/**
@@ -2155,7 +2155,7 @@ export class CatManager extends RefDataManager{
 	 */
 	by_name(name) {
 		let o;
-		this.find_rows({name: name}, obj => {
+		this.find_rows({name}, obj => {
 			o = obj;
 			return false;
 		});
@@ -2171,7 +2171,7 @@ export class CatManager extends RefDataManager{
 	by_id(id) {
     let o = this._by_id[id];
     if(!o) {
-      this.find_rows({id: id}, obj => {
+      this.find_rows({id}, obj => {
         o = obj;
         this._by_id[id] = o;
         return false;

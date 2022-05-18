@@ -1182,8 +1182,10 @@ const utils = {
       }
     }
 
-		for (let i in src) {
-			const o = src[i];
+    if(!src[Symbol.iterator]) {
+      src = Object.values(o);
+    }
+		for (const o of src) {
 			// выполняем колбэк с элементом и пополняем итоговый массив
 			if (utils._selection.call(this, o, selection)) {
 			  if(skip){

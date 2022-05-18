@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.30-beta.1, built:2022-04-20
+ metadata-core v2.0.30-beta.1, built:2022-05-18
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -964,14 +964,14 @@ class BaseDataObj {
   }
   static fix_collection(obj, _obj, fields) {
     for (const fld in fields) {
-      if(_obj[fld]) {
-        let {type, choice_type} = fields[fld];
-        if(choice_type && choice_type.path){
-          const prop = obj[choice_type.path[choice_type.path.length - 1]];
-          if(prop && prop.type) {
-            type = prop.type;
-          }
+      let {type, choice_type} = fields[fld];
+      if(choice_type?.path) {
+        const prop = obj[choice_type.path[choice_type.path.length - 1]];
+        if(prop && prop.type) {
+          type = prop.type;
         }
+      }
+      if(_obj.hasOwnProperty(fld)) {
         if (type.is_ref && typeof _obj[fld] === 'object') {
           if(!(fld === 'type' && obj.class_name && obj.class_name.indexOf('cch.') === 0)) {
             _obj[fld] = utils$1.fix_guid(_obj[fld], false);
@@ -979,6 +979,17 @@ class BaseDataObj {
         }
         else if (type.date_part && typeof _obj[fld] === 'string') {
           _obj[fld] = utils$1.fix_date(_obj[fld], type.types.length === 1);
+        }
+      }
+      else {
+        if(type.digits && !type.hasOwnProperty('str_len')) {
+          _obj[fld] = 0;
+        }
+        else if (type.is_ref && !type.hasOwnProperty('str_len')) {
+          _obj[fld] = utils$1.blank.guid;
+        }
+        else if (type.hasOwnProperty('str_len')) {
+          _obj[fld] = '';
         }
       }
     }
@@ -1747,7 +1758,7 @@ class DataManager extends MetaEventEmitter{
     return this.class_name.replace('.', '_');
 	}
 	find_rows(selection, callback){
-		return utils$1._find_rows.call(this, this.by_ref, selection, callback);
+		return utils$1._find_rows.call(this, this, selection, callback);
 	}
 	find_rows_remote(selection) {
 		return this.adapter.find_rows(this, selection);
@@ -3042,7 +3053,7 @@ class CatManager extends RefDataManager{
 	}
 	by_name(name) {
 		let o;
-		this.find_rows({name: name}, obj => {
+		this.find_rows({name}, obj => {
 			o = obj;
 			return false;
 		});
@@ -3051,7 +3062,7 @@ class CatManager extends RefDataManager{
 	by_id(id) {
     let o = this._by_id[id];
     if(!o) {
-      this.find_rows({id: id}, obj => {
+      this.find_rows({id}, obj => {
         o = obj;
         this._by_id[id] = o;
         return false;
@@ -3850,8 +3861,10 @@ const utils = {
         skip = 0;
       }
     }
-		for (let i in src) {
-			const o = src[i];
+    if(!src[Symbol.iterator]) {
+      src = Object.values(o);
+    }
+		for (const o of src) {
 			if (utils._selection.call(this, o, selection)) {
 			  if(skip){
           skipped++;
