@@ -622,14 +622,14 @@ export class BaseDataObj {
    */
   static fix_collection(obj, _obj, fields) {
     for (const fld in fields) {
-      if(_obj[fld]) {
-        let {type, choice_type} = fields[fld];
-        if(choice_type && choice_type.path){
-          const prop = obj[choice_type.path[choice_type.path.length - 1]];
-          if(prop && prop.type) {
-            type = prop.type;
-          }
+      let {type, choice_type} = fields[fld];
+      if(choice_type?.path) {
+        const prop = obj[choice_type.path[choice_type.path.length - 1]];
+        if(prop && prop.type) {
+          type = prop.type;
         }
+      }
+      if(_obj.hasOwnProperty(fld)) {
         if (type.is_ref && typeof _obj[fld] === 'object') {
           if(!(fld === 'type' && obj.class_name && obj.class_name.indexOf('cch.') === 0)) {
             _obj[fld] = utils.fix_guid(_obj[fld], false);
@@ -637,6 +637,17 @@ export class BaseDataObj {
         }
         else if (type.date_part && typeof _obj[fld] === 'string') {
           _obj[fld] = utils.fix_date(_obj[fld], type.types.length === 1);
+        }
+      }
+      else {
+        if(type.digits && !type.hasOwnProperty('str_len')) {
+          _obj[fld] = 0;
+        }
+        else if (type.is_ref && !type.hasOwnProperty('str_len')) {
+          _obj[fld] = utils.blank.guid;
+        }
+        else if (type.hasOwnProperty('str_len')) {
+          _obj[fld] = '';
         }
       }
     }
