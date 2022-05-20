@@ -1,7 +1,7 @@
 {
   "name": "metadata-react",
   "description": "React UI components for metadata.js",
-  "version": "2.0.30-beta.1",
+  "version": "2.0.30-beta.2",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
@@ -23,16 +23,16 @@
     "react-draggable": "^4.4",
     "react-helmet": "^6.1",
     "react-onclickoutside": "^6.12",
-    "react-swipeable": "^6.2",
+    "react-swipeable": "^7.0",
     "react-virtualized-auto-sizer": "^1.0.6",
-    "react-window": "^1.8.6",
+    "react-window": "^1.8.7",
     "react-window-infinite-loader": "^1.0.7",
     "url-join": "^5.0",
     "yamljs": "^0.3"
   },
   "peerDependencies": {
-    "react": "^17.0",
-    "react-dom": "^17.0"
+    "react": "^18.1",
+    "react-dom": "^18.1"
   },
   "scripts": {
     "build:es": "cross-env NODE_ENV=production BABEL_ENV=es babel --config-file ./babel.config.js ./src --out-dir . && node ./copy-files",
