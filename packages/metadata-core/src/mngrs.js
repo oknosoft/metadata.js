@@ -412,46 +412,40 @@ export class DataManager extends MetaEventEmitter{
 	 */
 	value_mgr(row, f, mf, array_enabled, v) {
 
-		const {$p} = this._owner;
+    if(mf._mgr) {
+      return mf._mgr;
+    }
 
-		let property, oproperty, tnames, rt, mgr;
-
-		if (mf._mgr){
-			return mf._mgr;
-		}
-
-		function mf_mgr(mgr) {
-			if (mgr && mf.types.length == 1){
-				mf._mgr = mgr;
-			}
-			return mgr;
-		}
+    const {$p} = this._owner;
 
 		if (mf.types.length == 1) {
-      tnames = mf.types[0].split('.');
+      const tnames = mf.types[0].split('.');
       if(tnames.length > 1 && $p[tnames[0]]) {
-        return mf_mgr($p[tnames[0]][tnames[1]]);
+        return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
       }
     }
 		else if (v && v.type) {
-      tnames = v.type.split('.');
+      const tnames = v.type.split('.');
       if(tnames.length > 1 && $p[tnames[0]]) {
-        return mf_mgr($p[tnames[0]][tnames[1]]);
+        return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
       }
     }
 
-		property = row.property || row.param;
+		let property = row.property || row.param;
     if(f != 'value' || !property) {
 
-      rt = [];
-      mf.types.forEach(function (v) {
-        tnames = v.split('.');
+      const rt = [];
+      mf.types.forEach((v) => {
+        const tnames = v.split('.');
         if(tnames.length > 1 && $p[tnames[0]][tnames[1]]) {
           rt.push($p[tnames[0]][tnames[1]]);
         }
       });
-      if(rt.length == 1 || row[f] == utils.blank.guid) {
-        return mf_mgr(rt[0]);
+      if(!rt.length) {
+        return ;
+      }
+      if(rt.length === 1) {
+        return DataManager.mf_mgr(rt[0], mf);
       }
       else if(array_enabled) {
         return rt;
@@ -459,16 +453,19 @@ export class DataManager extends MetaEventEmitter{
       else if((property = row[f]) instanceof DataObj) {
         return property._manager;
       }
+      else if(mf?.default && (!property || property === utils.blank.guid)) {
+        const tnames = mf.default.split('.');
+        return $p[tnames[0]][tnames[1]];
+      }
       else if(property && property != utils.blank.guid) {
-        for (let i in rt) {
-          mgr = rt[i];
+        for (const mgr of rt) {
           const v = mgr.by_ref[property];
           if(v && !v.is_new()) {
             return mgr;
           }
         }
-        for (let i in rt) {
-          mgr = rt[i];
+        // на втором проходе, разрешаем незаписанные
+        for (const mgr of rt) {
           if(mgr.by_ref[property]) {
             return mgr;
           }
@@ -478,6 +475,7 @@ export class DataManager extends MetaEventEmitter{
 		else {
 
 			// Получаем объект свойства
+      let oproperty;
 			if (utils.is_data_obj(property)){
 				oproperty = property;
 			}
@@ -495,9 +493,9 @@ export class DataManager extends MetaEventEmitter{
 				}
 
 				// и через его тип выходми на мнеджера значения
-				rt = [];
+        const rt = [];
         oproperty.type.types.some((v) => {
-          tnames = v.split('.');
+          const tnames = v.split('.');
           if(tnames.length > 1 && $p[tnames[0]][tnames[1]]) {
             rt.push($p[tnames[0]][tnames[1]]);
           }
@@ -507,7 +505,7 @@ export class DataManager extends MetaEventEmitter{
           }
         });
 				if(rt.length == 1 || row[f] == utils.blank.guid){
-					return mf_mgr(rt[0]);
+					return DataManager.mf_mgr(rt[0], mf);
 				}
 				else if(array_enabled){
 					return rt;
@@ -516,8 +514,7 @@ export class DataManager extends MetaEventEmitter{
 					return property._manager;
 				}
 				else if(utils.is_guid(property) && property != utils.blank.guid){
-					for(let i in rt){
-						mgr = rt[i];
+					for(const mgr of rt){
 						if(mgr.by_ref[property]){
 							return mgr;
 						}
@@ -598,6 +595,19 @@ export class DataManager extends MetaEventEmitter{
    */
   [Symbol.iterator]() {
     return new Iterator(this.by_ref, this.alatable);
+  }
+
+  /**
+   * Вспомогательный метод для value_mgr
+   * @param mgr {DataManager}
+   * @param mf {Object} - метаданные текущего поля
+   * @returns {DataManager}
+   */
+  static mf_mgr(mgr, mf) {
+    if (mgr && mf.types.length == 1){
+      mf._mgr = mgr;
+    }
+    return mgr;
   }
 }
 

@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.30-beta.2, built:2022-05-20
+ metadata-core v2.0.30-beta.3, built:2022-05-26
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1876,40 +1876,36 @@ class DataManager extends MetaEventEmitter{
     }
   }
 	value_mgr(row, f, mf, array_enabled, v) {
-		const {$p} = this._owner;
-		let property, oproperty, tnames, rt, mgr;
-		if (mf._mgr){
-			return mf._mgr;
-		}
-		function mf_mgr(mgr) {
-			if (mgr && mf.types.length == 1){
-				mf._mgr = mgr;
-			}
-			return mgr;
-		}
+    if(mf._mgr) {
+      return mf._mgr;
+    }
+    const {$p} = this._owner;
 		if (mf.types.length == 1) {
-      tnames = mf.types[0].split('.');
+      const tnames = mf.types[0].split('.');
       if(tnames.length > 1 && $p[tnames[0]]) {
-        return mf_mgr($p[tnames[0]][tnames[1]]);
+        return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
       }
     }
 		else if (v && v.type) {
-      tnames = v.type.split('.');
+      const tnames = v.type.split('.');
       if(tnames.length > 1 && $p[tnames[0]]) {
-        return mf_mgr($p[tnames[0]][tnames[1]]);
+        return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
       }
     }
-		property = row.property || row.param;
+		let property = row.property || row.param;
     if(f != 'value' || !property) {
-      rt = [];
-      mf.types.forEach(function (v) {
-        tnames = v.split('.');
+      const rt = [];
+      mf.types.forEach((v) => {
+        const tnames = v.split('.');
         if(tnames.length > 1 && $p[tnames[0]][tnames[1]]) {
           rt.push($p[tnames[0]][tnames[1]]);
         }
       });
-      if(rt.length == 1 || row[f] == utils$1.blank.guid) {
-        return mf_mgr(rt[0]);
+      if(!rt.length) {
+        return ;
+      }
+      if(rt.length === 1) {
+        return DataManager.mf_mgr(rt[0], mf);
       }
       else if(array_enabled) {
         return rt;
@@ -1917,16 +1913,18 @@ class DataManager extends MetaEventEmitter{
       else if((property = row[f]) instanceof DataObj) {
         return property._manager;
       }
+      else if(mf?.default && (!property || property === utils$1.blank.guid)) {
+        const tnames = mf.default.split('.');
+        return $p[tnames[0]][tnames[1]];
+      }
       else if(property && property != utils$1.blank.guid) {
-        for (let i in rt) {
-          mgr = rt[i];
+        for (const mgr of rt) {
           const v = mgr.by_ref[property];
           if(v && !v.is_new()) {
             return mgr;
           }
         }
-        for (let i in rt) {
-          mgr = rt[i];
+        for (const mgr of rt) {
           if(mgr.by_ref[property]) {
             return mgr;
           }
@@ -1934,6 +1932,7 @@ class DataManager extends MetaEventEmitter{
       }
     }
 		else {
+      let oproperty;
 			if (utils$1.is_data_obj(property)){
 				oproperty = property;
 			}
@@ -1947,9 +1946,9 @@ class DataManager extends MetaEventEmitter{
 				if (oproperty.is_new()){
 					return $p.cat.property_values;
 				}
-				rt = [];
+        const rt = [];
         oproperty.type.types.some((v) => {
-          tnames = v.split('.');
+          const tnames = v.split('.');
           if(tnames.length > 1 && $p[tnames[0]][tnames[1]]) {
             rt.push($p[tnames[0]][tnames[1]]);
           }
@@ -1959,7 +1958,7 @@ class DataManager extends MetaEventEmitter{
           }
         });
 				if(rt.length == 1 || row[f] == utils$1.blank.guid){
-					return mf_mgr(rt[0]);
+					return DataManager.mf_mgr(rt[0], mf);
 				}
 				else if(array_enabled){
 					return rt;
@@ -1968,8 +1967,7 @@ class DataManager extends MetaEventEmitter{
 					return property._manager;
 				}
 				else if(utils$1.is_guid(property) && property != utils$1.blank.guid){
-					for(let i in rt){
-						mgr = rt[i];
+					for(const mgr of rt){
 						if(mgr.by_ref[property]){
 							return mgr;
 						}
@@ -2025,6 +2023,12 @@ class DataManager extends MetaEventEmitter{
   }
   [Symbol.iterator]() {
     return new Iterator(this.by_ref, this.alatable);
+  }
+  static mf_mgr(mgr, mf) {
+    if (mgr && mf.types.length == 1){
+      mf._mgr = mgr;
+    }
+    return mgr;
   }
 }
 class RefDataManager extends DataManager{
@@ -4983,7 +4987,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.30-beta.2";
+    return "2.0.30-beta.3";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
