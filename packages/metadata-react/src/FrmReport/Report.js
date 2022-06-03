@@ -7,7 +7,6 @@ import RepToolbar from './RepToolbar';
 import RepTabularSection from './RepTabularSection';
 import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
 import {Helmet} from 'react-helmet';
-import {withIface} from 'metadata-redux';
 
 export class Report extends MDNRComponent {
 
@@ -179,5 +178,5 @@ Report.propTypes = {
 
 };
 
-export default withIface(Report);
+export default Report;
 
