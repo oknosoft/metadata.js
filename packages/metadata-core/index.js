@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.30-beta.3, built:2022-05-26
+ metadata-core v2.0.30-beta.3, built:2022-06-29
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1686,16 +1686,18 @@ class Iterator {
     this._alatable = alatable;
     this._idx = 0;
   }
-  next() {
-    if(this._idx >= this._alatable.length) {
-      return {done: true};
-    }
-    const value = this._by_ref[this._alatable[this._idx].ref];
+  value(_alatable) {
+    const value = this._by_ref[_alatable[this._idx]?.ref];
     this._idx++;
-    if(value && !value.empty()) {
-      return {value, done: false};
+    return value?.empty?.() ? null : value;
+  }
+  next() {
+    const {_alatable} = this;
+    let value = this.value(_alatable);
+    while (!value && (this._idx < _alatable.length)) {
+      value = this.value(_alatable);
     }
-    return this.next();
+    return {value, done: !value || this._idx > _alatable.length};
   }
 }
 class DataManager extends MetaEventEmitter{

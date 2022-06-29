@@ -47,16 +47,19 @@ class Iterator {
     this._idx = 0;
   }
 
-  next() {
-    if(this._idx >= this._alatable.length) {
-      return {done: true}; // проверка на последний элемент
-    }
-    const value = this._by_ref[this._alatable[this._idx].ref];
+  value(_alatable) {
+    const value = this._by_ref[_alatable[this._idx]?.ref];
     this._idx++;
-    if(value && !value.empty()) {
-      return {value, done: false};
+    return value?.empty?.() ? null : value;
+  }
+
+  next() {
+    const {_alatable} = this;
+    let value = this.value(_alatable);
+    while (!value && (this._idx < _alatable.length)) {
+      value = this.value(_alatable);
     }
-    return this.next();
+    return {value, done: !value || this._idx > _alatable.length};
   }
 }
 

@@ -1095,7 +1095,7 @@ const utils = {
    * @private
    */
   _find_rows_with_sort(src, selection) {
-    let pre = [], docs = [], sort, ref, top = 300, skip = 0, count = 0, skipped = 0;
+    let pre = [], docs = [], sort, top = 300, skip = 0, count = 0, skipped = 0;
 
     if(selection) {
       if(selection._sort) {
@@ -1111,7 +1111,6 @@ const utils = {
         delete selection._skip;
       }
       if(selection.hasOwnProperty('_ref')) {
-        ref = selection._ref;
         delete selection._ref;
       }
     }
