@@ -78,6 +78,12 @@ const config = {
     ]
   },
   plugins: getPlugins(),
+  resolve: {
+    fallback: {
+      url: false,
+      path: false,
+    }
+  }
 };
 
 

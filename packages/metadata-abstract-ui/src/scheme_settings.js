@@ -5,6 +5,7 @@
  *
  * Created 19.12.2016
  */
+import {re} from "@babel/core/lib/vendor/import-meta-resolve";
 
 const DataFrame = require('dataframe');
 
@@ -899,9 +900,23 @@ export default function scheme_settings() {
           return memo;
         };
 
+        // если в измерениях есть точка - разыменовываем
+        const rflds = dflds.filter(v => v.includes('.')).map(v => v.split('.'));
+        const rows = rflds.length ?  collection._obj.map(v => {
+          const res = Object.assign(v);
+          for(const [...flds] of rflds) {
+            let tmp = v._row[flds[0]];
+            for(let i = 1; i<flds.length; i++) {
+              tmp = tmp[flds[i]];
+            }
+            res[flds.join('.')] = tmp;
+          }
+          return res;
+        }) : collection._obj;
+
         const df = DataFrame({
-          rows: collection._obj,
           dimensions: dflds.map(v => ({value: v, title: v})),
+          rows,
           reduce
         });
 
@@ -930,16 +945,18 @@ export default function scheme_settings() {
         let prevLevel;    // предыдущий уровень группировки
         let index = 0;    // счетчик количества строк + id строки результирующего набора
 
+
+
         const cast_field = function (row, gdim, force) {
 
-          const mgr = _manager.value_mgr(row, gdim, meta[gdim].type);
+          const mgr = _manager.value_mgr(row, gdim, CatScheme_settings.cast_type(meta, gdim));
           const val = is_data_mgr(mgr) ? mgr.get(row[gdim]) : row[gdim];
 
           if(_columns.some(v => v.key === gdim)){
             row[gdim] = val;
           }
           else if(force){
-            row[col0.key] = _manager.value_mgr(row, col0.key, meta[col0.key].type) ?
+            row[col0.key] = _manager.value_mgr(row, col0.key, CatScheme_settings.cast_type(meta, col0.key)) ?
               is_data_obj(val) ? val : {presentation: val instanceof Date ? moment(val).format(moment._masks[meta[gdim].type.date_part]) : val }
               :
               is_data_obj(val) ? val.toString() : val;
@@ -1028,6 +1045,29 @@ export default function scheme_settings() {
     }
 
     /**
+     * Возвращает тип по метаданным поля с разыменованием через точку
+     * @param meta {Object}
+     * @param fld {String}
+     * @returns {Object}
+     */
+    static cast_type(meta, fld) {
+      if(meta[fld]) {
+        return meta[fld].type;
+      }
+      const dims = fld.split('.');
+      if(dims.length > 1 && meta[dims[0]]) {
+        const {type} = meta[dims[0]];
+        if(type.is_ref) {
+          meta = md.get(type.types[0]);
+          if(meta) {
+            return CatScheme_settings.cast_type(meta.fields, dims.splice(1).join('.'));
+          }
+        }
+      }
+      return {types: ['string'], str_len: 100};
+    }
+
+    /**
      * ### Возвращает массив колонок для динсписка или табчасти
      * @param mode {String} - режим формирования колонок
      * @return {Array}
@@ -1057,7 +1097,7 @@ export default function scheme_settings() {
             id: row.field,
             synonym: row.caption,
             tooltip: row.tooltip,
-            type: fld_meta.type,
+            type: fld_meta?.type || CatScheme_settings.cast_type(_meta.fields, row.field),
             ctrl_type: row.ctrl_type,
             width: row.width == '*' ? 250 : row.width,
           }));
