@@ -9,7 +9,6 @@ import DataListToolbar from '../DynList/DataListToolbar';
 import SchemeSettingsTabs from '../SchemeSettings/SchemeSettingsTabs';
 import Confirm from '../App/Confirm';
 import withStyles from './styles';
-import {withIface} from 'metadata-redux';
 import control_by_type from 'metadata-abstract-ui/ui';
 import Typography from '@material-ui/core/Typography';
 
@@ -335,4 +334,4 @@ DataTree.propTypes = {
 };
 
 
-export default withStyles(withIface(DataTree));
+export default withStyles(DataTree);

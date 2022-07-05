@@ -5,7 +5,6 @@
  *
  * Created 19.12.2016
  */
-import {re} from "@babel/core/lib/vendor/import-meta-resolve";
 
 const DataFrame = require('dataframe');
 

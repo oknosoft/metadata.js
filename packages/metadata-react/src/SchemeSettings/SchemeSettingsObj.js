@@ -1,7 +1,6 @@
 import React from 'react';
 import DataObj from '../FrmObj/DataObj';
 import withStyles from '../styles/paper600';
-import {withIface} from 'metadata-redux';
 import SchemeSettingsTabs from './SchemeSettingsTabs';
 import LoadingMessage from '../DumbLoader/LoadingMessage';
 
@@ -19,4 +18,4 @@ export class SchemeSettingsObj extends DataObj {
       <LoadingMessage/>;
   }
 }
-export default withStyles(withIface(SchemeSettingsObj));
+export default withStyles(SchemeSettingsObj);

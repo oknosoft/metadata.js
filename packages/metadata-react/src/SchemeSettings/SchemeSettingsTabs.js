@@ -115,7 +115,6 @@ export default class SchemeSettingsTabs extends Component {
           _obj={scheme}
           _tabular="fields"
           rowSelection={this.rowSelection(scheme)}
-          denyAddDel
         />}
 
         {value === 2 && <TabularSection
