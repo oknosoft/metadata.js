@@ -275,23 +275,47 @@ export default function log_manager() {
    */
   this.IregLog = class IregLog extends RegisterRow {
 
+    /**
+     * Дата и время события
+     * @type {Date}
+     */
     get date() {return this._getter('date')}
     set date(v) {this._setter('date', v)}
 
+    /**
+     * Уточнение момента времени (порядок в пределах миллисекунды)
+     * @type {Number}
+     */
     get sequence() {return this._getter('sequence')}
     set sequence(v) {this._setter('sequence', v)}
 
+    /**
+     * Класс события (ошибка, инфо, статистика и т.д.)
+     * @type {String}
+     */
     get class() {return this._getter('class')}
     set class(v) {this._setter('class', v)}
 
+    /**
+     * Комментарий к событию
+     * @type {String}
+     */
     get note() {return this._getter('note')}
     set note(v) {this._setter('note', v)}
 
+    /**
+     * Произвольный объект события
+     * @type {Object}
+     */
     get obj() {return this._getter('obj')}
     set obj(v) {this._setter('obj', v)}
 
-    get user() {return this._getter('obj')}
-    set user(v) {this._setter('obj', v)}
+    /**
+     * Имя пользователя, в сеансе которого произошло событие
+     * @type {String}
+     */
+    get user() {return this._getter('user')}
+    set user(v) {this._setter('user', v)}
 
   };
 
