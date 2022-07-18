@@ -1128,10 +1128,24 @@ export class DataObj extends BaseDataObj {
       }
     }
     else {
+      const {type: {types, is_ref}, list} = property;
+      if(list === 4) {
+        const res = new Map();
+        try {
+          const mgr = md.mgr_by_class_name(types[0]);
+          const raw = row?.txt_row ? JSON.parse(row.txt_row) : {};
+          for(const ref in raw) {
+            res.set(mgr.get(ref), raw[ref]);
+          }
+        }
+        catch (e) {
+          ;
+        }
+        return res;
+      }
       if(row) {
         return row.value;
       }
-      const {types, is_ref} = property.type;
       if(is_ref && types.length === 1) {
         const mgr = md.mgr_by_class_name(types[0]);
         return mgr && mgr.get();
