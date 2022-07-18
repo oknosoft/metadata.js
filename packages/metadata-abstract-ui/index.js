@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.30-beta.5, built:2022-07-05
+ metadata-abstract-ui v2.0.30-beta.6, built:2022-07-18
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -213,8 +213,8 @@ function log_manager() {
     set note(v) {this._setter('note', v);}
     get obj() {return this._getter('obj')}
     set obj(v) {this._setter('obj', v);}
-    get user() {return this._getter('obj')}
-    set user(v) {this._setter('obj', v);}
+    get user() {return this._getter('user')}
+    set user(v) {this._setter('user', v);}
   };
   classes.LogManager = LogManager;
   this.ireg.create('log', LogManager);

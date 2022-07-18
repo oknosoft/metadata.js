@@ -1,5 +1,7 @@
 import FrmProxyLogin from './Auth';
-import FrmLogin from './FrmLogin';
+import Login from './FrmLogin';
+import {withMeta} from 'metadata-redux';
+const FrmLogin = withMeta(Login);
 
 export default FrmProxyLogin;
 export {FrmLogin};
