@@ -23,9 +23,7 @@ import ProxySettings from './ProxySettings';
 import withStyles from './styles';
 import providers, {directLogins} from './providers';
 
-import {withMeta} from 'metadata-redux';
 import classnames from 'classnames';
-
 
 export class FrmLogin extends React.Component {
 
@@ -182,4 +180,4 @@ FrmLogin.propTypes = {
   handleLogin: PropTypes.func.isRequired,
 };
 
-export default withMeta(withStyles(FrmLogin));
+export default withStyles(FrmLogin);

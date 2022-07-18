@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {Helmet} from 'react-helmet';
 import {withStyles} from '@material-ui/styles';
-import {withIface} from 'metadata-redux';
 import Typography from '@material-ui/core/Typography';
 
 import AppContent from '../App/AppContent';
@@ -78,4 +77,4 @@ MarkdownDocs.propTypes = {
   footer: PropTypes.node,               // кнопки share соцсетей, прочие элементы в подвале
 }
 
-export default withStyles(styles)(withIface(MarkdownDocs));
+export default withStyles(styles)(MarkdownDocs);
