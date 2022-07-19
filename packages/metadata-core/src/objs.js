@@ -695,7 +695,6 @@ export class DataObj extends BaseDataObj {
 
   }
 
-
   /**
    * ### Ревизия
    * Eё устанваливает адаптер при чтении и записи
@@ -1101,11 +1100,12 @@ export class DataObj extends BaseDataObj {
   }
 
   /**
-   * ### Значение допреквизита по имени
+   * ### Значение допреквизита по имени или свойству
    * @param name {String|CchProperties} - имя параметра
    * @param [value] {Any} - если задано, устанавливает
+   * @param [list] {Number} - если задано, переопределяет list свойства
    */
-  _extra(property, value) {
+  _extra(property, value, list) {
     const {extra_fields, _manager: {_owner}} = this;
     const {cch, md} = _owner.$p;
     if(!extra_fields || !cch.properties) {
@@ -1128,7 +1128,10 @@ export class DataObj extends BaseDataObj {
       }
     }
     else {
-      const {type: {types, is_ref}, list} = property;
+      const {type: {types, is_ref}} = property;
+      if(!list) {
+        list = property.list;
+      }
       if(list === 4) {
         const res = new Map();
         try {

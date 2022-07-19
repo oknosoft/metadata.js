@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.30-beta.6, built:2022-07-18
+ metadata-core v2.0.30-beta.6, built:2022-07-19
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1293,7 +1293,7 @@ class DataObj extends BaseDataObj {
     }
     return res;
   }
-  _extra(property, value) {
+  _extra(property, value, list) {
     const {extra_fields, _manager: {_owner}} = this;
     const {cch, md} = _owner.$p;
     if(!extra_fields || !cch.properties) {
@@ -1315,7 +1315,10 @@ class DataObj extends BaseDataObj {
       }
     }
     else {
-      const {type: {types, is_ref}, list} = property;
+      const {type: {types, is_ref}} = property;
+      if(!list) {
+        list = property.list;
+      }
       if(list === 4) {
         const res = new Map();
         try {
