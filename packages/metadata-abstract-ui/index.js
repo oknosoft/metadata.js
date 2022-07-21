@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.30-beta.6, built:2022-07-18
+ metadata-abstract-ui v2.0.30-beta.6, built:2022-07-21
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -31,7 +31,45 @@ function log_manager() {
     constructor(owner) {
       super(owner, 'ireg.log');
       this._stamp = Date.now();
-      setInterval(this.backup.bind(this, 'stamp'), 90000);
+      setInterval(this.backup.bind(this, 'stamp'), 100000);
+      this._stat = {
+        timers: {},
+        stack: {},
+      };
+      setInterval(() => {
+        const {_stat} = this;
+        if(Object.keys(_stat.stack).length) {
+          this.record({
+            class: 'stat',
+            obj: _stat.stack,
+          });
+          _stat.stack = {};
+        }
+      }, 200000);
+    }
+    timeStart(ref) {
+      const {timers} = this._stat;
+      if (!timers[ref]) {
+        timers[ref] = [performance.now()];
+      }
+      else {
+        timers[ref].push(performance.now());
+      }
+    }
+    timeEnd(ref) {
+      const {timers, stack} = this._stat;
+      let timeSpent = 0;
+      if (timers[ref] && timers[ref].length) {
+        timeSpent = performance.now() - timers[ref].shift();
+        if (!stack[ref]) {
+          stack[ref] = [1, timeSpent];
+        }
+        else {
+          let [count, totalTime] = stack[ref];
+          stack[ref] = [++count, totalTime + timeSpent];
+        }
+      }
+      return timeSpent;
     }
     record(msg) {
       const {wsql} = this._owner.$p;
