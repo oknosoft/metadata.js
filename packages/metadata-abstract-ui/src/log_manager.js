@@ -29,8 +29,71 @@ export default function log_manager() {
       // раз в полторы минуты, пытаемся сбросить данные на сервер
       setInterval(this.backup.bind(this, 'stamp'), 90000);
 
+      this.state = {
+        timers: {}, // для активных таймеров (замеров)
+        stack: {}, // для сохранения результата (замеров)
+        isSetTimeout: false
+      };
     }
 
+    /**
+     * Таймер для отправки накопившейся статистики в couchdb 
+     */
+    sendingLogsTimeout() {
+        // если таймер запущен - дожидаемся его окончания, избегая повторных запусков
+        if (!this.state.isSetTimeout) {
+            const settimeout = setTimeout(() => {
+                const data = this.state.stack;
+              
+                // метод отправки накопившихся логов и очищение стека  
+               this.record({
+                    obj: data,
+                    class: "log_formulas"
+                });
+                this.state.stack = {};
+        
+                // очищаем таймер
+                this.state.isSetTimeout = false;
+                clearTimeout(settimeout);
+            }, 1000 * 60 * 5);
+        
+            this.state.isSetTimeout = true;
+        } 
+    }
+    
+    /**
+     * Начинает замер времени выполнения кода
+     * @param arg {String} - название таймера  
+     */
+    timeStart(arg) { 
+        if (!this.state.timers[arg]) {
+            this.state.timers[arg] = [Date.now()];  
+        } else {
+            this.state.timers[arg].push(Date.now());
+        }  
+    }
+    
+    /**
+     * Останавливает замер времени выполнения кода
+     * @param arg {String} - название таймера  
+     */
+    timeEnd(arg) { 
+        if (!this.state.timers[arg] || !this.state.timers[arg].length) return console.info(`Таймер "${arg}" не существует`);
+        const timeEnd = Date.now();   
+        const timeStart = this.state.timers[arg].shift();
+        const timeSpent = timeEnd - timeStart;   
+     
+        if (!this.state.stack[arg]) {
+            this.state.stack[arg] = [1, timeSpent];
+        } else {
+            let [count, totalTime] = this.state.stack[arg];
+            this.state.stack[arg] = [++count, totalTime + timeSpent];
+        }  
+        this.sendingLogsTimeout();
+     
+        return timeSpent;
+    }
+    
     /**
      * Добавляет запись в журнал
      * @param msg {String|Object|Error} - текст + класс события
