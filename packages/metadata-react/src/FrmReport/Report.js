@@ -135,6 +135,7 @@ export class Report extends MDNRComponent {
         handleSave={this.handleSave}
         handlePrint={this.handlePrint}
         handleClose={this.handleClose}
+        hide_btn={props.hide_btn}
       />,
 
       settings_open && <SchemeSettingsTabs

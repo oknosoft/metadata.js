@@ -58,7 +58,7 @@ class RepToolbar extends Component {
   render() {
 
     const {props, state, handleChange} = this;
-    const {handleSave, handleClose, handlePrint, _obj, _tabular, classes, scheme, settings_open, ToolbarExt} = props;
+    const {handleSave, handleClose, handlePrint, _obj, _tabular, classes, scheme, settings_open, ToolbarExt, hide_btn} = props;
 
 
     return (
@@ -87,6 +87,7 @@ class RepToolbar extends Component {
           classes={classes}
           scheme={scheme}
           show_variants={true}
+          hide_btn={hide_btn}
         />
 
         <IconButton onClick={this.handleMenuOpen} title="Дополнительно">
