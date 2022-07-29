@@ -78,7 +78,12 @@ export default class SchemeSettingsTabs extends Component {
       styleTabs.width = sizes.width;
     }
 
-    return [
+    // до лучших времён, настройки показываем только полноправному пользователю
+    const {current_user} = $p;
+    const is_admin = current_user.role_available('ИзменениеТехнологическойНСИ') ||
+      current_user.roles.includes('doc_full') || current_user.roles.includes('_admin');
+
+    return is_admin ? [
       <AppBar key="bar" position="static" color="default" style={styleBar}>
         <Tabs
           value={value}
@@ -151,7 +156,19 @@ export default class SchemeSettingsTabs extends Component {
         />}
 
       </div>
-    ];
+    ]
+      :
+      <div style={styleTabs}>{
+        tabParams ? tabParams : (
+          scheme.query.match('date') ?
+            <div>
+              <DataField _obj={scheme} _fld="date_from"/>
+              <DataField _obj={scheme} _fld="date_till"/>
+            </div>
+            :
+            <TabularSection _obj={scheme} _tabular="params"/>
+        )
+      }</div>;
   }
 }
 
