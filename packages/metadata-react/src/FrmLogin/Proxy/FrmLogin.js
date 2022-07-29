@@ -134,8 +134,11 @@ export class FrmLogin extends React.Component {
   }
 
   creditales() {
-    const {state: {  provider, login, password, showPassword}, props: {classes, user, _obj}} = this;
+    let {state: {  provider, login, password, showPassword}, props: {classes, user, _obj}} = this;
     if(user.logged_in) {
+      if(!_obj) {
+        _obj = $p.current_user;
+      }
       return <FormGroup>
         <PropField _obj={_obj} _fld="id" read_only />
         <PropField _obj={_obj} _fld="roles" read_only />
