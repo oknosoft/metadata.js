@@ -7,9 +7,12 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import Cascader from 'rc-cascader';
+import InputBase from '@material-ui/core/InputBase';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+
 
 import '../styles/cascader.css';
-
 
 class FieldPath extends Component {
 
@@ -20,7 +23,8 @@ class FieldPath extends Component {
     const options = this.fill_options();
 
     const {_obj, _fld} = props;
-    const defaultValue = _obj[_fld].split('.');
+    const value = _obj[_fld];
+    const defaultValue = value.split('.');
     let inputValue = '';
     if(defaultValue.length) {
       let curr;
@@ -37,7 +41,7 @@ class FieldPath extends Component {
         });
       });
     }
-    this.state = {defaultValue, inputValue, options};
+    this.state = {defaultValue, inputValue, options, value, open: false};
   }
 
   /**
@@ -115,26 +119,46 @@ class FieldPath extends Component {
 
   render() {
     const {_obj, _fld, popupVisible} = this.props;
-    const {inputValue, defaultValue, options} = this.state;
-    return (
-      <Cascader expandTrigger="hover"
-                popupVisible={popupVisible}
-                options={options}
-                defaultValue={defaultValue}
-                onChange={this.onChange}
-                onKeyDown={this.prevent}
-                onKeyPress={this.prevent}
-                loadData={this.loadData}
-                changeOnSelect
+    const {inputValue, defaultValue, options, value, open} = this.state;
+    const input = <InputBase
+      readOnly={open}
+      value={open ? inputValue : value}
+      placeholder="Путь к данным"
+      onBlur={this.prevent}
+      onChange={({target}) => {
+        const {value} = target;
+        _obj[_fld] = value;
+        this.setState({value});
+      }}
+      style={{
+        backgroundColor: 'white',
+        paddingLeft: 4,
+        fontSize: '0.9rem',
+      }}
+      endAdornment={<InputAdornment
+        position="end"
+        style={{cursor: 'pointer'}}
+        onClick={() => this.setState({open: !open})}
       >
-        <input
-          readOnly
-          value={inputValue}
-          placeholder="Путь к данным"
-          onBlur={this.prevent}
-        />
+        <ArrowDropDownIcon />
+      </InputAdornment>}
+    />;
+    return open ? <Cascader
+        expandTrigger="hover"
+        popupVisible={popupVisible}
+        options={options}
+        defaultValue={defaultValue}
+        onChange={this.onChange}
+        onKeyDown={this.prevent}
+        onKeyPress={this.prevent}
+        loadData={this.loadData}
+        changeOnSelect
+        open
+      >
+      {input}
       </Cascader>
-    );
+      :
+      input;
   }
 
 }
