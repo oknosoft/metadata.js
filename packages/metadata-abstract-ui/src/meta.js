@@ -747,6 +747,15 @@ export default {
                     types: ['boolean']
                   }
                 },
+                area: {
+                  synonym: 'Гр. ИЛИ',
+                  tooltip: 'Позволяет формировать условия ИЛИ',
+                  type: {
+                    types: ['number'],
+                    digits: 6,
+                    fraction: 0
+                  }
+                },
                 left_value: {
                   synonym: 'Левое значение',
                   tooltip: 'Путь к данным',

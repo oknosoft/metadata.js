@@ -11,7 +11,6 @@ import InputBase from '@material-ui/core/InputBase';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 
-
 import '../styles/cascader.css';
 
 class FieldPath extends Component {
