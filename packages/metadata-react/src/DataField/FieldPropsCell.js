@@ -21,22 +21,18 @@ class FieldPropsCell extends Editors.SimpleTextEditor {
     return {[column.key]: rowData[column.key]};
   }
 
-  onBlur = (evt) => {
-    evt.stopPropagation();
-    evt.preventDefault();
-  };
-
   render() {
 
     const {rowData, column, onCommit} = this.props;
+    const {ui: {prevent}, enm}  = $p;
     const subProps = {
       _obj: rowData,
       _fld: column.key,
-      label_position: $p.enm.label_positions.hide,
+      label_position: enm.label_positions.hide,
       handleValueChange: onCommit,
     };
 
-    return <div onBlur={this.onBlur}>
+    return <div onBlur={prevent}>
       <input
         type="text"
         disabled

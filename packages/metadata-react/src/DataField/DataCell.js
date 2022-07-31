@@ -18,7 +18,8 @@ class DataCell extends Editors.SimpleTextEditor {
   }
 
   getValue() {
-    return {[this.props.column.key]: this.state.value};
+    const {props: {column}, state} = this;
+    return {[column.key]: state.value};
   }
 
   handleSelectChange = (value) => {

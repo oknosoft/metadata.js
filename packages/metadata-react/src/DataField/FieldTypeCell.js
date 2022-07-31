@@ -21,7 +21,6 @@ class FieldTypeCell extends Editors.SimpleTextEditor {
       _fld: column.key,
       defaultValue: rowData[column.key],
       label_position: $p.enm.label_positions.hide,
-      popupVisible: true,
       handleValueChange: onCommit,
     };
 

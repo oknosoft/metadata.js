@@ -23,7 +23,7 @@ class FieldPath extends Component {
 
     const {_obj, _fld} = props;
     const value = _obj[_fld];
-    const defaultValue = value.split('.');
+    const defaultValue = typeof value === 'string' ? value.split('.') : [];
     let inputValue = '';
     if(defaultValue.length) {
       let curr;
@@ -111,19 +111,15 @@ class FieldPath extends Component {
     !init && this.setState({options: [...this.state.options]});
   };
 
-  prevent(e) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-
   render() {
-    const {_obj, _fld, popupVisible} = this.props;
+    const {_obj, _fld} = this.props;
     const {inputValue, defaultValue, options, value, open} = this.state;
+    const {prevent} = $p.ui;
     const input = <InputBase
       readOnly={open}
       value={open ? inputValue : value}
       placeholder="Путь к данным"
-      onBlur={this.prevent}
+      onBlur={prevent}
       onChange={({target}) => {
         const {value} = target;
         _obj[_fld] = value;
@@ -144,12 +140,11 @@ class FieldPath extends Component {
     />;
     return open ? <Cascader
         expandTrigger="hover"
-        popupVisible={popupVisible}
         options={options}
         defaultValue={defaultValue}
         onChange={this.onChange}
-        onKeyDown={this.prevent}
-        onKeyPress={this.prevent}
+        onKeyDown={prevent}
+        onKeyPress={prevent}
         loadData={this.loadData}
         changeOnSelect
         open

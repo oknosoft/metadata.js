@@ -10,13 +10,14 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import DataCell from 'metadata-react/DataField/DataCell';
+import DataCellTyped from "./DataField/DataCellTyped";
 import TypeFieldCell from 'metadata-react/DataField/FieldTypeCell';
 import PathFieldCell from 'metadata-react/DataField/FieldPathCell';
 import PropsFieldCell from 'metadata-react/DataField/FieldPropsCell';
 import dialogs from 'metadata-react/App/dialogs';
 import {Editors, Formatters} from 'react-data-grid-addons';
 import DataGrid from 'react-data-grid';
-import {withStyles} from '@material-ui/styles';
+import {withStyles, makeStyles} from '@material-ui/styles';
 import * as muiCore from '@material-ui/core';
 import classnames from 'classnames';
 import SchemeSettingsObj from './SchemeSettings/SchemeSettingsLazyObj';
@@ -152,7 +153,7 @@ function rx_columns({utils: {moment}, enm, md}) {
   return function columns({mode, fields, _obj, _mgr, read_only}) {
 
     const res = this.columns(mode);
-    const {input, text, label, link, cascader, toggle, image, type, path, props} = enm.data_field_kinds;
+    const {input, text, label, link, cascader, toggle, image, type, path, props, typed_field} = enm.data_field_kinds;
     if(!_mgr && _obj) {
       _mgr = _obj._manager;
     }
@@ -240,6 +241,13 @@ function rx_columns({utils: {moment}, enm, md}) {
             column.editor = PropsFieldCell;
           }
           column.formatter = props_formatter;
+          break;
+
+        case typed_field:
+          if(editable){
+            column.editor = DataCellTyped;
+          }
+          column.formatter = presentation_formatter;
           break;
 
         default:
@@ -369,7 +377,21 @@ export default {
 
     // публичные методы ui
     Object.defineProperty(this, 'ui', {
-      value: {dialogs, React, ReactDOM, withStyles, ...muiCore, classnames}
+      value: {
+        dialogs,
+        React,
+        ReactDOM,
+        withStyles,
+        makeStyles,
+        ...muiCore,
+        classnames,
+        prevent(evt) {
+          try {evt.preventDefault();}
+          catch(e) {}
+          try {evt.stopPropagation();}
+          catch(e) {}
+        },
+      }
     });
 
     // форма по умолчанию для scheme_settings
