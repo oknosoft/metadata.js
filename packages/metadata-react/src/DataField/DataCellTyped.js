@@ -10,10 +10,11 @@ class DataCellTyped extends DataCell {
     const type = rowData[`${column.key}_type`];
     const mgr = $p.md.mgr_by_class_name(type);
     if(mgr) {
-      this.state._meta.type = {
-        is_ref: true,
-        types: [type],
-      };
+      const {_meta} = this.state;
+      this.state._meta = Object.assign({}, _meta, {type: {
+          is_ref: true,
+          types: [type],
+        }});
     }
   }
 
