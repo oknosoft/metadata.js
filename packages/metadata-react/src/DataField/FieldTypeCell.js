@@ -22,6 +22,8 @@ class FieldTypeCell extends Editors.SimpleTextEditor {
       defaultValue: rowData[column.key],
       label_position: $p.enm.label_positions.hide,
       handleValueChange: onCommit,
+      fullWidth: true,
+      isTabular: true,
     };
 
     return <TypeField {...subProps} />;

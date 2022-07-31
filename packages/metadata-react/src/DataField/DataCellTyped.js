@@ -6,21 +6,35 @@ class DataCellTyped extends DataCell {
 
   constructor(props, context) {
     super(props, context);
+
     const {rowData, column} = props;
-    const type = rowData[`${column.key}_type`];
-    const mgr = $p.md.mgr_by_class_name(type);
+    const {type_str} = this;
+    const mgr = type_str && $p.md.mgr_by_class_name(type_str);
+
     if(mgr) {
       const {_meta} = this.state;
       this.state._meta = Object.assign({}, _meta, {type: {
           is_ref: true,
-          types: [type],
+          types: [type_str],
         }});
+      this.proxyData = {
+        get [column.key]() {
+          return mgr.get(rowData[column.key]);
+        },
+        set [column.key](v) {
+          rowData[column.key] = v;
+        }
+      }
     }
   }
 
-  is_path() {
+  get type_str() {
     const {rowData, column} = this.props;
-    return rowData[`${column.key}_type`] === 'path';
+    return rowData[`${column.key}_type`];
+  }
+
+  is_path() {
+    return this.type_str === 'path';
   }
 
   getValue() {
@@ -37,6 +51,8 @@ class DataCellTyped extends DataCell {
         defaultValue: rowData[column.key],
         label_position: $p.enm.label_positions.hide,
         handleValueChange: onCommit,
+        fullWidth: true,
+        isTabular: true,
       };
       return <PathField {...subProps} />;
     }

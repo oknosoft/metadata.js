@@ -30,6 +30,8 @@ class FieldPropsCell extends Editors.SimpleTextEditor {
       _fld: column.key,
       label_position: enm.label_positions.hide,
       handleValueChange: onCommit,
+      fullWidth: true,
+      isTabular: true,
     };
 
     return <div onBlur={prevent}>

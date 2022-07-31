@@ -95,10 +95,14 @@ class FieldAutocomplete extends AbstractField {
 
   loadMoreRows = (search = '', startIndex = 0, stopIndex = 100) => {
     const {props: {_obj, _fld}, state: {value}, _meta} = this;
-    if(!value) {
+    let _manager = value?._manager;
+    if(!_manager && _meta.type.is_ref && _meta.type.types.length === 1) {
+      _manager = $p.md.mgr_by_class_name(_meta.type.types[0]);
+    }
+    if(!_manager) {
       return;
     }
-    const {_manager} = value;
+
     const select = _manager.get_search_selector({_obj, _fld, _meta, search, top: stopIndex, skip: startIndex, source_mode: 'ram'});
     if(_manager.metadata().main_presentation_name) {
       select._sort = [{field: 'name', direction: 'asc'}];

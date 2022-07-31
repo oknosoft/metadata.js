@@ -112,13 +112,14 @@ class FieldPath extends Component {
   };
 
   render() {
-    const {_obj, _fld} = this.props;
+    const {_obj, _fld, fullWidth} = this.props;
     const {inputValue, defaultValue, options, value, open} = this.state;
     const {prevent} = $p.ui;
     const input = <InputBase
       readOnly={open}
       value={open ? inputValue : value}
       placeholder="Путь к данным"
+      fullWidth={fullWidth}
       onBlur={prevent}
       onChange={({target}) => {
         const {value} = target;

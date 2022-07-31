@@ -32,7 +32,7 @@ class DataCell extends Editors.SimpleTextEditor {
 
   render() {
 
-    const _obj = this.props.rowData;
+    const _obj = this.proxyData || this.props.rowData;
     if(!_obj) {
       return <input ref={this.nodeRef} />;
     }
@@ -41,12 +41,13 @@ class DataCell extends Editors.SimpleTextEditor {
     const subProps = {
       _obj,
       _fld,
-      _val: _obj[_fld],
       _meta: this.state._meta,
       cell: this,
       ref: this.nodeRef,
       label_position: $p.enm.label_positions.hide,
       handleValueChange: this.handleSelectChange,
+      fullWidth: true,
+      isTabular: true,
     };
 
     return <DataField {...subProps} />;
