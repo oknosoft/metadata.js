@@ -13,6 +13,75 @@ export default {
 
     const {Meta} = constructor.classes;
 
+    const scheme_settings_selection_fields = {
+      parent: {
+        synonym: 'Родитель',
+        tooltip: '',
+        type: {
+          types: ['string'],
+          str_len: 100
+        }
+      },
+      use: {
+        synonym: 'Использование',
+        tooltip: '',
+        type: {
+          types: ['boolean']
+        }
+      },
+      area: {
+        synonym: 'Гр. ИЛИ',
+        tooltip: 'Позволяет формировать условия ИЛИ',
+        type: {
+          types: ['number'],
+          digits: 6,
+          fraction: 0
+        }
+      },
+      left_value: {
+        synonym: 'Левое значение',
+        tooltip: 'Путь к данным',
+        type: {
+          types: ['string'],
+          str_len: 1024
+        }
+      },
+      left_value_type: {
+        synonym: 'Тип слева',
+        tooltip: 'Тип значения слева',
+        default: 'path',
+        type: {
+          types: ['string'],
+          str_len: 100
+        }
+      },
+      comparison_type: {
+        synonym: 'Вид сравнения',
+        tooltip: '',
+        type: {
+          types: ['enm.comparison_types'],
+          is_ref: true
+        }
+      },
+      right_value: {
+        synonym: 'Правое значение',
+        tooltip: 'Значение или путь',
+        type: {
+          types: ['string'],
+          str_len: 1024
+        }
+      },
+      right_value_type: {
+        synonym: 'Тип справа',
+        tooltip: 'Тип значения справа',
+        default: 'path',
+        type: {
+          types: ['string'],
+          str_len: 100
+        }
+      },
+    };
+
     // метаданные абстрактных интерфейсов
     Meta._sys.push({
       enm: {
@@ -731,74 +800,7 @@ export default {
               name: 'selection',
               synonym: 'Отбор',
               tooltip: '',
-              fields: {
-                parent: {
-                  synonym: 'Родитель',
-                  tooltip: '',
-                  type: {
-                    types: ['string'],
-                    str_len: 100
-                  }
-                },
-                use: {
-                  synonym: 'Использование',
-                  tooltip: '',
-                  type: {
-                    types: ['boolean']
-                  }
-                },
-                area: {
-                  synonym: 'Гр. ИЛИ',
-                  tooltip: 'Позволяет формировать условия ИЛИ',
-                  type: {
-                    types: ['number'],
-                    digits: 6,
-                    fraction: 0
-                  }
-                },
-                left_value: {
-                  synonym: 'Левое значение',
-                  tooltip: 'Путь к данным',
-                  type: {
-                    types: ['string'],
-                    str_len: 255
-                  }
-                },
-                left_value_type: {
-                  synonym: 'Тип слева',
-                  tooltip: 'Тип значения слева',
-                  default: 'path',
-                  type: {
-                    types: ['string'],
-                    str_len: 100
-                  }
-                },
-                comparison_type: {
-                  synonym: 'Вид сравнения',
-                  tooltip: '',
-                  type: {
-                    types: ['enm.comparison_types'],
-                    is_ref: true
-                  }
-                },
-                right_value: {
-                  synonym: 'Правое значение',
-                  tooltip: '',
-                  type: {
-                    types: ['string'],
-                    str_len: 100
-                  }
-                },
-                right_value_type: {
-                  synonym: 'Тип справа',
-                  tooltip: 'Тип значения справа',
-                  default: 'path',
-                  type: {
-                    types: ['string'],
-                    str_len: 100
-                  }
-                },
-              }
+              fields: scheme_settings_selection_fields,
             },
             params: {
               name: 'params',
@@ -897,64 +899,7 @@ export default {
               name: 'conditional_appearance',
               synonym: 'Условное оформление',
               tooltip: '',
-              fields: {
-                parent: {
-                  synonym: 'Родитель',
-                  tooltip: '',
-                  type: {
-                    types: ['string'],
-                    str_len: 100
-                  }
-                },
-                use: {
-                  synonym: 'Использование',
-                  tooltip: '',
-                  type: {
-                    types: ['boolean']
-                  }
-                },
-                left_value: {
-                  synonym: 'Левое значение',
-                  tooltip: 'Путь к данным',
-                  type: {
-                    types: ['string'],
-                    str_len: 255
-                  }
-                },
-                left_value_type: {
-                  synonym: 'Тип слева',
-                  tooltip: 'Тип значения слева',
-                  default: 'path',
-                  type: {
-                    types: ['string'],
-                    str_len: 100
-                  }
-                },
-                comparison_type: {
-                  synonym: 'Вид сравнения',
-                  tooltip: '',
-                  type: {
-                    types: ['enm.comparison_types'],
-                    is_ref: true
-                  }
-                },
-                right_value: {
-                  synonym: 'Правое значение',
-                  tooltip: '',
-                  type: {
-                    types: ['string'],
-                    str_len: 100
-                  }
-                },
-                right_value_type: {
-                  synonym: 'Тип справа',
-                  tooltip: 'Тип значения справа',
-                  default: 'path',
-                  type: {
-                    types: ['string'],
-                    str_len: 100
-                  }
-                },
+              fields: Object.assign({}, scheme_settings_selection_fields, {
                 columns: {
                   synonym: 'Колонки',
                   tooltip: 'Список колонок через запятую, к которым будет применено оформление (по умолчанию - ко всей строке)',
@@ -971,7 +916,7 @@ export default {
                     str_len: 0
                   }
                 },
-              }
+              }),
             }
           },
           cachable: 'ram'

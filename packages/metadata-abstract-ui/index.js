@@ -1206,6 +1206,8 @@ function scheme_settings() {
     set parent(v) {this._setter('parent', v);}
     get use() {return this._getter('use');}
     set use(v) {this._setter('use', v);}
+    get area() {return this._getter('area');}
+    set area(v) {this._setter('area', v);}
     get left_value() {return this._getter('left_value');}
     set left_value(v) {this._setter('left_value', v);}
     get left_value_type() {return this._getter('left_value_type');}
@@ -1240,7 +1242,9 @@ function scheme_settings() {
       else if(right_value_type && right_value_type !== 'string'){
         const mgr = md.mgr_by_class_name(right_value_type);
         if([ct.in, ct.inh, ct.nin, ct.ninh].includes(comparison_type)) {
-          right_value = right_value.split(',').map((ref) => mgr ? mgr.get(ref) : utils.fetch_type(ref, {types: [right_value_type]}));
+          right_value = right_value
+            .split(',')
+            .map((ref) => mgr ? mgr.get(ref) : utils.fetch_type(ref, {types: [right_value_type]}));
         }
         else {
           right_value = mgr ? mgr.get(right_value) : utils.fetch_type(right_value, {types: [right_value_type]});
