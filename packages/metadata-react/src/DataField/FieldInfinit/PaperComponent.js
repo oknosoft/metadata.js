@@ -21,14 +21,6 @@ import ClearIcon from '@material-ui/icons/Clear';
 
 import {withStyles} from '@material-ui/styles';
 
-export function prevent(evt) {
-  evt.stopPropagation();
-  try {
-    evt.preventDefault();
-  }
-  catch(e) {}
-}
-
 const styles = theme => ({
   flex: {
     flex: 1,
@@ -89,7 +81,8 @@ class PaperComponent extends React.Component {
     const {props: {_obj, _fld}, _meta} = owner;
     const value = _obj[_fld];
     const {_manager} = value || {};
-    const is_enm = $p.utils.is_enm_mgr(_manager);
+    const {ui: {prevent}, utils} = $p;
+    const is_enm = utils.is_enm_mgr(_manager);
     const footer = !is_enm || _meta.type.types.length > 1;
     const iconDisabled= !value || value.empty();
 

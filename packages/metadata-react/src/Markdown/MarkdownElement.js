@@ -93,8 +93,7 @@ export function MarkdownElement(props) {
     if(evt.target.tagName === 'A') {
       const url = new URL(evt.target.href);
       if(url.origin === location.origin) {
-        evt.preventDefault();
-        evt.stopPropagation();
+        $p.ui.prevent(evt);
         handleNavigate(url.pathname);
       }
       else if(!evt.target.target) {

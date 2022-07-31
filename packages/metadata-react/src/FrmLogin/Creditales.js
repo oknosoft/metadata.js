@@ -18,9 +18,10 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import withStyles, {extClasses} from '../DataField/stylesPropertyGrid';
 
 function Creditales(
-  {login, password, showPassword, handleClickShowPasssword, handleMouseDownPassword, handleLogin, loginChange, passwordChange, classes}) {
+  {login, password, showPassword, handleClickShowPasssword, handleLogin, loginChange, passwordChange, classes}) {
 
   const ext = extClasses(classes);
+  const {prevent} = $p.ui;
 
   return (
     <>
@@ -46,7 +47,7 @@ function Creditales(
             <InputAdornment position="end">
               <IconButton
                 onClick={handleClickShowPasssword}
-                onMouseDown={handleMouseDownPassword}
+                onMouseDown={prevent}
               >
                 {showPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>

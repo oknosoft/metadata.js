@@ -20,7 +20,7 @@ import cn from 'classnames';
 import InputReadOnly from './InputReadOnly';
 import InputEditable from './InputEditable';
 import OuterDialog from './OuterDialog';
-import PaperComponent, {prevent} from './PaperComponent';
+import PaperComponent from './PaperComponent';
 import AbstractField, {suggestionText} from '../AbstractField';
 import withStyles from '../styles';
 import ReactCalendar from 'rc-calendar';
@@ -125,7 +125,7 @@ class FieldAutocomplete extends AbstractField {
   onKeyDown = (evt) => {
     const {key} = evt;
     if(break_keys.all.includes(key) || (this.state.open && this.isTabular && break_keys.open.includes(key))) {
-      prevent(evt);
+      $p.ui.prevent(evt);
     }
     else if(key === 'F4') {
       if(evt.ctrlKey && evt.shiftKey) {
@@ -136,7 +136,7 @@ class FieldAutocomplete extends AbstractField {
       }
     }
     else if(key === 'F2') {
-      prevent(evt);
+      $p.ui.prevent(evt);
       this.setState({open: !this.state.open});
     }
   };
@@ -176,13 +176,13 @@ class FieldAutocomplete extends AbstractField {
   handleOpenList = (evt) => {
     const {_obj, _fld, tree} = this.props;
     this.setState({dialogOpened: tree ? 'tree' : 'list', open: false});
-    prevent(evt);
+    $p.ui.prevent(evt);
   };
 
   handleOpenObj = (evt) => {
     const {_obj, _fld} = this.props;
     this.setState({dialogOpened: 'obj', open: false});
-    prevent(evt);
+    $p.ui.prevent(evt);
   };
 
   handleCloseDialog = () => {

@@ -49,8 +49,7 @@ class CalculatorInput extends PureComponent {
    */
   handleKeyPress(event) {
     if (event.key === '=' || event.key === 'Enter') {
-      event.preventDefault();
-      event.stopPropagation();
+      $p.ui.prevent(event);
 
       if (this.props.onEqualSignPres !== null) {
         this.props.onEqualSignPres();
@@ -64,8 +63,7 @@ class CalculatorInput extends PureComponent {
     }
 
     if (event.key.match(/[\d\.]/) === null) {
-      event.preventDefault();
-      event.stopPropagation();
+      $p.ui.prevent(event);
 
       if (['+', '-', '/', '*'].indexOf(event.key) !== -1) {
         if (this.props.onOperationKeyPress !== null) {
@@ -81,8 +79,7 @@ class CalculatorInput extends PureComponent {
 
     } else {
       if (event.key.match(/[\d\.]/) !== null && this.props.clearInputRequired === true) {
-        event.preventDefault();
-        event.stopPropagation();
+        $p.ui.prevent(event);
         this.props.onChange(event.key);
 
         if (this.props.onInputCleared !== null) {
@@ -94,8 +91,7 @@ class CalculatorInput extends PureComponent {
 
   handleKeyDown(event) {
     if (event.key === 'Backspace') {
-      event.preventDefault();
-      event.stopPropagation();
+      $p.ui.prevent(event);
 
       if (this.props.onRemoveKeyPress !== null) {
         this.props.onRemoveKeyPress();

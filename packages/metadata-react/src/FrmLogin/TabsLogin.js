@@ -61,10 +61,6 @@ export class TabsLogin extends Component {
     return true;
   }
 
-  handleMouseDownPassword(event) {
-    event.preventDefault();
-  }
-
   handleClickShowPasssword = () => {
     this.setState({ showPassword: !this.state.showPassword });
   };
@@ -109,7 +105,6 @@ export class TabsLogin extends Component {
           password={state.password}
           showPassword={state.showPassword}
           handleClickShowPasssword={this.handleClickShowPasssword}
-          handleMouseDownPassword={this.handleMouseDownPassword}
           handleLogin={this.handleLogin}
           loginChange={event => this.setState({login: event.target.value})}
           passwordChange={event => this.setState({password: event.target.value})}

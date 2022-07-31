@@ -50,10 +50,6 @@ export class FrmLogin extends React.Component {
     };
   }
 
-  handleMouseDownPassword(event) {
-    event.preventDefault();
-  }
-
   handleClickShowPasssword = () => {
     this.setState({showPassword: !this.state.showPassword});
   };
@@ -153,7 +149,6 @@ export class FrmLogin extends React.Component {
           password={password}
           showPassword={showPassword}
           handleClickShowPasssword={this.handleClickShowPasssword}
-          handleMouseDownPassword={this.handleMouseDownPassword}
           handleLogin={this.handleLogin}
           loginChange={this.handleLoginChange}
           passwordChange={this.handlePasswordChange}
