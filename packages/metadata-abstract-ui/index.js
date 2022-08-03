@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.30-beta.7, built:2022-07-31
+ metadata-abstract-ui v2.0.30-beta.7, built:2022-08-03
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -288,6 +288,14 @@ function scheme_settings() {
   const {wsql, utils, cat, enm, dp, md, constructor} = this;
   const {CatManager, DataProcessorsManager, DataProcessorObj, CatObj, DocManager, TabularSectionRow} = constructor.classes || this;
   class SchemeSettingsManager extends CatManager {
+    tune_meta() {
+      const root = this._owner.formulas.predefined('components');
+      if(root && !root.empty()) {
+        const {fields} = this.metadata('fields');
+        fields.formatter.choice_params[0].path.push(root);
+        fields.editor.choice_params[0].path.push(root);
+      }
+    }
     find_schemas(class_name) {
       return Promise.resolve(
         this.find_rows({obj: class_name})
@@ -1076,7 +1084,7 @@ function scheme_settings() {
         res = [];
       this.fields.find_rows({use: true}, (row) => {
         const fld_meta = _meta.fields[row.field] || _mgr.metadata(row.field);
-        res.push(new GridColumn(mode === 'ts' || mode === 'tabular' ?
+        const column = new GridColumn(mode === 'ts' || mode === 'tabular' ?
           {
             key: row.field,
             name: row.caption,
@@ -1093,7 +1101,14 @@ function scheme_settings() {
             type: fld_meta?.type || CatScheme_settings.cast_type(_meta.fields, row.field),
             ctrl_type: row.ctrl_type,
             width: row.width == '*' ? 250 : row.width,
-          }));
+          });
+        if(!row.formatter.empty()) {
+          column.formatter = row.formatter.execute();
+        }
+        if(!row.editor.empty()) {
+          column.editor = row.editor.execute();
+        }
+        res.push(column);
       });
       return res;
     }

@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.30-beta.7, built:2022-07-31
+ metadata-abstract-ui v2.0.30-beta.7, built:2022-08-03
  © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -92,7 +92,11 @@ var meta = {
             order: 1,
             name: 'desc',
             synonym: 'По убыванию'
-          }
+          },
+          {
+            tag: 'Направление сортировки',
+            description: 'Для компоновки',
+          },
         ],
         comparison_types: [
           {
@@ -165,7 +169,11 @@ var meta = {
             order: 13,
             name: 'nfilled',
             synonym: 'Не заполнено'
-          }
+          },
+          {
+            tag: 'Виды сравнений',
+            description: 'Системное перечисление',
+          },
         ],
         label_positions: [
           {
@@ -198,6 +206,10 @@ var meta = {
             order: 5,
             name: 'bottom',
             synonym: 'Низ'
+          },
+          {
+            tag: 'Положение заголовка элемеента управления',
+            description: 'Системное перечисление',
           },
         ],
         data_field_kinds: [
@@ -266,6 +278,10 @@ var meta = {
             order: 12,
             name: 'star',
             synonym: 'Пометка'
+          },
+          {
+            tag: 'Типы полей ввода данных',
+            description: 'Системное перечисление',
           },
         ],
         standard_period: [
@@ -465,6 +481,10 @@ var meta = {
             name: 'thisMonth',
             synonym: 'Этот месяц'
           },
+          {
+            tag: 'Стандартный период',
+            description: 'Для компоновки',
+          },
         ],
         quick_access: [
           {
@@ -482,6 +502,10 @@ var meta = {
             order: 2,
             name: 'drawer',
             synonym: 'Панель формы'
+          },
+          {
+            tag: 'Расположение элемента быстрого доступа',
+            description: 'Для компоновки',
           },
         ],
         report_output: [
@@ -505,6 +529,10 @@ var meta = {
             order: 3,
             name: 'html',
             synonym: 'Документ HTML'
+          },
+          {
+            tag: 'Варианты вывода отчёта',
+            description: 'Для компоновки',
           },
         ],
       },
@@ -673,7 +701,13 @@ var meta = {
                   type: {
                     types: ['cat.formulas'],
                     is_ref: true
-                  }
+                  },
+                  choice_params: [
+                    {
+                      name: 'parent',
+                      path: []
+                    }
+                  ]
                 },
                 editor: {
                   synonym: 'Редактор',
@@ -681,7 +715,13 @@ var meta = {
                   type: {
                     types: ['cat.formulas'],
                     is_ref: true
-                  }
+                  },
+                  choice_params: [
+                    {
+                      name: 'parent',
+                      path: []
+                    }
+                  ]
                 }
               }
             },
@@ -918,7 +958,7 @@ var meta = {
       dp: {
         scheme_settings: {
           name: 'scheme_settings',
-          synonym: 'Варианты настроек',
+          synonym: 'Варианты настроек компоновки',
           fields: {
             scheme: {
               synonym: 'Текущая настройка',

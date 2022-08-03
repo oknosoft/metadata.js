@@ -96,7 +96,11 @@ export default {
             order: 1,
             name: 'desc',
             synonym: 'По убыванию'
-          }
+          },
+          {
+            tag: 'Направление сортировки',
+            description: 'Для компоновки',
+          },
         ],
         comparison_types: [
           {
@@ -169,7 +173,11 @@ export default {
             order: 13,
             name: 'nfilled',
             synonym: 'Не заполнено'
-          }
+          },
+          {
+            tag: 'Виды сравнений',
+            description: 'Системное перечисление',
+          },
         ],
         label_positions: [
           {
@@ -202,6 +210,10 @@ export default {
             order: 5,
             name: 'bottom',
             synonym: 'Низ'
+          },
+          {
+            tag: 'Положение заголовка элемеента управления',
+            description: 'Системное перечисление',
           },
         ],
         data_field_kinds: [
@@ -270,6 +282,10 @@ export default {
             order: 12,
             name: 'star',
             synonym: 'Пометка'
+          },
+          {
+            tag: 'Типы полей ввода данных',
+            description: 'Системное перечисление',
           },
         ],
         standard_period: [
@@ -469,6 +485,10 @@ export default {
             name: 'thisMonth',
             synonym: 'Этот месяц'
           },
+          {
+            tag: 'Стандартный период',
+            description: 'Для компоновки',
+          },
         ],
         quick_access: [
           {
@@ -486,6 +506,10 @@ export default {
             order: 2,
             name: 'drawer',
             synonym: 'Панель формы'
+          },
+          {
+            tag: 'Расположение элемента быстрого доступа',
+            description: 'Для компоновки',
           },
         ],
         report_output: [
@@ -509,6 +533,10 @@ export default {
             order: 3,
             name: 'html',
             synonym: 'Документ HTML'
+          },
+          {
+            tag: 'Варианты вывода отчёта',
+            description: 'Для компоновки',
           },
         ],
       },
@@ -677,7 +705,13 @@ export default {
                   type: {
                     types: ['cat.formulas'],
                     is_ref: true
-                  }
+                  },
+                  choice_params: [
+                    {
+                      name: 'parent',
+                      path: []
+                    }
+                  ]
                 },
                 editor: {
                   synonym: 'Редактор',
@@ -685,7 +719,13 @@ export default {
                   type: {
                     types: ['cat.formulas'],
                     is_ref: true
-                  }
+                  },
+                  choice_params: [
+                    {
+                      name: 'parent',
+                      path: []
+                    }
+                  ]
                 }
 
               }
@@ -925,7 +965,7 @@ export default {
       dp: {
         scheme_settings: {
           name: 'scheme_settings',
-          synonym: 'Варианты настроек',
+          synonym: 'Варианты настроек компоновки',
           fields: {
             scheme: {
               synonym: 'Текущая настройка',

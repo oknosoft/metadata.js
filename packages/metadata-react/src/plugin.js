@@ -251,7 +251,7 @@ function rx_columns({utils: {moment}, enm, md}) {
           break;
 
         default:
-          if(editable){
+          if(!column.editor && editable){
             column.editor = DataCell;
           }
           else if(!column.formatter && !index) {

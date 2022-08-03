@@ -1,4 +1,4 @@
-/**
+/*
  * ### Менеджер настроек отчетов и динсписков
  *
  * @module scheme_settings
@@ -41,15 +41,27 @@ export default function scheme_settings() {
   const {CatManager, DataProcessorsManager, DataProcessorObj, CatObj, DocManager, TabularSectionRow} = constructor.classes || this;
 
   /**
-   * ### Менеджер настроек отчетов и динсписков
+   * Менеджер настроек отчетов и динсписков
    */
   class SchemeSettingsManager extends CatManager {
 
+    /**
+     * Корректирует метаданные
+     */
+    tune_meta() {
+      const root = this._owner.formulas.predefined('components');
+      if(root && !root.empty()) {
+        const {fields} = this.metadata('fields');
+        fields.formatter.choice_params[0].path.push(root);
+        fields.editor.choice_params[0].path.push(root);
+      }
+    }
 
     /**
      * Возвращает промис с подходящими схемами
      * @param class_name
-     * @return {*|{value}|Promise.<Array>}
+     * @async
+     * @return {Array.<CatScheme_settings>}
      */
     find_schemas(class_name) {
       return Promise.resolve(
@@ -79,7 +91,7 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Возвращает объект текущих настроек
+     * Возвращает объект текущих настроек
      * - если не существует ни одной настройки для _class_name_, создаёт элемент справочника _SchemeSettings_
      * - если в localstorage есть настройка для текущего пользователя, возвращает её
      *
@@ -151,7 +163,7 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Имя сохраненных настроек
+     * Имя сохраненных настроек
      * @param class_name
      */
     scheme_name(class_name) {
@@ -161,12 +173,12 @@ export default function scheme_settings() {
   }
 
   /**
-   * ### Менеджер настроек отчетов и динсписков
+   * Менеджер настроек отчетов и динсписков
    */
   class SchemeSelectManager extends DataProcessorsManager {
 
     /**
-     * ### Экземпляр обработки для выбора варианта
+     * Экземпляр обработки для выбора варианта
      * @param scheme
      * @return {_obj, _meta}
      */
@@ -189,10 +201,9 @@ export default function scheme_settings() {
   }
 
   /**
-   * ### Обработка выбора варианта настроек scheme_settings
-   * @class CatScheme_settings
+   * Обработка выбора варианта настроек scheme_settings
+   * @class
    * @extends DataProcessorObj
-   * @constructor
    */
   class DpScheme_settings extends DataProcessorObj {
 
@@ -208,11 +219,10 @@ export default function scheme_settings() {
   this.DpScheme_settings = DpScheme_settings;
 
   /**
-   * ### Справочник scheme_settings
+   * Справочник _scheme_settings_
    * Настройки отчетов и списков
-   * @class CatScheme_settings
+   * @class
    * @extends CatObj
-   * @constructor
    */
   class CatScheme_settings extends CatObj {
 
@@ -550,9 +560,9 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Заполняет настройки по метаданным
+     * Заполняет настройки по метаданным
      *
-     * @param class_name
+     * @param class_name {String}
      */
     fill_default(class_name) {
 
@@ -644,8 +654,8 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Расширенные метаданные по имени класса
-     * @param class_name
+     * Расширенные метаданные по имени класса
+     * @param class_name {String}
      * @return {{parts: (Array|*), _mgr: (DataManager|undefined|*), _meta: Object}}
      */
     child_meta(class_name) {
@@ -685,7 +695,7 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Устанавливает текущую настройку по умолчанию
+     * Устанавливает текущую настройку по умолчанию
      */
     set_default() {
       wsql.set_user_param(this._manager.scheme_name(this.obj), this.ref);
@@ -693,7 +703,7 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Формирует манго селектор
+     * Формирует манго селектор
      */
     mango_selector({columns, skip, limit, _owner}) {
 
@@ -767,7 +777,7 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Дополняет селектор по отбору
+     * Дополняет селектор по отбору
      * @param selector
      */
     append_selection(selector) {
@@ -809,7 +819,7 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Фильтрует внешнюю табчасть
+     * Фильтрует внешнюю табчасть
      * @param collection {TabularSection}
      * @param parent
      * @param self
@@ -852,7 +862,7 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Выполняет группировку записей внешней табчасти
+     * Выполняет группировку записей внешней табчасти
      * помещяет результат в collection._rows
      * @param collection {TabularSection}
      */
@@ -1067,7 +1077,7 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Возвращает массив колонок для динсписка или табчасти
+     * Возвращает массив колонок для динсписка или табчасти
      * @param mode {String} - режим формирования колонок
      * @return {Array}
      */
@@ -1081,8 +1091,7 @@ export default function scheme_settings() {
       this.fields.find_rows({use: true}, (row) => {
 
         const fld_meta = _meta.fields[row.field] || _mgr.metadata(row.field);
-
-        res.push(new GridColumn(mode === 'ts' || mode === 'tabular' ?
+        const column = new GridColumn(mode === 'ts' || mode === 'tabular' ?
           {
             key: row.field,
             name: row.caption,
@@ -1099,13 +1108,21 @@ export default function scheme_settings() {
             type: fld_meta?.type || CatScheme_settings.cast_type(_meta.fields, row.field),
             ctrl_type: row.ctrl_type,
             width: row.width == '*' ? 250 : row.width,
-          }));
+          });
+        if(!row.formatter.empty()) {
+          column.formatter = row.formatter.execute();
+        }
+        if(!row.editor.empty()) {
+          column.editor = row.editor.execute();
+        }
+
+        res.push(column);
       });
       return res;
     }
 
     /**
-     * ### Фильтрует табчасть компоновки
+     * Фильтрует табчасть компоновки
      * не путать с фильтром внешних данных
      * @param collection
      * @param parent
@@ -1118,7 +1135,7 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Возвращает массив измерений группировки
+     * Возвращает массив измерений группировки
      * @param [parent] - родитель, для многоуровневой группировки
      * @return {Array}
      */
@@ -1133,7 +1150,7 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Возвращает массив имён используемых колонок
+     * Возвращает массив имён используемых колонок
      * @param [parent] - родитель, для многоуровневой группировки
      * @return {Array}
      */
@@ -1142,7 +1159,7 @@ export default function scheme_settings() {
     }
 
     /**
-     * ### Возвращает массив элементов для поля выбора
+     * Возвращает массив элементов для поля выбора
      * @return {Array}
      */
     used_fields_list() {
