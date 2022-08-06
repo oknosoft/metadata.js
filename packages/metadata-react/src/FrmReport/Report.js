@@ -13,7 +13,7 @@ export class Report extends MDNRComponent {
   constructor(props, context) {
 
     super(props, context);
-    const {_mgr, _meta, _obj} = props;
+    const {_mgr, _meta, _obj, scheme} = props;
     const _tabular = props._tabular || _mgr._tabular || 'data';
 
     this.state = {
@@ -23,7 +23,7 @@ export class Report extends MDNRComponent {
       settings_open: false,
     };
 
-    (props.scheme ? Promise.resolve(props.scheme) : $p.cat.scheme_settings.get_scheme(_mgr.class_name + `.${_tabular}`))
+    (scheme ? Promise.resolve(scheme) : $p.cat.scheme_settings.get_scheme(_mgr.class_name + `.${_tabular}`))
       .then(this.handleSchemeChange)
       .then(() => {
         if(props.autoexec) {
@@ -70,7 +70,8 @@ export class Report extends MDNRComponent {
   // обработчик при изменении настроек компоновки
   handleSchemeChange = (scheme) => {
 
-    const {props, state: {_obj, _meta}} = this;
+    const {props, state} = this;
+    const {_obj, _meta} = state;
     const {handleSchemeChange, handleColumns, read_only} = props;
     const _columns = scheme.rx_columns({
       mode: 'ts',
@@ -78,14 +79,14 @@ export class Report extends MDNRComponent {
       _obj,
       read_only,
     });
-    handleColumns && handleColumns(_columns);
 
-    // в этом методе
-    handleSchemeChange && handleSchemeChange(this, scheme);
-
-    // обновляем state, shouldComponentUpdate берём из MDNRComponent
-    this.setState({scheme, _columns}, () => this.shouldComponentUpdate(props));
-
+    if(!$p.utils.equals(_columns, this.state._columns) || state.scheme !== scheme) {
+      handleColumns && handleColumns(_columns);
+      // если задан, выполняем внешний обработчик при смене схемы
+      handleSchemeChange && handleSchemeChange(this, scheme);
+      // обновляем state, shouldComponentUpdate берём из MDNRComponent
+      this.setState({scheme, _columns}, () => this.shouldComponentUpdate(props));
+    }
   };
 
   get ltitle() {
