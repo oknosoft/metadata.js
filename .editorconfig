@@ -23,7 +23,7 @@ charset = utf-8
 
 # Denotes whether to trim whitespace at the end of lines
 # Possible values - true, false
-trim_trailing_whitespace = true
+trim_trailing_whitespace = false
 
 # Denotes whether file should end with a newline
 # Possible values - true, false

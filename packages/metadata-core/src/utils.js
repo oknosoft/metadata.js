@@ -573,9 +573,8 @@ const utils = {
   },
 
 	/**
-	 * ### Сравнивает на равенство ссылочные типы и примитивные значения
+	 * Сравнивает на равенство ссылочные типы и примитивные значения
 	 *
-	 * @method is_equal
 	 * @param v1 {DataObj|String}
 	 * @param v2 {DataObj|String}
 	 * @return {boolean} - true, если значенния эквивалентны
@@ -596,6 +595,23 @@ const utils = {
     }
 		return (this.fix_guid(v1, false) == this.fix_guid(v2, false));
 	},
+
+  /**
+   * Сравнивает на равенство массивы и простые объекты
+   *
+   * @param [v1] {Object|Array}
+   * @param [v2] {Object|Array}
+   * @return {boolean} - true, если значенния эквивалентны
+   */
+  equals(v1, v2) {
+    if(Array.isArray(v1) && Array.isArray(v2)) {
+      return v1.length === v2.length && v1.every((elm1, index) => this.equals(elm1, v2[index]));
+    }
+    if(typeof v1 !== 'object' || typeof v2 !== 'object') {
+      return false;
+    }
+    return Object.keys(v1).every((key) => v1[key] === v2[key]);
+  },
 
   /**
    * Заменяет в ссылке минусы '_' и добавляет '_' в начало
