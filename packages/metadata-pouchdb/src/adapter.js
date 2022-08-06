@@ -1,7 +1,7 @@
 /**
  * Содержит методы и подписки на события PouchDB
  *
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2019
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2022
  * @module common
  * @submodule pouchdb
  */

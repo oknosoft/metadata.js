@@ -1,6 +1,6 @@
 /*!
- metadata-core v2.0.30-beta.7, built:2022-08-06
- © 2014-2019 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ metadata-core v2.0.30-beta.8, built:2022-08-06
+ © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */
@@ -1524,6 +1524,9 @@ class EnumObj extends DataObj {
   }
   empty() {
     return !this.ref || this.ref == '_';
+  }
+  is(name) {
+    return this._manager[name] === this;
   }
 }
 class RegisterRow extends DataObj {
@@ -5018,7 +5021,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.30-beta.7";
+    return "2.0.30-beta.8";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

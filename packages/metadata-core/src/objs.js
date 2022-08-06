@@ -1557,6 +1557,17 @@ export class EnumObj extends DataObj {
   empty() {
     return !this.ref || this.ref == '_';
   }
+
+  /**
+   * Проверяет на равенство по имени  
+   * т.к. знаяения перечислений могут иметь синонимы,
+   * метод `is()` - эффективнее прямого сравнения со строкой имени значения перечисления
+   * @param name {String}
+   * @return {Boolean}
+   */
+  is(name) {
+    return this._manager[name] === this;
+  }
 }
 
 
