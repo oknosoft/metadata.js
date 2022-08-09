@@ -6,6 +6,13 @@ import Dialog from './Dialog';
 import MarkdownElement from '../Markdown/MarkdownElementLight';
 
 export default function Alert({text, title, html, markdown, Component, props, handleOk, open, initFullScreen, hide_btn, ...other}) {
+  if(typeof text === 'string' && text.includes('<br')) {
+    text = text
+      .replace('<br/>', '\n')
+      .replace('<br />', '\n')
+      .split('\n')
+      .map((t, i) => <p key={`t-${i}`}>{t}</p>);
+  }
   return <Dialog
     open={open}
     initFullScreen={initFullScreen}
