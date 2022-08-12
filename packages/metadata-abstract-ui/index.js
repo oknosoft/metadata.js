@@ -952,15 +952,15 @@ function scheme_settings() {
           dims.indexOf(key) == -1 && dims.push(key);
         }
       });
+      const dflds = dims.filter(v => v);
+      const rflds = dflds.filter(v => v.includes('.')).map(v => v.split('.'));
       if(grouping.length) {
-        const dflds = dims.filter(v => v);
         const reduce = function(row, memo) {
           for(const resource of ress){
             memo[resource] = (memo[resource] || 0) + row[resource];
           }
           return memo;
         };
-        const rflds = dflds.filter(v => v.includes('.')).map(v => v.split('.'));
         const rows = rflds.length ?  collection._obj.map(v => {
           const res = Object.assign(v);
           for(const [...flds] of rflds) {
@@ -1055,9 +1055,16 @@ function scheme_settings() {
       }
       else {
         collection.group_by(dims, ress);
-        collection.forEach((row) => {
+        for(const row of collection) {
+          for(const [...flds] of rflds) {
+            let tmp = row[flds[0]];
+            for(let i = 1; i<flds.length; i++) {
+              tmp = tmp[flds[i]];
+            }
+            row[flds.join('.')] = tmp;
+          }
           collection._rows.push(row);
-        });
+        }
         collection._rows._count = collection._rows.length;
       }
     }

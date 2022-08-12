@@ -896,10 +896,12 @@ export default function scheme_settings() {
 
       // TODO сейчас группировка по набору полей не поддержана - группируем ступенькой по всем измерениям. нужная математика в DataFrame уже есть
 
+      // поля группировки без пустых имён (без сводных итогов)
+      const dflds = dims.filter(v => v);
+      // поля к разыменованию через точку
+      const rflds = dflds.filter(v => v.includes('.')).map(v => v.split('.'));
+      
       if(grouping.length) {
-
-        // поля группировки без пустых имён (без сводных итогов)
-        const dflds = dims.filter(v => v);
 
         // TODO: скомпилировать и подклеить агрегаты из схемы
         const reduce = function(row, memo) {
@@ -910,7 +912,6 @@ export default function scheme_settings() {
         };
 
         // если в измерениях есть точка - разыменовываем
-        const rflds = dflds.filter(v => v.includes('.')).map(v => v.split('.'));
         const rows = rflds.length ?  collection._obj.map(v => {
           const res = Object.assign(v);
           for(const [...flds] of rflds) {
@@ -1045,9 +1046,17 @@ export default function scheme_settings() {
       else {
         // или заполняем без группировки
         collection.group_by(dims, ress);
-        collection.forEach((row) => {
+        for(const row of collection) {
+          // если в измерениях есть точка - разыменовываем
+          for(const [...flds] of rflds) {
+            let tmp = row[flds[0]];
+            for(let i = 1; i<flds.length; i++) {
+              tmp = tmp[flds[i]];
+            }
+            row[flds.join('.')] = tmp;
+          }
           collection._rows.push(row);
-        });
+        }
         collection._rows._count = collection._rows.length;
       }
 
