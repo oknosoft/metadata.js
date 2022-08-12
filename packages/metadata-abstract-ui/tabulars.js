@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.30-beta.8, built:2022-08-06
+ metadata-abstract-ui v2.0.30-beta.8, built:2022-08-12
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -46,36 +46,39 @@ function tabulars(constructor) {
       if(!columns.length) {
         columns = Object.keys(this._owner._metadata(this._name).fields);
       }
+      columns = columns.map(col => col.key ? col : {key: col, name: col});
       const data = [];
       const {utils, wsql} = this._owner._manager._owner.$p;
       const len = columns.length - 1;
       let text;
       this.forEach((row) => {
         const rdata = {};
-        columns.forEach((col) => {
-          if(utils.is_data_obj(row[col])) {
+        columns.forEach(({key, name, formatter}) => {
+          const val = formatter ? formatter({value: row[key], raw: true}) : row[key];
+          const col = format === 'xls' ? name : key;
+          if(utils.is_data_obj(val)) {
             if(format == 'json') {
-              rdata[col] = {
-                ref: row[col].ref,
-                type: row[col]._manager.class_name,
-                presentation: row[col].presentation,
+              rdata[key] = {
+                ref: val.ref,
+                type: val._manager.class_name,
+                presentation: val.presentation,
               };
             }
             else {
-              rdata[col] = row[col].presentation;
+              rdata[col] = val.presentation;
             }
           }
-          else if(typeof(row[col]) == 'number' && format == 'csv') {
-            rdata[col] = row[col].toLocaleString('ru-RU', {
+          else if(typeof(val) == 'number' && format == 'csv') {
+            rdata[col] = val.toLocaleString('ru-RU', {
               useGrouping: false,
               maximumFractionDigits: 3,
             });
           }
-          else if(row[col] instanceof Date && format != 'xls') {
-            rdata[col] = utils.moment(row[col]).format(utils.moment._masks.date_time);
+          else if(val instanceof Date && format != 'xls') {
+            rdata[col] = utils.moment(val).format(utils.moment._masks.date_time);
           }
           else {
-            rdata[col] = row[col];
+            rdata[col] = val;
           }
         });
         data.push(rdata);
@@ -90,10 +93,10 @@ function tabulars(constructor) {
             text = JSON.stringify(data, null, '\t');
           }
           else {
-            text = columns.join('\t') + '\n';
+            text = columns.map(col => col.key).join('\t') + '\n';
             data.forEach((row) => {
-              columns.forEach((col, index) => {
-                text += row[col];
+              columns.forEach(({key}, index) => {
+                text += row[key];
                 if(index < len) {
                   text += '\t';
                 }

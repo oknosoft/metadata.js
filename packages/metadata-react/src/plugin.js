@@ -67,7 +67,7 @@ function rx_columns({utils: {moment}, enm, md}) {
 
   const typed_formatters = {};
 
-  const indicator_formatter = (is_doc, is_date) => ({value, row}) => {
+  const indicator_formatter = (is_doc, is_date) => ({value, row, raw}) => {
     if(value && value.toString) {
       value = value.toString();
     }
@@ -84,6 +84,9 @@ function rx_columns({utils: {moment}, enm, md}) {
     else if(is_doc) {
       indicator = row.posted ? 'cell_doc_posted' : 'cell_doc';
     }
+    if(raw) {
+      return value;
+    }
     if(is_date) {
       const values = value.split(' ');
       if(values.length === 2) {
@@ -95,12 +98,15 @@ function rx_columns({utils: {moment}, enm, md}) {
 
   const date_formatter = (format, indicator, is_doc) => {
     const formatter = indicator && indicator_formatter(is_doc, true);
-    return ({value, row}) => {
+    return ({value, row, raw}) => {
       if(!value || value.length < 5) {
         value = String(value || '');
       }
       else {
         value = moment(value).format(moment._masks[format]);
+      }
+      if(raw) {
+        return value;
       }
       if(formatter) {
         return formatter({value, row});
@@ -113,12 +119,12 @@ function rx_columns({utils: {moment}, enm, md}) {
     }
   }
 
-  const presentation_formatter = ({value}) => {
+  const presentation_formatter = ({value, raw}) => {
     let text = typeof value === 'string' ? value : (value && value.presentation) || '';
     if(text === '_') {
       text = '';
     }
-    return <div title={text}>{text}</div>;
+    return raw ? text : <div title={text}>{text}</div>;
   };
 
   const typed_formatter = (type) => {
@@ -128,26 +134,30 @@ function rx_columns({utils: {moment}, enm, md}) {
     const _mgr = md.mgr_by_class_name(type);
     if(_mgr) {
       typed_formatters[type] = (row) => {
-        return presentation_formatter({value: _mgr.get(row.value, true) || stub});
+        return presentation_formatter({
+          value: _mgr.get(row.value, true) || stub,
+          raw: row.raw,
+        });
       };
       return typed_formatters[type];
     }
   }
 
   const number_formatter = (fraction = 0) => {
-    return ({value}) => {
+    return ({value, raw}) => {
       if(!value && value !== 0) value = 0;
       const text = typeof value === 'number' ? value.toFixed(fraction) : value.toString();
-      return <div title={text} style={{textAlign: 'right'}}>{text}</div>;
+      return raw ? Number(text) : <div title={text} style={{textAlign: 'right'}}>{text}</div>;
     };
   };
 
-  const bool_formatter = ({value}) => {
-    return <div>{value ? 'Да' : 'Нет'}</div>;
+  const bool_formatter = ({value, raw}) => {
+    const v = value ? 'Да' : 'Нет';     
+    return raw ? v : <div>{v}</div>;
   };
 
-  const props_formatter = ({value}) => {
-    return <div title={value.toString()}>{value.presentation}</div>;
+  const props_formatter = ({value, raw}) => {
+    return raw ? value.presentation : <div title={value.toString()}>{value.presentation}</div>;
   };
 
   return function columns({mode, fields, _obj, _mgr, read_only}) {
@@ -221,7 +231,7 @@ function rx_columns({utils: {moment}, enm, md}) {
           if(editable){
             column.editor = <DropDownEditor options={toggle_options}/>;
           }
-          column.formatter = <DropDownFormatter options={toggle_options} value={''}/>;
+          //column.formatter = <DropDownFormatter options={toggle_options} value={''}/>;
           break;
 
         case path:
@@ -279,7 +289,7 @@ export function export_handlers() {
   this.doExport = (format, evt) => {
     const {handleMenuClose, props: {_obj, _tabular, _columns}} = this;
     const t = typeof _tabular === 'object' && _tabular.export ? _tabular : _obj && _obj[_tabular];
-    t && t.export(format, _columns.map(({key}) => key), evt && evt.target);
+    t && t.export(format, _columns, evt && evt.target);
     handleMenuClose && handleMenuClose();
   };
 
