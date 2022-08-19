@@ -14,7 +14,7 @@ function tabulars(constructor) {
   const {TabularSection} = constructor.classes;
 
   Object.defineProperty(TabularSection.prototype, 'export', {
-
+    configurable: true,
     value: function (format = 'csv', columns = [], container) {
 
       if(!columns.length) {
