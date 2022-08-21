@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.30-beta.8, built:2022-08-19
+ metadata-abstract-ui v2.0.30-beta.8, built:2022-08-21
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -906,18 +906,30 @@ function scheme_settings() {
       });
     }
     filter(collection, parent = '', self = false) {
-      const selection = [];
-      this.selection.find_rows({use: true}, (row) => selection.push(row));
+      const _or = new Map();
+      this.selection.find_rows({use: true}, (row) => {
+        if(!_or.has(row.area)) {
+          _or.set(row.area, []);
+        }
+        _or.get(row.area).push(row);
+      });
       const res = [];
       collection.forEach((row) => {
         let ok = true;
-        for(const crow of selection){
-          ok = crow.check(row);
-          if(!ok){
+        for(const grp of _or.values()) {
+          let grp_ok = true;
+          for (const crow of grp) {
+            grp_ok = crow.check(row);
+            if (!grp_ok) {
+              break;
+            }
+          }
+          ok = grp_ok;
+          if (ok) {
             break;
           }
         }
-        if(self){
+        if (self) {
           !ok && res.push(row._obj);
         }
         else {

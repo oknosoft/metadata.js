@@ -827,27 +827,40 @@ export default function scheme_settings() {
      */
     filter(collection, parent = '', self = false) {
       // получаем активный отбор
-      const selection = [];
-      this.selection.find_rows({use: true}, (row) => selection.push(row));
+      const _or = new Map();
+      this.selection.find_rows({use: true}, (row) => {
+        if(!_or.has(row.area)) {
+          _or.set(row.area, []);
+        }
+        _or.get(row.area).push(row);
+      });
 
       const res = [];
       collection.forEach((row) => {
+        
         let ok = true;
-
-        for(const crow of selection){
-          ok = crow.check(row);
-          if(!ok){
+        for(const grp of _or.values()) {
+          let grp_ok = true;
+          for (const crow of grp) {
+            grp_ok = crow.check(row);
+            if (!grp_ok) {
+              break;
+            }
+          }
+          ok = grp_ok;
+          if (ok) {
             break;
           }
         }
 
-        if(self){
+        if (self) {
           !ok && res.push(row._obj);
         }
-        else{
+        else {
           ok && res.push(row);
         }
       });
+      
       if(self){
         const {_obj} = collection;
         res.forEach((row) => {
