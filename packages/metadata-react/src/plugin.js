@@ -71,6 +71,9 @@ function rx_columns({utils: {moment}, enm, md}) {
     if(value && value.toString) {
       value = value.toString();
     }
+    if(raw) {
+      return value;
+    }
     let indicator = 'cell_ref_elm';
     if(row.deleted) {
       indicator = is_doc ? 'cell_doc_deleted' : 'cell_ref_elm_deleted';
@@ -83,9 +86,6 @@ function rx_columns({utils: {moment}, enm, md}) {
     }
     else if(is_doc) {
       indicator = row.posted ? 'cell_doc_posted' : 'cell_doc';
-    }
-    if(raw) {
-      return value;
     }
     if(is_date) {
       const values = value.split(' ');

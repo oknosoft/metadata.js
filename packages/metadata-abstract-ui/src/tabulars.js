@@ -31,7 +31,7 @@ function tabulars(constructor) {
       this.forEach((row) => {
         const rdata = {};
         columns.forEach(({key, name, formatter}) => {
-          const val = formatter ? formatter({value: row[key], raw: true}) : row[key];
+          const val = formatter ? formatter({value: row[key], row, raw: true}) : row[key];
           const col = format === 'xls' ? name : key;
           if(utils.is_data_obj(val)) {
             if(format == 'json') {
