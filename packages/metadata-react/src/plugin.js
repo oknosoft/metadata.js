@@ -167,8 +167,9 @@ function rx_columns({utils: {moment}, enm, md}) {
     if(!_mgr && _obj) {
       _mgr = _obj._manager;
     }
-    const editable = (_obj && !read_only) ? _mgr.class_name.indexOf('rep.') !== 0 || this.obj.indexOf(`.${_mgr._tabular || 'data'}`) === -1 : false;
     const is_doc = _mgr.class_name.startsWith('doc.');
+    const is_rep = _mgr.class_name.startsWith('rep.');
+    const editable = (_obj && !read_only) ? !is_rep || this.obj.indexOf(`.${_mgr._tabular || 'data'}`) === -1 : false;
 
     if(fields) {
       res.forEach((column, index) => {
@@ -264,7 +265,7 @@ function rx_columns({utils: {moment}, enm, md}) {
           if(!column.editor && editable){
             column.editor = DataCell;
           }
-          else if(!column.formatter && !index) {
+          else if(!column.formatter && !index && !is_rep) {
             column.formatter = indicator_formatter(is_doc);
           }
         }

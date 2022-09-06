@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.30-beta.10, built:2022-09-04
+ metadata-abstract-ui v2.0.30-beta.10, built:2022-09-06
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -955,7 +955,7 @@ function scheme_settings() {
       const resources = this.resources._obj.map(v => v.field);
       const {_manager} = collection._owner;
       const meta = _manager.metadata(collection._name || 'data').fields;
-      const _columns = this.rx_columns({_obj: this, mode: 'ts', fields: meta});
+      const _columns = this.rx_columns({_obj: this, _mgr: _manager, mode: 'ts', fields: meta});
       _columns.forEach(({key}) => {
         if(dims.indexOf(key) == -1 && resources.indexOf(key) != -1) {
           ress.push(key);
@@ -966,6 +966,16 @@ function scheme_settings() {
       });
       const dflds = dims.filter(v => v);
       const rflds = dflds.filter(v => v.includes('.')).map(v => v.split('.'));
+      let sortBy = '', sortDir = 'asc';
+      this.sorting.find_rows({use: true}, ({field, direction}) => {
+        if(sortBy) {
+          sortBy += ',';
+        }
+        if(direction) {
+          sortDir = direction.valueOf();
+        }
+        sortBy += field;
+      });
       if(grouping.length) {
         const reduce = function(row, memo) {
           for(const resource of ress){
@@ -989,11 +999,7 @@ function scheme_settings() {
           rows,
           reduce
         });
-        const res = df.calculate({
-          dimensions: dflds,
-          sortBy: '',
-          sortDir: 'asc',
-        });
+        const res = df.calculate({dimensions: dflds, sortBy, sortDir});
         const stack = [];
         const col0 = _columns[0];
         const {is_data_obj, is_data_mgr, moment} = $p.utils;
@@ -1078,6 +1084,26 @@ function scheme_settings() {
           collection._rows.push(row);
         }
         collection._rows._count = collection._rows.length;
+        if(sortBy) {
+          sortBy = sortBy.split(',');
+          const fv = (v) => {
+            return  sortBy.map((f) => {
+              const tmp = v[f];
+              return tmp ? tmp.valueOf() : '';
+            })
+              .join('');
+          };
+          collection._rows.sort((a, b) => {
+            const va = fv(a), vb = fv(b);
+            if(va > vb) {
+              return sortDir === 'desc' ? -1 : 1;
+            }
+            if(vb > va) {
+              return sortDir === 'desc' ? 1 : -1;
+            }
+            return 0;
+          });
+        }
       }
     }
     static cast_type(meta, fld) {

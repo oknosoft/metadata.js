@@ -892,7 +892,7 @@ export default function scheme_settings() {
       const resources = this.resources._obj.map(v => v.field);
       const {_manager} = collection._owner;
       const meta = _manager.metadata(collection._name || 'data').fields;
-      const _columns = this.rx_columns({_obj: this, mode: 'ts', fields: meta});
+      const _columns = this.rx_columns({_obj: this, _mgr: _manager, mode: 'ts', fields: meta});
       _columns.forEach(({key}) => {
         if(dims.indexOf(key) == -1 && resources.indexOf(key) != -1) {
           ress.push(key);
@@ -913,6 +913,17 @@ export default function scheme_settings() {
       const dflds = dims.filter(v => v);
       // поля к разыменованию через точку
       const rflds = dflds.filter(v => v.includes('.')).map(v => v.split('.'));
+      // уточним сортировку
+      let sortBy = '', sortDir = 'asc';
+      this.sorting.find_rows({use: true}, ({field, direction}) => {
+        if(sortBy) {
+          sortBy += ',';
+        }
+        if(direction) {
+          sortDir = direction.valueOf();
+        }
+        sortBy += field;
+      });
       
       if(grouping.length) {
 
@@ -943,11 +954,9 @@ export default function scheme_settings() {
           reduce
         });
 
-        const res = df.calculate({
-          dimensions: dflds,
-          sortBy: '',
-          sortDir: 'asc',
-        });
+        
+        
+        const res = df.calculate({dimensions: dflds, sortBy, sortDir});
 
         // TODO в группировке может потребоваться разыменовать поля
 
@@ -967,9 +976,7 @@ export default function scheme_settings() {
         const {is_data_obj, is_data_mgr, moment} = $p.utils;
         let prevLevel;    // предыдущий уровень группировки
         let index = 0;    // счетчик количества строк + id строки результирующего набора
-
-
-
+        
         const cast_field = function (row, gdim, force) {
 
           const mgr = _manager.value_mgr(row, gdim, CatScheme_settings.cast_type(meta, gdim));
@@ -1071,6 +1078,27 @@ export default function scheme_settings() {
           collection._rows.push(row);
         }
         collection._rows._count = collection._rows.length;
+
+        if(sortBy) {
+          sortBy = sortBy.split(',');
+          const fv = (v) => {
+            return  sortBy.map((f) => {
+              const tmp = v[f];
+              return tmp ? tmp.valueOf() : '';
+            })
+              .join('');
+          }
+          collection._rows.sort((a, b) => {
+            const va = fv(a), vb = fv(b);
+            if(va > vb) {
+              return sortDir === 'desc' ? -1 : 1;
+            }
+            if(vb > va) {
+              return sortDir === 'desc' ? 1 : -1;
+            }
+            return 0;
+          });
+        }
       }
 
     }
