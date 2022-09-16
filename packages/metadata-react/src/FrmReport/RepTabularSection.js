@@ -155,7 +155,7 @@ export default class RepTabularSection extends Component {
   render() {
 
     const {props, state, RowRenderer} = this;
-    const {_columns, minHeight, hideHeader} = props;
+    const {_columns, minHeight, minWidth, hideHeader} = props;
 
     // rowRenderer={RowRenderer}
     // onRowExpandToggle={onRowExpandToggle}
@@ -169,6 +169,7 @@ export default class RepTabularSection extends Component {
         rowsCount={state.rows.length}
         getSubRowDetails={this.getSubRowDetails}
         onCellExpand={this.onCellExpand}
+        minWidth={minWidth}
         minHeight={minHeight || 220}
         rowHeight={33}
         headerRowHeight={hideHeader ? 1 : 33}

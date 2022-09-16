@@ -408,7 +408,7 @@ export class BaseDataObj {
    * Метод для ручной установки признака _прочитан_ (не новый)
    */
   _set_loaded(ref) {
-    this._manager.push(this, ref);
+    this._manager.push(this, ref || this.ref);
     Object.assign(this._data, {
       _modified: false,
       _is_new: false,
