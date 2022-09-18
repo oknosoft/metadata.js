@@ -8,13 +8,8 @@
     "node": "^16.13",
     "yarn": "^1.22"
   },
-  "workspaces": [
-    "packages/*"
-  ],
-  "dependencies": {
-  },
   "devDependencies": {
-    "lerna": "^5.5",
+    "lerna": "^5.5.1",
     "rollup": "^2.79",
     "rollup-plugin-postcss": "^4.0",
     "typescript": "~4.8.2",
@@ -25,10 +20,10 @@
     "react-dom": "^18.2"
   },
   "scripts": {
-    "build:core": "node ./packages/metadata-core/build.js",
+    "build:core": "node ./packages/core/build.js",
     "build:ui": "cd packages/ui/ && cross-env NODE_ENV=production BABEL_ENV=es babel --config-file ./babel.config.js ./src --out-dir . && node ./copy-files && cd ../../ && node packages/ui/build.js",
-    "build:adapter-pouchdb": "node ./packages/metadata-pouchdb/build.js",
-    "build:adapter-postgres": "node ./packages/metadata-postgres/build.js",
+    "build:adapter-pouchdb": "node ./packages/pouchdb/build.js",
+    "build:adapter-postgres": "node ./packages/postgres/build.js",
     "build:docs": "yuidoc -c doc/yuidoc.json src"
   },
   "repository": {
