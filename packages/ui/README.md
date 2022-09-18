@@ -1,7 +1,5 @@
 ### React UI components for metadata.js
 
-[English version](README.en.md)
-
 Компоненты визуального интерфейса metadata.js на базе [React](https://facebook.github.io/react/)
 
 - DataList - динамический список

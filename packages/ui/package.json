@@ -1,0 +1,39 @@
+{
+  "name": "@metadata/ui",
+  "description": "React UI components for metadata.js",
+  "version": "3.0-beta.1",
+  "author": "Evgeniy Malyarov <info@oknosoft.ru> (https://oknosoft.ru)",
+  "license": "MIT",
+  "engines": {
+    "node": "^16.13",
+    "yarn": "^1.22"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.10.4",
+    "@emotion/styled": "^11.10.4",
+    "@mui/icons-material": "^5.10.3",
+    "@mui/material": "^5.10.4",
+    "marked": "^4.1"
+  },
+  "peerDependencies": {
+    "react": "^18.2",
+    "react-dom": "^18.2"
+  },
+  "scripts": {
+    "build:es": "cross-env NODE_ENV=production BABEL_ENV=es babel --config-file ./babel.config.js ./src --out-dir . && node ./copy-files",
+    "build:umd": "cross-env BABEL_ENV=production-umd rollup -c scripts/rollup.config.js"
+  },
+  "main": "build/es",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oknosoft/metadata.js/tree/v3/packages/ui"
+  },
+  "bugs": {
+    "url": "https://github.com/oknosoft/metadata.js/issues"
+  },
+  "homepage": "https://oknosoft.ru/metadata/",
+  "keywords": [
+    "metadata",
+    "react"
+  ]
+}

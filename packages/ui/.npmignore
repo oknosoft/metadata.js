@@ -4,5 +4,5 @@
 /build.js
 /babel.config.js
 /copy-files.js
-/*.log
-/*.lock
+*.log
+*.lock

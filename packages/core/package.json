@@ -1,0 +1,36 @@
+{
+  "name": "@metadata/core",
+  "description": "The core of metadata.js as a standalone package",
+  "version": "3.0-beta.1",
+  "author": "Evgeniy Malyarov <info@oknosoft.ru> (https://oknosoft.ru)",
+  "license": "MIT",
+  "engines": {
+    "node": "^16.13",
+    "yarn": "^1.22"
+  },
+  "dependencies": {
+    "alasql": "^1.7.3",
+    "dayjs": "^1.11",
+    "uuid": "^8.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oknosoft/metadata.js/tree/master/packages/metadata-core"
+  },
+  "bugs": {
+    "url": "https://github.com/oknosoft/metadata.js/issues"
+  },
+  "homepage": "http://www.oknosoft.ru/metadata/",
+  "main": "./index.js",
+  "keywords": [
+    "metadata",
+    "browser data engine",
+    "node data engine",
+    "spa offline",
+    "web сервис",
+    "клиент 1с",
+    "offline framework",
+    "offline-first",
+    "replication"
+  ]
+}
