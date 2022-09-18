@@ -1,7 +1,7 @@
 {
-  "name": "@metadata/monorepo",
+  "name": "@mdta/monorepo",
   "description": "Library for building offline-first browser-based business applications",
-  "version": "3.0.1-beta.1",
+  "version": "3.0.0",
   "private": true,
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "engines": {
