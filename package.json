@@ -8,6 +8,9 @@
     "node": "^16.13",
     "yarn": "^1.22"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "dependencies": {
   },
   "devDependencies": {
