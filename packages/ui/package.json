@@ -23,7 +23,7 @@
     "build:es": "cross-env NODE_ENV=production BABEL_ENV=es babel --config-file ./babel.config.js ./src --out-dir . && node ./copy-files",
     "build:umd": "cross-env BABEL_ENV=production-umd rollup -c scripts/rollup.config.js"
   },
-  "main": "build/es",
+  "main": "./dist/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/oknosoft/metadata.js/tree/v3/packages/ui"
