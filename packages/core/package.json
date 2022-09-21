@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "alasql": "^1.7.3",
+    "camelcase": "^7.0",
     "dayjs": "^1.11",
     "uuid": "^8.3"
   },
