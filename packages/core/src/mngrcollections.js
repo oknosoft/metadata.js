@@ -5,16 +5,28 @@ import {
 
 class ManagersCollection {
 
+  /**
+   * Ссылка на владельца
+   */
+  #owner;
+
+  /**
+   * Ссылка на конструктор членов
+   */
   #Manager;
 
-  constructor($p, name, Manager) {
-    this.$p = $p;
-    this.name = name;
+  constructor(owner, name, Manager) {
+    this.#owner = owner;
     this.#Manager = Manager;
+    this.name = name;
   }
 
   toString() {
-    return this.$p.msg.meta_classes[this.name];
+    return this.owner.msg.meta_classes[this.name];
+  }
+
+  get owner() {
+    return this.#owner;
   }
 
   create(name, Constructor, freeze) {
@@ -41,8 +53,8 @@ class ManagersCollection {
  */
 class Enumerations extends ManagersCollection {
   //#Manager;
-  constructor($p) {
-    super($p, 'enm', EnumManager);
+  constructor(owner) {
+    super(owner, 'enm', EnumManager);
     //console.log(this.#Manager)
   }
 }
@@ -56,8 +68,8 @@ class Enumerations extends ManagersCollection {
  * @static
  */
 class Catalogs extends ManagersCollection {
-  constructor($p) {
-    super($p, 'cat', CatManager);
+  constructor(owner) {
+    super(owner, 'cat', CatManager);
   }
 }
 
@@ -70,8 +82,8 @@ class Catalogs extends ManagersCollection {
  * @static
  */
 class Documents extends ManagersCollection {
-  constructor($p) {
-    super($p, 'doc', DocManager);
+  constructor(owner) {
+    super(owner, 'doc', DocManager);
   }
 }
 
@@ -84,8 +96,8 @@ class Documents extends ManagersCollection {
  * @static
  */
 class InfoRegs extends ManagersCollection {
-  constructor($p) {
-    super($p, 'ireg', InfoRegManager);
+  constructor(owner) {
+    super(owner, 'ireg', InfoRegManager);
   }
 }
 
@@ -98,8 +110,8 @@ class InfoRegs extends ManagersCollection {
  * @static
  */
 class AccumRegs extends ManagersCollection {
-  constructor($p) {
-    super($p, 'areg', AccumRegManager);
+  constructor(owner) {
+    super(owner, 'areg', AccumRegManager);
   }
 }
 
@@ -112,8 +124,8 @@ class AccumRegs extends ManagersCollection {
  * @static
  */
 class AccountsRegs extends ManagersCollection {
-  constructor($p) {
-    super($p, 'accreg', AccumRegManager);
+  constructor(owner) {
+    super(owner, 'accreg', AccumRegManager);
   }
 }
 
@@ -126,8 +138,8 @@ class AccountsRegs extends ManagersCollection {
  * @static
  */
 class DataProcessors extends ManagersCollection {
-  constructor($p) {
-    super($p, 'dp', DataProcessorsManager);
+  constructor(owner) {
+    super(owner, 'dp', DataProcessorsManager);
   }
 }
 
@@ -140,8 +152,8 @@ class DataProcessors extends ManagersCollection {
  * @static
  */
 class Reports extends ManagersCollection {
-  constructor($p) {
-    super($p, 'rep', DataProcessorsManager);
+  constructor(owner) {
+    super(owner, 'rep', DataProcessorsManager);
   }
 }
 
@@ -154,8 +166,8 @@ class Reports extends ManagersCollection {
  * @static
  */
 class ChartsOfAccounts extends ManagersCollection {
-  constructor($p) {
-    super($p, 'cacc', ChartOfAccountManager);
+  constructor(owner) {
+    super(owner, 'cacc', ChartOfAccountManager);
   }
 }
 
@@ -168,8 +180,8 @@ class ChartsOfAccounts extends ManagersCollection {
  * @static
  */
 class ChartsOfCharacteristics extends ManagersCollection {
-  constructor($p) {
-    super($p, 'cch', ChartOfCharacteristicManager);
+  constructor(owner) {
+    super(owner, 'cch', ChartOfCharacteristicManager);
   }
 }
 
@@ -182,8 +194,8 @@ class ChartsOfCharacteristics extends ManagersCollection {
  * @static
  */
 class Tasks extends ManagersCollection {
-  constructor($p) {
-    super($p, 'tsk', TaskManager);
+  constructor(owner) {
+    super(owner, 'tsk', TaskManager);
   }
 }
 
@@ -196,8 +208,8 @@ class Tasks extends ManagersCollection {
  * @static
  */
 class BusinessProcesses extends ManagersCollection {
-  constructor($p) {
-    super($p, 'bp', BusinessProcessManager);
+  constructor(owner) {
+    super(owner, 'bp', BusinessProcessManager);
   }
 }
 

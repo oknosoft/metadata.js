@@ -3,13 +3,23 @@
 import EventEmitter from 'events'
 
 /**
- * ### MetaEventEmitter будет прототипом менеджеров данных
+ * MetaEventEmitter будет прототипом менеджеров данных
  */
 export default class MetaEventEmitter extends EventEmitter{
 
-  constructor() {
+  /**
+   * Ссылка на владельца
+   */
+  #owner;
+
+  constructor(owner) {
     super();
-    this.setMaxListeners(20);
+    this.#owner = owner;
+    this.setMaxListeners(40);
+  }
+
+  get owner() {
+    return this.#owner;
   }
 
 	/**

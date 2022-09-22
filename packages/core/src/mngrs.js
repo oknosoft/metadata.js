@@ -1,12 +1,43 @@
 /**
  * Конструкторы менеджеров данных
  *
- * @module  metadata
- * @submodule meta_mngrs
  */
 
+
+import utils from './utils';
+import msg from './i18n.ru';
+import {DataObj, EnumObj, DocObj, RegisterRow} from './objs';
+import MetaEventEmitter from './meta/emitter';
+import camelcase from 'camelcase';
+
+const string = 'string';
+
+class Iterator {
+
+  constructor(alatable) {
+    this.alatable = alatable;
+    this.idx = 0;
+  }
+
+  value(alatable) {
+    const value = alatable[this.idx];
+    this.idx++;
+    return value?.empty?.() ? null : value;
+  }
+
+  next() {
+    const {alatable} = this;
+    let value = this.value(alatable);
+    while (!value && (this.idx < alatable.length)) {
+      value = this.value(alatable);
+    }
+    return {value, done: !value || this.idx > alatable.length};
+  }
+}
+
+
 /**
- * ### Абстрактный менеджер данных
+ * Абстрактный менеджер данных
  * Не используется для создания прикладных объектов, но является базовым классом,
  * от которого унаследованы менеджеры как ссылочных данных, так и объектов с суррогратным ключом и несохраняемых обработок<br />
  * См. так же:
@@ -24,274 +55,191 @@
  * - {{#crossLink "TaskManager"}}{{/crossLink}} - менеджер задач
  * - {{#crossLink "BusinessProcessManager"}}{{/crossLink}} - менеджер бизнес-процессов
  *
- * @class DataManager
- * @constructor
- * @param className {string} - имя типа менеджера объекта. например, "doc.calc_order"
- * @menuorder 10
- * @tooltip Менеджер данных
+ * @abstract
+ * @param {ManagersCollection} owner - коллекция менеджеров
+ * @param {string} className  - имя типа менеджера объекта. например, "doc.calc_order"
  */
-
-import utils from './utils';
-import msg from './i18n.ru';
-import {DataObj, EnumObj, DocObj, RegisterRow} from './objs';
-import MetaEventEmitter from './meta/emitter';
-
-const rp = 'promise';
-const string = 'string';
-
-class Iterator {
-
-  constructor(byRef, alatable) {
-    this.byRef = byRef;
-    this.alatable = alatable;
-    this.idx = 0;
-  }
-
-  value(alatable) {
-    const value = this.byRef[alatable[this.idx]?.ref];
-    this.idx++;
-    return value?.empty?.() ? null : value;
-  }
-
-  next() {
-    const {alatable} = this;
-    let value = this.value(alatable);
-    while (!value && (this.idx < alatable.length)) {
-      value = this.value(alatable);
-    }
-    return {value, done: !value || this.idx > alatable.length};
-  }
-}
-
-
 export class DataManager extends MetaEventEmitter{
 
   /**
    * Хранилище объектов данного менеджера
+   * @type Object
    */
   #byRef = {};
 
   /**
-   * Индекс по коду-номеру
+   * Те же объекты в виде массива
+   * @type Array.<DataObj>
    */
-  #byId = {};
+  #alatable = [];
+
+  /**
+   * Индекс по коду-дате-номеру
+   * @type Object
+   */
+  #index = {
+    predefined: {},
+    id: {},
+    year: {},
+  };
+
+  /**
+   * В этом свойстве хранятся имена конструктора объекта и конструкторов табличных частей
+   * @type Object
+   */
+  #constructorNames = {};
 
 	constructor(owner, className) {
 
-		super();
+		super(owner);
 
 		/**
-		 * ### Владелец менеджера
-		 * например, справочники, документы - верхний уровень
-		 */
-		this._owner = owner;
-
-		/**
-		 * ### Имя типа объектов этого менеджера
-		 * @property className
+		 * Имя типа объектов этого менеджера
 		 * @type String
 		 * @final
 		 */
 		this.className = className;
-    this.name = className.split('.')[1];
-
-		/**
-		 * В этом свойстве хранятся имена конструктора объекта и конструкторов табличных частей
-		 */
-		this.constructorNames = {};
 
 	}
 
 	toString(){
-		return msg.meta_mgrs[this._owner.name]
+		return msg.meta_mgrs[this.owner.name]
 	}
 
   /**
-   * ### toJSON
-   * для сериализации возвращаем внутренний _obj
+   * toJSON
+   * для сериализации возвращаем представление
    */
   toJSON() {
     return {type: 'DataManager', className: this.className};
   }
 
+  /**
+   * Имя типа объектов этого менеджера
+   * @type String
+   * @final
+   */
+  get name() {
+    return this.className.split('.')[1];
+  }
+
+  /**
+   * Корень метадаты
+   * @type {MetaEngine}
+   */
+  get $p() {
+    return this.owner.owner;
+  }
+
 	/**
-	 * ### Метаданные объекта
+	 * Метаданные объекта
 	 * указатель на фрагмент глобальных метаданных, относящийся к текущему классу данных
-	 *
-	 * @method metadata
-	 * @for DataManager
-	 * @return {Object} - объект метаданных
+	 * @param {String} [field]
+	 * @return {MetaObj} - объект метаданных
 	 */
-	metadata(field_name) {
-	  const {md} = this._owner.$p;
-	  const _meta = md.get(this) || {};
-		if(field_name){
-			return _meta.fields && _meta.fields[field_name] || md.get(this, field_name);
-		}
-		else{
-			return _meta;
-		}
+	metadata(field) {
+    return this.$p.md.get(this, field);
 	}
+
+  /**
+   * Помещает элемент ссылочных данных в локальную коллекцию
+   * Попутно, включает их в индексы и alatable
+   * @param obj {DataObj}
+   * @param [new_ref] {String} - новое значение ссылки объекта
+   */
+  push(obj, new_ref){
+    if (new_ref && (new_ref != obj.ref)) {
+      delete this.#byRef[obj.ref];
+      this.#byRef[new_ref] = obj;
+    }
+    else {
+      this.#byRef[obj.ref] = obj;
+    }
+  }
+
+  /**
+   * Возвращает объект по ссылке (читает из локального кеша)
+   * Если нет в кеше и идентификатор не пуст, создаёт новый объект
+   * @param {String|Object} [ref] - ссылочный идентификатор
+   * @param {Boolean} [create=false] - Если false - не создавать новый. Например, при поиске элемента из конструктора
+   * @return {DataObj|undefined}
+   */
+  get(ref, create = true) {
+    ref = utils.fix.guid(ref);
+    let o = this.#byRef[ref];
+    if (!o && !create) {
+      o = this.obj_constructor('', [ref, this]);
+    }
+    return o;
+  }
+
+  /**
+   * Возаращает элемент по имени предопределенных данных
+   * @param {String} name - имя предопределенного
+   * @return {DataObj}
+   */
+  predefined(name) {
+    return this.#index.predefined[name];
+  }
 
 	/**
 	 * Указатель на адаптер данных этого менеджера
 	 */
 	get adapter(){
-    const {adapters} = this._owner.$p;
+    const {adapters} = this.$p;
     return adapters[this.cachable] || adapters.pouch;
-	}
-
-	/**
-	 * ### Указатель на массив, сопоставленный с таблицей локальной базы данных
-	 * Фактически - хранилище объектов данного класса
-	 * @property alatable
-	 * @type Array
-	 * @final
-	 */
-	get alatable(){
-		const {table_name, _owner} = this;
-		const {tables} = _owner.$p.wsql.aladb;
-		return tables[table_name] ? tables[table_name].data : []
 	}
 
 	/**
 	 * Способ (место) хранения объектов этого менеджера
 	 *
-	 * Выполняет две функции:
-	 * - Указывает, нужно ли сохранять (искать) объекты в локальном кеше или сразу топать на сервер
-	 * - Указывает, нужно ли запоминать представления ссылок (инверсно).
+	 * Указывает, нужно ли сохранять (искать) объекты в локальном кеше или сразу топать на сервер
 	 * Для кешируемых, представления ссылок запоминать необязательно, т.к. его быстрее вычислить по месту
-   *
-	 * @type String - ("ram", "doc", "remote", "meta", "e1cib")
-	 * @final
-	 */
-	get cachable(){
-
-    const {className, _cachable} = this;
-    if(_cachable) {
-      return _cachable;
-    }
-
-    const _meta = this.metadata();
-
-    // перечисления кешируются всегда
-    if(className.startsWith('enm.')) {
-      return 'ram';
-    }
-
-    // Если в метаданных явно указано правило кеширования, используем его
-    if(_meta && _meta.cachable) {
-      return _meta.cachable;
-    }
-
-    // документы, отчеты и обработки по умолчанию кешируем в idb, но в память не загружаем
-    if(className.indexOf('doc.') != -1 || className.indexOf('dp.') != -1 || className.indexOf('rep.') != -1) {
-      return 'doc';
-    }
-
-    // остальные классы по умолчанию кешируем и загружаем в память при старте
-    return 'ram';
-  }
-
-	/**
-	 * ### Имя таблицы объектов этого менеджера в базе alasql
-	 * @property table_name
+   * ("ram", "doc", "remote", "meta", "e1cib")
 	 * @type String
 	 * @final
 	 */
-	get table_name(){
-    return this.className.replace('.', '_');
-	}
+  get cachable() {
+    return this.metadata().cachable;
+  }
+
 
 	/**
-	 * ### Найти строки
-	 * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
+	 * Найти строки
+	 * Возвращает массив дата-объектов, обрезанный отбором _selection_
 	 * Eсли отбор пустой, возвращаются все строки, закешированные в менеджере.
 	 * Имеет смысл для объектов, у которых _cachable = "ram"_
-	 * @method find_rows
-	 * @param selection {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: значение}
-	 * @param [callback] {Function} - в который передается текущий объект данных на каждой итерации
+	 * @param {Object} selection - в ключах имена полей, в значениях значения фильтра или объект {like: значение}
+	 * @param {Function} [callback] - в который передается текущий объект данных на каждой итерации
 	 * @return {Array}
 	 */
-	find_rows(selection, callback){
-		return utils._find_rows.call(this, this, selection, callback);
-	}
-
-	/**
-	 * ### Найти строки на сервере
-	 * @param selection
-	 * @async
-	 */
-	find_rows_remote(selection) {
-		return this.adapter.find_rows(this, selection);
-	}
-
-	/**
-	 * ### Дополнительные реквизиты
-	 * Массив дополнителных реквизитов (аналог подсистемы `Свойства` БСП) вычисляется через
-	 * ПВХ `НазначениеДополнительныхРеквизитов` или справочник `НазначениеСвойствКатегорийОбъектов`
-	 *
-	 * @property extra_fields
-	 * @type Array
-	 */
-  extra_fields(obj) {
-    const {cat, cch, md} = this._owner.$p;
-    // ищем предопределенный элемент, сответствующий классу данных
-    const dests = cat.destinations || cch.destinations;
-    const res = [];
-    if(dests) {
-      const condition = this._destinations_condition || {predefined_name: md.className_to_1c(this.className).replace('.', '_')};
-      dests.find_rows(condition, destination => {
-        const ts = destination.extra_fields || destination.ДополнительныеРеквизиты;
-        if(ts) {
-          ts.each(row => {
-            if(!row._deleted && !row.ПометкаУдаления) {
-              res.push(row.property || row.Свойство);
-            }
-          });
-        }
-        return false;
-      });
-    }
-    return res;
+  find_rows(selection, callback) {
+    return utils._find_rows.call(this, this, selection, callback);
   }
 
 	/**
-	 * ### Дополнительные свойства
-	 * Массив дополнителных свойств (аналог подсистемы `Свойства` БСП) вычисляется через
-	 * ПВХ `НазначениеДополнительныхРеквизитов` или справочник `НазначениеСвойствКатегорийОбъектов`
-	 *
-	 * @property extra_properties
-	 * @type Array
-	 */
-	extra_properties(obj){
-		return [];
-	}
-
-	/**
-	 * ### Имя функции - конструктора объектов или строк табличных частей
+	 * Имя функции - конструктора объектов или строк табличных частей
 	 *
 	 * @method obj_constructor
-	 * @param [ts_name] {String}
-	 * @param [mode] {Boolean | Object }
-	 * @return {String | Function | DataObj}
+	 * @param {String} [ts_name]
+	 * @param {Boolean|Object} [mode]
+	 * @return {String|Function|DataObj}
 	 */
-	obj_constructor(ts_name = "", mode) {
+	obj_constructor(ts_name = '', mode) {
 
-		if(!this.constructorNames[ts_name]){
-			const parts = this.className.split("."),
-				fn_name = parts[0].charAt(0).toUpperCase() + parts[0].substr(1) + parts[1].charAt(0).toUpperCase() + parts[1].substr(1);
-			this.constructorNames[ts_name] = ts_name ? fn_name + ts_name.charAt(0).toUpperCase() + ts_name.substr(1) + "Row" : fn_name;
+		if(!this.#constructorNames[ts_name]){
+			const fn_name = camelcase(this.className);
+			this.#constructorNames[ts_name] = ts_name ? `${fn_name}${camelcase(ts_name)}Row` : fn_name;
 		}
 
-		ts_name = this.constructorNames[ts_name];
+		ts_name = this.#constructorNames[ts_name];
 
 		// если режим не указан, возвращаем имя функции - конструктора
 		if(!mode){
 			return ts_name;
 		}
 		// если булево - возвращаем саму функцию - конструктор
-		const constructor = this._owner.$p[ts_name];
+		const constructor = this.$p[ts_name];
 		if(mode === true ){
 			return constructor;
 		}
@@ -304,38 +252,36 @@ export class DataManager extends MetaEventEmitter{
 	}
 
 	/**
-	 * ### Возвращает массив доступных значений для комбобокса
-	 * @method get_option_list
-	 * @for DataManager
+	 * Возвращает массив доступных значений для комбобокса
 	 * @param [selection] {Object} - отбор, который будет наложен на список
 	 * @param [selection._top] {Number} - ограничивает длину возвращаемого массива
 	 * @return {Promise.<Array>}
 	 */
-	get_option_list(selection = {}, val){
+	option_list(selection = {}, val){
 
-		let t = this, l = [], input_by_string, text;
+		let l = [], input_by_string, text;
 
-    function push(v){
-      if(selection._dhtmlx){
+    function push(v) {
+      if (selection._dhtmlx) {
         const opt = {
           text: v.presentation,
           value: v.ref
         }
-        if(utils.is_equal(opt.value, val)){
+        if (utils.is_equal(opt.value, val)) {
           opt.selected = true;
         }
-        if(v.className == 'cat.property_values' && v.css) {
+        if (v.className === 'cat.property_values' && v.css) {
           opt.css = v.css;
         }
         l.push(opt);
       }
-      else if(!v.empty()){
+      else if (!v.empty()) {
         l.push(v);
       }
     }
 
     // поиск по строке
-    if(selection.presentation && (input_by_string = t.metadata().input_by_string)) {
+    if(selection.presentation && (input_by_string = this.metadata().input_by_string)) {
       text = selection.presentation.like;
       delete selection.presentation;
       selection.or = [];
@@ -346,87 +292,26 @@ export class DataManager extends MetaEventEmitter{
       });
     }
 
-    if(t.cachable.endsWith('ram') || t._direct_ram || (selection && selection._local)) {
-      t.find_rows(selection._mango ? selection.selector : selection, push);
+    if(this.cachable.endsWith('ram') || this._direct_ram || (selection && selection._local)) {
+      this.find_rows(selection._mango ? selection.selector : selection, push);
       return Promise.resolve(l);
     }
-    else if(t.cachable != 'e1cib') {
-      if(selection._mango){
-        if(selection.selector.hasOwnProperty('$and')) {
-          selection.selector.push({className: t.className})
-        }
-        else {
-          selection.selector.className = t.className;
-        }
-      }
-      return t.adapter.find_rows(t, selection)
-        .then((data) => {
-          for (const v of data) {
-            push(v);
-          };
-          return l;
-        });
-    }
-    else {
-      // для некешируемых выполняем запрос к серверу
-      let attr = {selection: selection, top: selection._top},
-        is_doc = t instanceof DocManager || t instanceof BusinessProcessManager;
-      delete selection._top;
-
-      if(is_doc) {
-        attr.fields = ['ref', 'date', 'number_doc'];
-      }
-      else if(t.metadata().main_presentation_name) {
-        attr.fields = ['ref', 'name'];
-      }
-      else {
-        attr.fields = ['ref', 'id'];
-      }
-
-      return _rest.load_array(attr, t)
-        .then((data) => {
-          data.forEach(push);
-          return l;
-        });
-    }
+    return this.adapter.find_rows(this, selection)
+      .then((data) => {
+        for (const v of data) {
+          push(v);
+        };
+        return l;
+      });
   }
 
-	/**
-	 * ### Возвращает менеджер значения по свойству строки
-	 * @method value_mgr
-	 * @param row {Object|TabularSectionRow} - строка табчасти или объект
-	 * @param f {String} - имя поля
-	 * @param mf {Object} - описание типа поля mf.type
-	 * @param array_enabled {Boolean} - возвращать массив для полей составного типа или первый доступный тип
-	 * @param v {*} - устанавливаемое значение
-	 * @return {DataManager|Array|undefined}
-	 */
-	value_mgr(row, f, mf, array_enabled, v) {
-
-	}
 
 	/**
 	 * Возвращает промис со структурой печатных форм объекта
-	 * @return {Promise.<Object>}
+	 * @return {Object}
 	 */
 	printing_plates(){
-		const rattr = {};
-		const {ajax} = this._owner.$p;
-
-		if(!this._printing_plates){
-			if(this.metadata().printing_plates){
-        this._printing_plates = this.metadata().printing_plates;
-			}
-			else {
-			  const {cachable} = this.metadata();
-        if(cachable && (cachable.indexOf('doc') == 0 || cachable.indexOf('ram') == 0)){
-          this._printing_plates = {};
-        }
-      }
-		}
-
-		return Promise.resolve(this._printing_plates);
-
+		return this.metadata().printing_plates;
 	}
 
   /**
@@ -434,27 +319,36 @@ export class DataManager extends MetaEventEmitter{
    * @method unload_obj
    * @param ref
    */
-  unload_obj(ref) {
+  unload_obj(obj) {
+    const {ref, id, date, number_doc} = obj;
     delete this.#byRef[ref];
-    this.alatable.some((o, i, a) => {
-      if(o.ref == ref){
-        if(o.id && this._by_id[o.id]) {
-          delete this._by_id[o.id];
-        }
-        else if(o.number_doc && this._by_id[o.number_doc]) {
-          delete this._by_id[o.number_doc];
-        }
-        a.splice(i, 1);
-        return true;
+    const ind = this.#alatable.indexOf(obj);
+    if(ind >= 0) {
+      this.#alatable.splice(ind, 1);
+    }
+    if(id && this.#index.id[id]) {
+      delete this.#index.id[id];
+    }
+    else if(date && number_doc) {
+      const by_id = this.#index.year[utils.moment(date).format('YYYYMM')];
+      if(by_id[number_doc]) {
+        delete by_id[number_doc];
       }
-    });
+    }
   }
 
   /**
-   * Синоним для each()
+   * Перебор объектов в ОЗУ
    */
-  forEach(fn) {
-    return this.each(fn);
+  forEach(...args) {
+    return this.#alatable.forEach(...args);
+  }
+
+  /**
+   * Map объектов в ОЗУ
+   */
+  map(...args) {
+    return this.#alatable.forEach(...args);
   }
 
   /**
@@ -462,7 +356,7 @@ export class DataManager extends MetaEventEmitter{
    * @return {Iterator}
    */
   [Symbol.iterator]() {
-    return new Iterator(this.byRef, this.alatable);
+    return new Iterator(this.#alatable);
   }
 
 }
@@ -477,90 +371,6 @@ export class DataManager extends MetaEventEmitter{
  * @param className {string} - имя типа менеджера объекта
  */
 export class RefDataManager extends DataManager{
-
-	/**
-	 * Помещает элемент ссылочных данных в локальную коллекцию
-	 * @method push
-	 * @param o {DataObj}
-	 * @param [new_ref] {String} - новое значение ссылки объекта
-	 */
-	push(o, new_ref){
-		if(new_ref && (new_ref != o.ref)){
-			delete this.byRef[o.ref];
-			this.byRef[new_ref] = o;
-		}else
-			this.byRef[o.ref] = o;
-	}
-
-	/**
-	 * Выполняет перебор элементов локальной коллекции
-	 * @method each
-	 * @param fn {Function} - функция, вызываемая для каждого элемента локальной коллекции
-	 */
-	each(fn){
-    for (const i in this.byRef) {
-      if(!i || i === utils.blank.guid) {
-        continue;
-      }
-      if(fn.call(this, this.byRef[i]) === true) {
-        break;
-      }
-    }
-  }
-
-	/**
-	 * Возвращает объект по ссылке (читает из датабазы или локального кеша) если идентификатор пуст, создаёт новый объект
-	 * @method get
-	 * @param [ref] {String|Object} - ссылочный идентификатор
-	 * @param [no_create] {Boolean} - Не создавать новый. Например, когда поиск элемента выполняется из конструктора
-	 * @return {DataObj|undefined}
-	 */
-	get(ref, no_create){
-
-		if(!ref || typeof ref !== string){
-      ref = utils.fix_guid(ref);
-    }
-		let o = this.byRef[ref];
-
-		if(arguments.length == 3){
-			if(no_create){
-				no_create = rp;
-			}
-			else{
-				no_create = arguments[2];
-			}
-		}
-		let created;
-		if(!o){
-			if(no_create && no_create != rp){
-				return;
-			}
-			else{
-				o = this.obj_constructor('', [ref, this]);
-        created = true;
-			}
-		}
-
-		if(ref === utils.blank.guid){
-			return no_create == rp ? Promise.resolve(o) : o;
-		}
-
-		if(o.is_new()){
-			if(no_create == rp){
-        // читаем из базы
-				return o.load()
-          .then(() => {
-            return o.is_new() ? o.after_create() : o;
-          });
-			}
-			else{
-        created && arguments.length !== 3 && o.after_create();
-				return o;
-			}
-		}else{
-			return no_create == rp ? Promise.resolve(o) : o;
-		}
-	}
 
 	/**
 	 * ### Создаёт новый объект типа объектов текущего менеджера
@@ -616,7 +426,7 @@ export class RefDataManager extends DataManager{
 
           // выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
           if(this.cachable == 'e1cib' && do_after_create) {
-            const {ajax} = this._owner.$p;
+            const {ajax} = this.$p;
             const rattr = {};
             ajax.default_attr(rattr, job_prm.irest_url());
             rattr.url += this.rest_name + '/Create()';
@@ -637,33 +447,32 @@ export class RefDataManager extends DataManager{
 
 	/**
 	 * Находит первый элемент, в любом поле которого есть искомое значение
-	 * @method find
-	 * @param val {*} - значение для поиска
+   * либо, ищет по ключам или методу условия
+	 * @param val - значение или правило или метод для поиска
 	 * @param columns {String|Array} - колонки, в которых искать
 	 * @return {DataObj}
 	 */
-	find(val, columns){
-		return utils._find(this.byRef, val, columns);
-	}
+  find(val, columns) {
+    return utils._find(this.#byRef, val, columns);
+  }
 
 	/**
-	 * ### Сохраняет массив объектов в менеджере
+	 * Сохраняет массив объектов в менеджере
 	 *
-	 * @method load_array
 	 * @param aattr {Array} - массив объектов для трансформации в объекты ссылочного типа
-	 * @param [forse] {Boolean|String} - перезаполнять объект
+	 * @param {Boolean|String} [forse] - перезаполнять объект
    * при forse == "update_only", новые объекты не создаются, а только перезаполняются ранее загруженные в озу
 	 */
 	load_array(aattr, forse){
 		const res = [];
-    const {wsql} = this._owner.$p;
+    const {wsql} = this.$p;
     const {grouping, tabular_sections} = this.metadata();
 		for(const attr of aattr){
 		  if(grouping === 'array' && attr.ref.length <= 3) {
 		    res.push.apply(res, this.load_array(attr.rows, forse));
 		    continue;
       }
-			let obj = this.byRef[utils.fix_guid(attr)];
+			let obj = this.get(attr, false);
 			if(!obj){
         if(forse === 'update_only') {
 					continue;
@@ -715,7 +524,7 @@ export class RefDataManager extends DataManager{
 	 * @return {Object|String}
 	 */
 	sqlCreate(attr){
-		const {sql_mask, sql_type} = this._owner.$p.md;
+		const {sql_mask, sql_type} = this.$p.md;
 		let t = this,
       sql = "CREATE TABLE IF NOT EXISTS ",
 			cmd = t.metadata(),
@@ -768,27 +577,6 @@ export class RefDataManager extends DataManager{
     sql += ")";
 
     return sql;
-	}
-
-	/**
-	 * Возаращает предопределенный элемент по имени предопределенных данных
-	 * @method predefined
-	 * @param name {String} - имя предопределенного
-	 * @return {DataObj}
-	 */
-	predefined(name){
-		if(!this._predefined){
-      this._predefined = {};
-      this.find_rows({predefined_name: {not: ''}}, (el) => {
-        this._predefined[el.predefined_name] = el;
-      });
-    }
-		else if(!this._predefined[name]){
-      this.find_rows({predefined_name: name}, (el) => {
-        this._predefined[name] = el;
-      });
-    }
-		return this._predefined[name];
 	}
 
   /**
@@ -916,41 +704,16 @@ export class EnumManager extends RefDataManager{
 		}
 	}
 
-  /**
-   * Метаданные перечисления
-   * @param field_name
-   */
-  metadata(field_name) {
-	  const res = super.metadata(field_name);
-	  if(!res.input_by_string){
-      res.input_by_string = ['ref', 'synonym'];
-    }
-    return res;
-  }
-
-	get(ref, do_not_create){
-
-		if(ref instanceof EnumObj){
-      return ref;
-    }
-
-		else if(!ref || ref == utils.blank.guid){
+	get(ref, create){
+    if(!ref || ref == utils.blank.guid){
       ref = "_";
     }
-
-		return this[ref] || new EnumObj({name: ref}, this);
+		return super.get(ref, create);
 	}
 
 	push(value, new_ref){
-    this.byRef[new_ref] = value;
+    super.push(value, new_ref);
 		Object.defineProperty(this, new_ref, {value});
-	}
-
-	each(fn) {
-		this.alatable.forEach(v => {
-			if(v.ref && v.ref != "_" && v.ref != utils.blank.guid)
-				fn.call(this[v.ref]);
-		});
 	}
 
 	/**
@@ -1004,12 +767,11 @@ export class EnumManager extends RefDataManager{
 
 	/**
 	 * Возвращает массив доступных значений для комбобокса
-	 * @method get_option_list
 	 * @param [selection] {Object}
 	 * @param [selection._top] {Number}
 	 * @return {Promise.<Array>}
 	 */
-	get_option_list(selection = {}, val){
+  option_list(selection = {}, val){
 		let l = [], synonym = "", sref;
 
     function push(v){
@@ -1114,7 +876,7 @@ export class RegisterManager extends DataManager{
 
 		attr.action = "select";
 
-		const {alasql} = this._owner.$p.wsql;
+		const {alasql} = this.$p.wsql;
 		const arr = wsql.alasql(this.get_sql_struct(attr), attr._values);
 
 		let res;
@@ -1177,7 +939,7 @@ export class RegisterManager extends DataManager{
 	 * @return {Object|String}
 	 */
 	get_sql_struct(attr) {
-		const {sql_mask, sql_type} = this._owner.$p.md;
+		const {sql_mask, sql_type} = this.$p.md;
 		var t = this,
 			cmd = t.metadata(),
 			res = {}, f,

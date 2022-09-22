@@ -605,7 +605,8 @@ const utils = {
 					}
 				}
 			}
-		} else {
+		}
+    else {
 			for (let i in src) { // ищем по ключам из val
 				const o = src[i];
 				let finded = true;
@@ -1056,13 +1057,17 @@ const utils = {
      * @return {Boolean} - true, если значение соответствует регурярному выражению guid
      */
     guid(v) {
-      if (typeof v !== 'string' || v.length < 36) {
+      if (typeof v !== 'string') {
         return false;
       }
-      else if (v.length === 72) {
+      const {length} = v;
+      if (length < 36) {
+        return false;
+      }
+      else if (length === 72) {
         return rxref.test(v.substr(0, 36)) && rxref.test(v.substr(36));
       }
-      else if (v.length > 36) {
+      else if (length > 36) {
         const parts = v.split('|');
         v = parts.length === 2 ? parts[1] : v.substr(0, 36);
       }
@@ -1072,18 +1077,16 @@ const utils = {
     /**
      * Проверяет, является ли значение пустым идентификатором
      *
-     * @method is_empty_guid
      * @param v {*} - проверяемое значение
      * @return {Boolean} - true, если v эквивалентен пустому guid
      */
     empty_guid(v) {
-      return !v || v === this.blank.guid;
+      return !v || v === utils.blank.guid;
     },
 
     /**
      * Проверяет, является ли значенние Data-объектным типом
      *
-     * @method is_data_obj
      * @param v {*} - проверяемое значение
      * @return {Boolean} - true, если значение является ссылкой
      */
@@ -1094,7 +1097,6 @@ const utils = {
     /**
      * Проверяет, является ли значенние Data-документом
      *
-     * @method is_doc_obj
      * @param v {*} - проверяемое значение
      * @return {Boolean} - true, если значение является ссылкой
      */
@@ -1105,7 +1107,6 @@ const utils = {
     /**
      * Проверяет, является ли значенние менеджером объектов данных
      *
-     * @method is_data_mgr
      * @param v {*} - проверяемое значение
      * @return {Boolean} - true, если значение является менеджером данных
      */
@@ -1116,7 +1117,6 @@ const utils = {
     /**
      * Проверяет, является ли значенние менеджером перечисления
      *
-     * @method is_enm_mgr
      * @param v {*} - проверяемое значение
      * @return {Boolean} - true, если значение является менеджером данных
      */
@@ -1127,7 +1127,6 @@ const utils = {
     /**
      * Проверяет, является ли значенние табличной частью или строкой табличной части
      *
-     * @method is_tabular
      * @param v {*} - проверяемое значение
      * @return {Boolean} - true, если значение является табличной частью
      */
@@ -1156,66 +1155,62 @@ const utils = {
       if (tv1 === 'boolean' || tv2 === 'boolean') {
         return Boolean(v1) === Boolean(v2);
       }
-      return (this.fix.guid(v1, false) == this.fix.guid(v2, false));
+      return (utils.fix.guid(v1, false) == utils.fix.guid(v2, false));
     },
   },
 
   fix: {
     /**
-     * ### Приводит значение к типу Дата
+     * Приводит значение к типу Дата
      *
-     * @method fix_date
      * @param str {String|Number|Date} - приводиме значение
      * @param [strict=false] {Boolean} - если истина и значение не приводится к дате, возвращать пустую дату
      * @return {Date|*}
      */
     date(str, strict) {
-      if (str instanceof Date || (!strict && (this.is_guid(str) || (str && (str.length === 11 || str.length === 9))))){
+      if (str instanceof Date){
         return str;
       }
-      else {
-        const m = moment(str, date_frmts);
-        return m.isValid() ? m.toDate() : (strict ? this.blank.date : str);
-      }
+      const m = moment(str, date_frmts);
+      return m.isValid() ? m.toDate() : (strict ? utils.blank.date : str);
     },
 
     /**
-     * ### Извлекает guid из строки или ссылки или объекта
+     * Извлекает guid из строки или ссылки или объекта
      *
-     * @method fix_guid
-     * @param ref {*} - значение, из которого надо извлечь идентификатор
-     * @param generate {Boolean} - указывает, генерировать ли новый guid для пустого значения
+     * @param ref {String|Object|DataObj} - значение, из которого надо извлечь идентификатор
+     * @param [generate] {Boolean} - указывает, генерировать ли новый guid для пустого значения
      * @return {String}
      */
     guid(ref, generate) {
 
-      if (ref && typeof ref == 'string') {
-
-      }
-      else if (ref instanceof DataObj) {
+      if (ref instanceof DataObj) {
         return ref.ref;
       }
-      else if (ref && typeof ref == 'object') {
-        if (ref.hasOwnProperty('presentation')) {
-          if (ref.hasOwnProperty('ref')){
-            return ref.ref || this.blank.guid;
-          }
-          else if (ref.hasOwnProperty('name')){
-            return ref.name;
-          }
+
+      if (ref && typeof ref == 'object') {
+        if (ref.hasOwnProperty('ref')){
+          ref = ref.ref;
         }
-        else {
-          ref = (typeof ref.ref == 'object' && ref.ref.hasOwnProperty('ref')) ? ref.ref.ref : ref.ref;
+        else if (ref.hasOwnProperty('name')){
+          ref = ref.name;
         }
       }
 
-      if (generate === false || this.is_guid(ref)) {
+      if(typeof ref === 'string') {
+        const i = ref.indexOf('|');
+        if(i >= 0) {
+          ref = ref.substring(i + 1);
+        }
+      }
+
+      if (generate === false || utils.is.guid(ref)) {
         return ref;
       }
       else if (generate) {
         return this.generate_guid();
       }
-      return this.blank.guid;
+      return utils.blank.guid;
     },
 
     /**
@@ -1271,7 +1266,7 @@ const utils = {
         }
         type = type.type;
       }
-      if(this.is.data_obj(str) && type?.types.includes(str.className)) {
+      if(utils.is.data_obj(str) && type?.types.includes(str.className)) {
         return str;
       }
       if (type.is_ref) {

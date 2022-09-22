@@ -1100,7 +1100,7 @@ export class DataObj extends BaseDataObj {
   }
 
   /**
-   * ### Значение допреквизита по имени или свойству
+   * Значение допреквизита по имени или свойству
    * @param name {String|CchProperties} - имя параметра
    * @param [value] {Any} - если задано, устанавливает
    * @param [list] {Number} - если задано, переопределяет list свойства
@@ -1154,6 +1154,35 @@ export class DataObj extends BaseDataObj {
         return mgr && mgr.get();
       }
     }
+  }
+
+  /**
+   * Дополнительные реквизиты
+   * Массив дополнителных реквизитов (аналог подсистемы `Свойства` БСП) вычисляется через
+   * ПВХ `НазначениеДополнительныхРеквизитов` или справочник `НазначениеСвойствКатегорийОбъектов`
+   *
+   * @type Array.<CchProperties>
+   */
+  get _extra_props() {
+    const {cat, cch, md} = this.$p;
+    // ищем предопределенный элемент, сответствующий классу данных
+    const dests = cat.destinations || cch.destinations;
+    const res = [];
+    if(dests) {
+      const condition = obj?._destinations_condition || {predefined_name: md.className_to_1c(this.className).replace('.', '_')};
+      dests.find_rows(condition, destination => {
+        const ts = destination.extra_fields || destination.ДополнительныеРеквизиты;
+        if(ts) {
+          ts.each(row => {
+            if(!row._deleted) {
+              res.push(row.property);
+            }
+          });
+        }
+        return false;
+      });
+    }
+    return res;
   }
 }
 
