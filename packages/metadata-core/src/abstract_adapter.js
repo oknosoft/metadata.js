@@ -1,7 +1,6 @@
 
 import MetaEventEmitter from './emitter'
 
-
 export default class AbstracrAdapter extends MetaEventEmitter{
 
 	constructor($p) {
@@ -17,7 +16,6 @@ export default class AbstracrAdapter extends MetaEventEmitter{
 	 * @return {Promise.<DataObj>} - промис с загруженным объектом
 	 */
 	load_obj(tObj) {
-
 		return Promise.resolve(tObj);
 	}
 
@@ -31,7 +29,6 @@ export default class AbstracrAdapter extends MetaEventEmitter{
 	 * @return {*}
 	 */
 	load_array(_mgr, refs, with_attachments) {
-
 		return Promise.resolve([]);
 	}
 
@@ -44,7 +41,6 @@ export default class AbstracrAdapter extends MetaEventEmitter{
 	 * @return {Promise.<DataObj>} - промис с записанным объектом
 	 */
 	save_obj(tObj, attr) {
-
 		return Promise.resolve(tObj);
 	}
 
@@ -57,7 +53,6 @@ export default class AbstracrAdapter extends MetaEventEmitter{
 	 * @return {Promise.<Array>}
 	 */
 	get_tree(_mgr, attr){
-
 		return Promise.resolve([]);
 	}
 

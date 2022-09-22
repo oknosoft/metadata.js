@@ -1,5 +1,5 @@
 /**
- * ### Переопределяет методы менеджеров данных
+ * Переопределяет методы менеджеров данных
  *
  * @module proto
  *
@@ -48,7 +48,7 @@ export default ({classes}) => {
       code_length = this._metadata().code_length - prefix.length;
 
     // для кешируемых в озу, вычисляем без индекса
-    if (_manager.cachable == 'ram' || _manager.cachable == 'doc_ram') {
+    if (_manager.cachable == 'ram') {
       return Promise.resolve(this.new_cat_id(prefix));
     }
 

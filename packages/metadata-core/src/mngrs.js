@@ -570,6 +570,9 @@ export class DataManager extends MetaEventEmitter{
    * @param ref
    */
   unload_obj(ref) {
+    if(ref === utils.blank.ref) {
+      return;
+    }
     delete this.by_ref[ref];
     this.alatable.some((o, i, a) => {
       if(o.ref == ref){
