@@ -10,7 +10,6 @@
     "yarn": "^1.22"
   },
   "dependencies": {
-    "alasql": "^1.7.3",
     "camelcase": "^7.0",
     "dayjs": "^1.11",
     "uuid": "^8.3"
@@ -34,7 +33,7 @@
     "react-dom": "^18.2"
   },
   "scripts": {
-    "dev": "webpack serve",
+    "dev": "webpack serve -c example/webpack.config.js",
     "build:core": "node ./packages/core/build.js",
     "build:ui": "cd packages/ui/ && cross-env NODE_ENV=production BABEL_ENV=es babel --config-file ./babel.config.js ./src --out-dir . && node ./copy-files && cd ../../ && node packages/ui/build.js",
     "build:pouchdb": "node ./packages/pouchdb/build.js",

@@ -17,7 +17,24 @@ import {sys, sys_fields} from './system';
  * @class MetaObj
  */
 class MetaObj {
-
+  constructor(raw) {
+    if(Array.isArray(raw)) {
+      this.values = [];
+      for(const row of raw) {
+        if(typeof row.order === 'number' && row.name) {
+          this.values.push(row);
+        }
+        else {
+          for(const fld in row) {
+            this[fld] = row[fld];
+          }
+        }
+      }
+    }
+    else {
+      Object.assign(this, raw);
+    }
+  }
 }
 
 /**
@@ -43,7 +60,7 @@ class MetaField {
 class Meta extends MetaEventEmitter {
 
   /**
-   * Хранилище (индекс) объектов метаданных
+   * Хранилище объектов описания метаданных
    * @type {Object}
    */
   #m = {
@@ -58,6 +75,15 @@ class Meta extends MetaEventEmitter {
     cacc: {},
     bp: {},
     tsk: {}
+  };
+
+  /**
+   * Индекс по id и className
+   * @type Object
+   */
+  #index = {
+    meta: {},
+    mgrs: {},
   };
 
   /**
@@ -84,13 +110,10 @@ class Meta extends MetaEventEmitter {
    */
   static Field = MetaField;
 
-  constructor($p) {
-    super();
-    Object.defineProperties(this, {
-      $p: {get() {return $p}},
-    });
+  constructor(owner) {
+    super(owner);
     // создаём конструкторы менеджеров данных
-    mngrcollections($p);
+    mngrcollections(owner);
   }
 
   /**
@@ -103,9 +126,22 @@ class Meta extends MetaEventEmitter {
     for(const patch of Meta._sys) {
       utils._patch(raw, patch);
     }
-    const m = this.#m;
-    for(const el of raw) {
-      new MetaObj(m, el);
+    for(const area of Object.keys(raw)) {
+      if(this.#m[area]) {
+        for(const el in raw[area]) {
+          const obj = new MetaObj(raw[area][el]);
+          this.#m[area][el] = obj;
+          this.#index.meta[`${area}.${el}`] = obj;
+          if(obj.id) {
+            this.#index.meta[obj.id] = obj;
+          }
+          delete raw[area][el];
+        };
+      }
+      else {
+        this.#m[area] = raw[area];
+        delete raw[area];
+      }
     }
     return this;
   }
@@ -315,20 +351,7 @@ class Meta extends MetaEventEmitter {
    * @private
    */
   find_mgr(id) {
-    if(id) {
-      const {$p} = this;
-      let np = id.split('.');
-      if(np[1] && $p[np[0]]) {
-        return $p[np[0]][np[1]];
-      }
-      const pos = id.indexOf('_');
-      if(pos) {
-        np = [id.substr(0, pos), id.substr(pos + 1)];
-        if(np[1] && $p[np[0]]) {
-          return $p[np[0]][np[1]];
-        }
-      }
-    }
+    return this.#index.mgrs[id];
   }
 
   /**
@@ -337,7 +360,7 @@ class Meta extends MetaEventEmitter {
    */
   create_tables(callback, attr) {
 
-    const {$p} = this;
+    const {owner} = this;
     const data_names = [];
     const managers = this.classes();
 
@@ -351,7 +374,7 @@ class Meta extends MetaEventEmitter {
           callback(create);
         }
         else {
-          $p.wsql.alasql.utils.saveFile('create_tables.sql', create);
+          console.log(create);
         }
       }
       else {
@@ -370,7 +393,7 @@ class Meta extends MetaEventEmitter {
     // TODO переписать на промисах и генераторах и перекинуть в синкер
     for (let mgr of 'enm,cch,cacc,cat,bp,tsk,doc,ireg,areg'.split(',')) {
       for (let className in managers[mgr]) {
-        data_names.push({'class': $p[mgr], 'name': managers[mgr][className]});
+        data_names.push({'class': owner[mgr], 'name': managers[mgr][className]});
       }
     }
     cstep = data_names.length;

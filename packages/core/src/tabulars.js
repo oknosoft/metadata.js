@@ -334,45 +334,15 @@ export class TabularSection {
 	}
 
 	/**
-	 * ### Сортирует табличную часть
+	 * Сортирует табличную часть
 	 *
 	 * @method sort
 	 * @param fields {Array|String}
 	 */
 	sort(fields) {
-
     if(typeof fields == 'string') {
       fields = fields.split(',');
     }
-
-    let sql = 'select * from ? order by ';
-		let	res = true;
-		let	has_dot;
-
-		for(let f of fields){
-      has_dot = has_dot || f.indexOf('.') !== -1;
-      f = f.trim().replace(/\s{1,}/g, ' ').split(' ');
-      if (res){
-        res = false;
-      }
-      else{
-        sql += ', ';
-      }
-
-      sql += '`' + f[0] + '`';
-      if(f[1]) {
-        sql += ' ' + f[1];
-      }
-    }
-
-    const {$p} = this._owner._manager._owner;
-		try {
-			res = $p.wsql.alasql(sql, [has_dot ? this._obj.map((row) => row._row) : this._obj]);
-			return this.load(res);
-		}
-		catch (err) {
-			$p.record_log(err);
-		}
 	}
 
 	/**
@@ -382,10 +352,9 @@ export class TabularSection {
 	 * - AGGR - позволяет задать собственный агрегатор (функцию) для расчета итогов
 	 *
 	 * @method aggregate
-	 * @param [dimensions] {Array|String} - список измерений
-	 * @param [resources] {Array|String} - список ресурсов
-	 * @param [aggr] {String} - агрегатная функция
-	 * @param [ret_array] {Boolran} - указывает возвращать массив значений
+	 * @param {Array|String} [dimensions] - список измерений
+	 * @param {Array|String} [resources] - список ресурсов
+	 * @param {String|Function} [aggr] - агрегатная функция
 	 * @return {Number|Array} - Значение агрегатной фукнции или массив значений
 	 *
 	 * @example

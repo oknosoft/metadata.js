@@ -924,9 +924,9 @@ const utils = {
     }
 
     // сортируем
-    if(sort && sort.length && typeof alasql !== 'undefined') {
-      pre = alasql(`select * from ? order by ${sort.map(({field, direction}) => `${field} ${direction}`).join(',')}`, [pre]);
-    }
+    // if(sort && sort.length && typeof alasql !== 'undefined') {
+    //   pre = alasql(`select * from ? order by ${sort.map(({field, direction}) => `${field} ${direction}`).join(',')}`, [pre]);
+    // }
 
     // обрезаем кол-во возвращаемых элементов
     for (const o of pre) {

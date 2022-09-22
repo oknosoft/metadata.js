@@ -217,6 +217,17 @@ export class DataManager extends MetaEventEmitter{
     return utils._find_rows.call(this, this, selection, callback);
   }
 
+  /**
+   * Находит первый элемент, в любом поле которого есть искомое значение
+   * либо, ищет по ключам или методу условия
+   * @param val - значение или правило или метод для поиска
+   * @param columns {String|Array} - колонки, в которых искать
+   * @return {DataObj}
+   */
+  find(val, columns) {
+    return utils._find(this.#byRef, val, columns);
+  }
+
 	/**
 	 * Имя функции - конструктора объектов или строк табличных частей
 	 *
@@ -315,7 +326,7 @@ export class DataManager extends MetaEventEmitter{
 	}
 
   /**
-   * Удаляет объект из alasql и локального кеша
+   * Удаляет объект из alatable и локального кеша
    * @method unload_obj
    * @param ref
    */
@@ -423,38 +434,14 @@ export class RefDataManager extends DataManager{
 
       return (call_new_number_doc ? o.new_number_doc() : Promise.resolve(o))
         .then(() => {
-
           // выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
-          if(this.cachable == 'e1cib' && do_after_create) {
-            const {ajax} = this.$p;
-            const rattr = {};
-            ajax.default_attr(rattr, job_prm.irest_url());
-            rattr.url += this.rest_name + '/Create()';
-            return ajax.get_ex(rattr.url, rattr)
-              .then(function (req) {
-                return o._mixin(JSON.parse(req.response), undefined, ['ref']);
-              });
-          }
-          else {
-            return after_create_res instanceof Promise ? after_create_res : o;
-          }
+          return after_create_res instanceof Promise ? after_create_res : o;
         });
 		}
 
 		return force_obj ? o : Promise.resolve(o);
 
 	}
-
-	/**
-	 * Находит первый элемент, в любом поле которого есть искомое значение
-   * либо, ищет по ключам или методу условия
-	 * @param val - значение или правило или метод для поиска
-	 * @param columns {String|Array} - колонки, в которых искать
-	 * @return {DataObj}
-	 */
-  find(val, columns) {
-    return utils._find(this.#byRef, val, columns);
-  }
 
 	/**
 	 * Сохраняет массив объектов в менеджере

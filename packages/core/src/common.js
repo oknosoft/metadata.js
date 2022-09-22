@@ -8,7 +8,6 @@
 import utils from './utils';
 import Aes from '../lib/aes';
 import JobPrm from './jobprm';
-import WSQL from './wsql';
 import Meta from './meta';
 import msg from './i18n.ru';
 import classes from './classes';
@@ -61,41 +60,33 @@ class MetaEngine {
     this.aes = new Aes('metadata.js');
 
     /**
-     * ### Параметры работы программы
-     * @property job_prm
+     * Параметры работы программы
      * @type JobPrm
      * @final
      */
-    this.job_prm = new JobPrm(this);
+    this.jobPrm = new JobPrm(this);
 
     /**
-     * Интерфейс к данным в LocalStorage, AlaSQL и IndexedDB
-     * @property wsql
-     * @type WSQL
+     * Mетаданные конфигурации
+     * @type Meta
      * @final
      */
-    this.wsql = new WSQL(this);
-
-    /**
-     * ### Mетаданные конфигурации
-     * @property md
-     * @type Meta
-     * @static
-     */
     this.md = new Meta(this);
-
 
     // дублируем метод record_log в utils
     this.record_log = this.record_log.bind(this);
 
     // начинаем следить за ошибками
+    let emitter;
     if(typeof process !== 'undefined' && process.addEventListener) {
-      process.addEventListener('error', this.record_log, false);
-      //process.addEventListener('unhandledrejection', this.record_log, false);
+      emitter = process;
     }
     else if(typeof window !== 'undefined' && window.addEventListener) {
-      window.addEventListener('error', this.record_log, false);
-      //window.addEventListener('unhandledRejection', this.record_log, false);
+      emitter = window;
+    }
+    if(emitter) {
+      emitter.addEventListener('error', this.record_log, false);
+      //emitter.addEventListener('unhandledRejection', this.record_log, false);
     }
 
     // при налчии расширений, выполняем их методы инициализации
@@ -200,7 +191,7 @@ class MetaEngine {
             // если superlogin, всю онформацию о пользователе получаем из sl_users
             user = superlogin.create_user();
           }
-          else if(this.job_prm.use_ram !== false) {
+          else if(this.jobPrm.use_ram !== false) {
             cat.users.find_rows_remote({
               _top: 1,
               id: user_name,
