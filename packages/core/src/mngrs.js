@@ -45,15 +45,12 @@ class Iterator {
  * - {{#crossLink "RefDataManager"}}{{/crossLink}} - абстрактный менеджер ссылочных данных
  * - {{#crossLink "CatManager"}}{{/crossLink}} - менеджер регистров накопления
  * - {{#crossLink "ChartOfCharacteristicManager"}}{{/crossLink}} - менеджер регистров накопления
- * - {{#crossLink "ChartOfAccountManager"}}{{/crossLink}} - менеджер регистров накопления
  * - {{#crossLink "DocManager"}}{{/crossLink}} - менеджер регистров накопления
  * - {{#crossLink "DataProcessorsManager"}}{{/crossLink}} - менеджер обработок
  * - {{#crossLink "RegisterManager"}}{{/crossLink}} - абстрактный менеджер регистра (накопления, сведений и бухгалтерии)
  * - {{#crossLink "InfoRegManager"}}{{/crossLink}} - менеджер регистров сведений
  * - {{#crossLink "LogManager"}}{{/crossLink}} - менеджер журнала регистрации
  * - {{#crossLink "AccumRegManager"}}{{/crossLink}} - менеджер регистров накопления
- * - {{#crossLink "TaskManager"}}{{/crossLink}} - менеджер задач
- * - {{#crossLink "BusinessProcessManager"}}{{/crossLink}} - менеджер бизнес-процессов
  *
  * @abstract
  * @param {ManagersCollection} owner - коллекция менеджеров
@@ -171,6 +168,15 @@ export class DataManager extends MetaEventEmitter{
       o = this.obj_constructor('', [ref, this]);
     }
     return o;
+  }
+
+  /**
+   * Извлекает ссылку из сырых данных
+   * @param {Object} attr
+   * @return {String}
+   */
+  get_ref(attr){
+    return utils.fix.guid(attr);
   }
 
   /**
@@ -678,25 +684,33 @@ export class EnumManager extends RefDataManager{
 
 	constructor(owner, className) {
 		super(owner, className);
-		for(var v of this.metadata()){
-      if('order' in v && v.name) {
-        const value = new EnumObj(v, this);
-        if(v.latin) {
-          Object.defineProperty(this, v.latin, {value});
-        }
-      }
-      else if(v.default) {
-        Object.defineProperty(this, '_', {value: this.get(v.default)});
+    const meta = this.metadata();
+		for(var v of meta.values){
+      const value = new EnumObj(v, this);
+      if(v.latin) {
+        Object.defineProperty(this, v.latin, {value});
       }
 		}
+    if(meta.default) {
+      Object.defineProperty(this, '_', {value: this.get(meta.default)});
+    }
 	}
 
-	get(ref, create){
-    if(!ref || ref == utils.blank.guid){
+  get(ref, create) {
+    if (!ref || ref == utils.blank.guid) {
       ref = "_";
     }
-		return super.get(ref, create);
-	}
+    return super.get(ref, create);
+  }
+
+  /**
+   * Извлекает ссылку из сырых данных
+   * @param {Object} attr
+   * @return {String}
+   */
+  get_ref(attr){
+    return attr.name;
+  }
 
 	push(value, new_ref){
     super.push(value, new_ref);
@@ -1447,58 +1461,15 @@ export class ChartOfCharacteristicManager extends CatManager{
 }
 
 /**
- * ### Абстрактный менеджер плана счетов
- * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
- * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "ChartsOfAccounts"}}{{/crossLink}}
- *
- * @class ChartOfAccountManager
- * @extends CatManager
- * @constructor
- * @param className {string}
- */
-export class ChartOfAccountManager extends CatManager{
-
-}
-
-/**
  * ### Абстрактный менеджер документов
  * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
  * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "Documents"}}{{/crossLink}}
  *
- * @class DocManager
  * @extends RefDataManager
- * @constructor
  * @param className {string}
  */
 export class DocManager extends RefDataManager{
 
 }
 
-/**
- * ### Абстрактный менеджер задач
- * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
- * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "Tasks"}}{{/crossLink}}
- *
- * @class TaskManager
- * @extends CatManager
- * @constructor
- * @param className {string}
- */
-export class TaskManager extends CatManager{
-
-}
-
-/**
- * ### Абстрактный менеджер бизнес-процессов
- * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
- * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "BusinessProcesses"}}{{/crossLink}}
- *
- * @class BusinessProcessManager
- * @extends CatManager
- * @constructor
- * @param className {string}
- */
-export class BusinessProcessManager extends CatManager{
-
-}
 

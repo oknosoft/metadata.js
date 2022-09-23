@@ -10,41 +10,9 @@ import utils from '../utils';
 import {DataManager} from '../mngrs';
 import mngrcollections from '../mngrcollections';
 import {sys, sys_fields} from './system';
+import {TypeDef, MetaObj, MetaField, MetaFields, MetaTabs, } from './classes';
 
-/**
- * Описание метаданных объекта
- * Не путать с виртуальным справочником CatMeta_objs
- * @class MetaObj
- */
-class MetaObj {
-  constructor(raw) {
-    if(Array.isArray(raw)) {
-      this.values = [];
-      for(const row of raw) {
-        if(typeof row.order === 'number' && row.name) {
-          this.values.push(row);
-        }
-        else {
-          for(const fld in row) {
-            this[fld] = row[fld];
-          }
-        }
-      }
-    }
-    else {
-      Object.assign(this, raw);
-    }
-  }
-}
 
-/**
- * ### Описание метаданных поля
- * Не путать с виртуальным справочником CatMeta_fields
- * @class MetaField
- */
-class MetaField {
-
-}
 
 /**
  * Хранилище метаданных конфигурации
@@ -100,16 +68,6 @@ class Meta extends MetaEventEmitter {
    */
   static _sys = sys;
 
-  /**
-   * Пробрасываем конструктор MetaObj наружу
-   */
-  static Obj = MetaObj;
-
-  /**
-   * Пробрасываем конструктор MetaField наружу
-   */
-  static Field = MetaField;
-
   constructor(owner) {
     super(owner);
     // создаём конструкторы менеджеров данных
@@ -129,7 +87,7 @@ class Meta extends MetaEventEmitter {
     for(const area of Object.keys(raw)) {
       if(this.#m[area]) {
         for(const el in raw[area]) {
-          const obj = new MetaObj(raw[area][el]);
+          const obj = new MetaObj(area, raw[area][el]);
           this.#m[area][el] = obj;
           this.#index.meta[`${area}.${el}`] = obj;
           if(obj.id) {
@@ -147,28 +105,23 @@ class Meta extends MetaEventEmitter {
   }
 
   /**
-   * ### Возвращает описание объекта метаданных
+   * Возвращает описание объекта метаданных
    *
-   * @method get
-   * @param type {String|DataManager} - например, "doc.calc_order"
-   * @param [field_name] {String} - имя поля или табчасти или путь к полю табчасти
+   * @param {String|DataManager} type - например, "doc.calc_order"
+   * @param {String} [field] - имя поля или табчасти или путь к полю табчасти
    * @return {MetaObj}
    */
-  get(type, field_name) {
-    const np = type instanceof DataManager ? [type._owner.name, type.name] : type.split('.');
-    const np0 = this._m[np[0]];
-    if(!np0) {
-      return;
+  get(type, field) {
+    const key = type instanceof DataManager ? type.className : type;
+    const meta = this.#index.meta[key];
+    if(!field) {
+      return meta;
     }
-    const _meta = np0[np[1]];
-    if(!field_name) {
-      return _meta;
+    else if(meta?.fields?.[field]) {
+      return meta.fields[field];
     }
-    else if(_meta && _meta.fields[field_name]) {
-      return _meta.fields[field_name];
-    }
-    else if(_meta && _meta.tabular_sections && _meta.tabular_sections[field_name]) {
-      return _meta.tabular_sections[field_name];
+    else if(meta?.tabular_sections?.[field]) {
+      return meta.tabular_sections[field];
     }
 
     const res = {
@@ -180,48 +133,51 @@ class Meta extends MetaEventEmitter {
           is_ref: false,
           types: ['string'],
         },
-      },
-      is_doc = 'doc,tsk,bp'.includes(np[0]),
+      };
+    if(!meta?.fields) {
+      return res;
+    }
+    const is_doc = 'doc,tsk,bp'.includes(np[0]),
       is_cat = 'cat,cch,cacc,tsk'.includes(np[0]);
 
-    if(is_doc && field_name == 'number_doc' && _meta.code_length) {
+    if(is_doc && field == 'number_doc' && _meta.code_length) {
       res.synonym = 'Номер';
       res.tooltip = 'Номер документа';
       res.type.str_len = 11;
     }
-    else if(is_doc && field_name == 'date') {
+    else if(is_doc && field == 'date') {
       res.synonym = 'Дата';
       res.tooltip = 'Дата документа';
       res.type.date_part = 'date_time';
       res.type.types[0] = 'date';
     }
-    else if(is_doc && field_name == 'posted') {
+    else if(is_doc && field == 'posted') {
       res.synonym = 'Проведен';
       res.type.types[0] = 'boolean';
     }
-    else if(is_cat && field_name == 'id' && _meta.code_length) {
+    else if(is_cat && field == 'id' && _meta.code_length) {
       res.synonym = 'Код';
       res.mandatory = true;
     }
-    else if(is_cat && field_name == 'name') {
+    else if(is_cat && field == 'name') {
       res.synonym = 'Наименование';
       res.mandatory = _meta.main_presentation_name;
     }
-    else if(field_name == '_area') {
+    else if(field == '_area') {
       res.synonym = 'Область';
     }
-    else if(field_name == 'presentation') {
+    else if(field == 'presentation') {
       res.synonym = 'Представление';
     }
-    else if(field_name == '_deleted') {
+    else if(field == '_deleted') {
       res.synonym = 'Пометка удаления';
       res.type.types[0] = 'boolean';
     }
-    else if(field_name == 'is_folder') {
+    else if(field == 'is_folder') {
       res.synonym = 'Это группа';
       res.type.types[0] = 'boolean';
     }
-    else if(field_name == 'ref') {
+    else if(field == 'ref') {
       res.synonym = 'Ссылка';
       res.type.is_ref = true;
       if(type instanceof DataManager) {

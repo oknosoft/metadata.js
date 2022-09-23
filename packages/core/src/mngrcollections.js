@@ -1,14 +1,10 @@
 import {
-  EnumManager, CatManager, DocManager, InfoRegManager, AccumRegManager, DataProcessorsManager,
-  ChartOfAccountManager, ChartOfCharacteristicManager, TaskManager, BusinessProcessManager
-} from './mngrs';
+  EnumManager, CatManager, DocManager, InfoRegManager, AccumRegManager,
+  DataProcessorsManager, ChartOfCharacteristicManager} from './mngrs';
 
-class ManagersCollection {
+import {OwnerObj} from './meta/classes';
 
-  /**
-   * Ссылка на владельца
-   */
-  #owner;
+class ManagersCollection extends OwnerObj {
 
   /**
    * Ссылка на конструктор членов
@@ -16,17 +12,13 @@ class ManagersCollection {
   #Manager;
 
   constructor(owner, name, Manager) {
-    this.#owner = owner;
+    super(owner);
     this.#Manager = Manager;
     this.name = name;
   }
 
   toString() {
     return this.owner.msg.meta_classes[this.name];
-  }
-
-  get owner() {
-    return this.#owner;
   }
 
   create(name, Constructor, freeze) {
@@ -116,20 +108,6 @@ class AccumRegs extends ManagersCollection {
 }
 
 /**
- * ### Коллекция менеджеров регистров бухгалтерии
- * - Состав коллекции определяется метаданными используемой конфигурации
- * - Тип элементов коллекции: {{#crossLink "RegisterManager"}}{{/crossLink}}
- *
- * @class AccountsRegs
- * @static
- */
-class AccountsRegs extends ManagersCollection {
-  constructor(owner) {
-    super(owner, 'accreg', AccumRegManager);
-  }
-}
-
-/**
  * ### Коллекция менеджеров обработок
  * - Состав коллекции определяется метаданными используемой конфигурации
  * - Тип элементов коллекции: {{#crossLink "DataProcessorsManager"}}{{/crossLink}}
@@ -157,22 +135,9 @@ class Reports extends ManagersCollection {
   }
 }
 
-/**
- * ### Коллекция менеджеров планов счетов
- * - Состав коллекции определяется метаданными используемой конфигурации
- * - Тип элементов коллекции: {{#crossLink "ChartOfAccountManager"}}{{/crossLink}}
- *
- * @class ChartsOfAccounts
- * @static
- */
-class ChartsOfAccounts extends ManagersCollection {
-  constructor(owner) {
-    super(owner, 'cacc', ChartOfAccountManager);
-  }
-}
 
 /**
- * ### Коллекция менеджеров планов видов характеристик
+ * Коллекция менеджеров планов видов характеристик
  * - Состав коллекции определяется метаданными используемой конфигурации
  * - Тип элементов коллекции: {{#crossLink "ChartOfCharacteristicManager"}}{{/crossLink}}
  *
@@ -182,34 +147,6 @@ class ChartsOfAccounts extends ManagersCollection {
 class ChartsOfCharacteristics extends ManagersCollection {
   constructor(owner) {
     super(owner, 'cch', ChartOfCharacteristicManager);
-  }
-}
-
-/**
- * ### Коллекция менеджеров задач
- * - Состав коллекции определяется метаданными используемой конфигурации
- * - Тип элементов коллекции: {{#crossLink "TaskManager"}}{{/crossLink}}
- *
- * @class Tasks
- * @static
- */
-class Tasks extends ManagersCollection {
-  constructor(owner) {
-    super(owner, 'tsk', TaskManager);
-  }
-}
-
-/**
- * ### Коллекция бизнес-процессов
- * - Состав коллекции определяется метаданными используемой конфигурации
- * - Тип элементов коллекции: {{#crossLink "BusinessProcessManager"}}{{/crossLink}}
- *
- * @class BusinessProcesses
- * @static
- */
-class BusinessProcesses extends ManagersCollection {
-  constructor(owner) {
-    super(owner, 'bp', BusinessProcessManager);
   }
 }
 
@@ -259,14 +196,6 @@ function mngrs($p) {
     areg: {value: new AccumRegs($p)},
 
     /**
-     * Коллекция менеджеров регистров бухгалтерии
-     * @property accreg
-     * @type AccountsRegs
-     * @static
-     */
-    accreg: {value: new AccountsRegs($p)},
-
-    /**
      * Коллекция менеджеров обработок
      * @property dp
      * @type DataProcessors
@@ -283,36 +212,12 @@ function mngrs($p) {
     rep: {value: new Reports($p)},
 
     /**
-     * Коллекция менеджеров планов счетов
-     * @property cacc
-     * @type ChartsOfAccounts
-     * @static
-     */
-    cacc: {value: new ChartsOfAccounts($p)},
-
-    /**
      * Коллекция менеджеров планов видов характеристик
      * @property cch
      * @type ChartsOfCharacteristics
      * @static
      */
     cch: {value: new ChartsOfCharacteristics($p)},
-
-    /**
-     * Коллекция менеджеров задач
-     * @property tsk
-     * @type Tasks
-     * @static
-     */
-    tsk: {value: new Tasks($p)},
-
-    /**
-     * Коллекция менеджеров бизнес-процессов
-     * @property bp
-     * @type Tasks
-     * @static
-     */
-    bp: {value: new BusinessProcesses($p)}
 
   });
 

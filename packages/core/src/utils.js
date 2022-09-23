@@ -1163,8 +1163,8 @@ const utils = {
     /**
      * Приводит значение к типу Дата
      *
-     * @param str {String|Number|Date} - приводиме значение
-     * @param [strict=false] {Boolean} - если истина и значение не приводится к дате, возвращать пустую дату
+     * @param {String|Number|Date} str - приводиме значение
+     * @param {Boolean} [strict=false] - если истина и значение не приводится к дате, возвращать пустую дату
      * @return {Date|*}
      */
     date(str, strict) {
@@ -1178,8 +1178,8 @@ const utils = {
     /**
      * Извлекает guid из строки или ссылки или объекта
      *
-     * @param ref {String|Object|DataObj} - значение, из которого надо извлечь идентификатор
-     * @param [generate] {Boolean} - указывает, генерировать ли новый guid для пустого значения
+     * @param {String|Object|DataObj} ref - значение, из которого надо извлечь идентификатор
+     * @param {Boolean} [generate] - указывает, генерировать ли новый guid для пустого значения
      * @return {String}
      */
     guid(ref, generate) {
@@ -1214,11 +1214,10 @@ const utils = {
     },
 
     /**
-     * ### Приводит значение к типу Число
+     * Приводит значение к типу Число
      *
-     * @method fix_number
-     * @param str {*} - приводиме значение
-     * @param [strict=false] {Boolean} - конвертировать NaN в 0
+     * @param {*} str - приводиме значение
+     * @param {Boolean} [strict=false] - конвертировать NaN в 0
      * @return {Number}
      */
     number(str, strict) {
@@ -1238,9 +1237,8 @@ const utils = {
     },
 
     /**
-     * ### Приводит значение к типу Булево
+     * Приводит значение к типу Булево
      *
-     * @method fix_boolean
      * @param str {String}
      * @return {boolean}
      */
@@ -1252,11 +1250,10 @@ const utils = {
     },
 
     /**
-     * ### Приводит тип значения v к типу метаданных
+     * Приводит тип значения v к типу метаданных
      *
-     * @method fetch_type
      * @param str {*} - значение (обычно, строка, полученная из html поля ввода)
-     * @param type {Object} - поле type объекта метаданных (field.type)
+     * @param {Object} type - поле type объекта метаданных (field.type)
      * @return {*}
      */
     type(str, type) {
@@ -1286,6 +1283,45 @@ const utils = {
       }
       return str;
     },
+
+    /**
+     * Приводит строки дат к датам, ссылки к ссылкам
+     * @param obj
+     * @param _obj
+     * @param fields
+     */
+    collection(obj, _obj, fields) {
+      for (const fld in fields) {
+        let {type, choice_type} = fields[fld];
+        if(choice_type?.path) {
+          const prop = obj[choice_type.path[choice_type.path.length - 1]];
+          if(prop && prop.type) {
+            type = prop.type;
+          }
+        }
+        if(_obj.hasOwnProperty(fld)) {
+          if (type.is_ref && typeof _obj[fld] === 'object') {
+            if(!(fld === 'type' && obj.className && obj.className.indexOf('cch.') === 0)) {
+              _obj[fld] = utils.fix_guid(_obj[fld], false);
+            }
+          }
+          else if (type.date_part && typeof _obj[fld] === 'string') {
+            _obj[fld] = utils.fix_date(_obj[fld], type.types.length === 1);
+          }
+        }
+        else {
+          if(type.digits && !type.hasOwnProperty('str_len')) {
+            _obj[fld] = 0;
+          }
+          else if (type.is_ref && !type.hasOwnProperty('str_len')) {
+            _obj[fld] = utils.blank.guid;
+          }
+          else if (type.hasOwnProperty('str_len')) {
+            _obj[fld] = '';
+          }
+        }
+      }
+    }
   }
 
 };
