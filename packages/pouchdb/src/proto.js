@@ -15,7 +15,7 @@ export default ({classes}) => {
   classes.RamIndexer = RamIndexer;
 
 	// методы в прототип DataObj
-  DataObj.prototype.new_number_doc = function new_number_doc(prefix) {
+  DataObj.prototype.newNumberDoc = function newNumberDoc(prefix) {
     if (!this._metadata().code_length) {
       return Promise.resolve(this);
     }
@@ -52,7 +52,7 @@ export default ({classes}) => {
       return Promise.resolve(this.new_cat_id(prefix));
     }
 
-    return _manager.pouch_db.query('doc/number_doc',
+    return _manager.pouch_db.query('doc/numberDoc',
       {
         limit: 1,
         include_docs: false,
@@ -79,7 +79,7 @@ export default ({classes}) => {
         }
 
         if (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj){
-          this.number_doc = prefix + part;
+          this.numberDoc = prefix + part;
         }
         else{
           this.id = prefix + part;
@@ -97,7 +97,7 @@ export default ({classes}) => {
         (organization && organization.prefix ? organization.prefix : (wsql.get_user_param('zone') + '-'));
 
     let code_length = this._metadata().code_length - prefix.length,
-      field = (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) ? 'number_doc' : 'id',
+      field = (this instanceof DocObj || this instanceof TaskObj || this instanceof BusinessProcessObj) ? 'numberDoc' : 'id',
       part = '',
       res = wsql.alasql('select top 1 ' + field + ' as id from ? where ' + field + ' like "' + prefix + '%" order by ' + field + ' desc', [_manager.alatable]);
 

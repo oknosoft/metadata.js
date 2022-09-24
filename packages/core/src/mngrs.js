@@ -4,13 +4,13 @@
  */
 
 
-import utils from './utils';
 import msg from './i18n.ru';
-import {DataObj, EnumObj, DocObj, RegisterRow} from './objs';
+import {BaseDataObj, DataObj, EnumObj, DocObj, RegisterRow} from './objs';
 import MetaEventEmitter from './meta/emitter';
 import camelcase from 'camelcase';
 
 const string = 'string';
+const pascal = {pascalCase: true, preserveConsecutiveUppercase: true};
 
 class Iterator {
 
@@ -124,8 +124,15 @@ export class DataManager extends MetaEventEmitter{
    * Корень метадаты
    * @type {MetaEngine}
    */
-  get $p() {
+  get root() {
     return this.owner.owner;
+  }
+
+  /**
+   * @type {MetaUtils}
+   */
+  get utils() {
+    return this.root.utils;
   }
 
 	/**
@@ -135,7 +142,7 @@ export class DataManager extends MetaEventEmitter{
 	 * @return {MetaObj} - объект метаданных
 	 */
 	metadata(field) {
-    return this.$p.md.get(this, field);
+    return this.root.md.get(this, field);
 	}
 
   /**
@@ -162,10 +169,10 @@ export class DataManager extends MetaEventEmitter{
    * @return {DataObj|undefined}
    */
   get(ref, create = true) {
-    ref = utils.fix.guid(ref);
+    ref = this.utils.fix.guid(ref);
     let o = this.#byRef[ref];
     if (!o && !create) {
-      o = this.obj_constructor('', [ref, this]);
+      o = this.objConstructor('', [ref, this]);
     }
     return o;
   }
@@ -176,7 +183,7 @@ export class DataManager extends MetaEventEmitter{
    * @return {String}
    */
   get_ref(attr){
-    return utils.fix.guid(attr);
+    return this.utils.fix.guid(attr);
   }
 
   /**
@@ -192,7 +199,7 @@ export class DataManager extends MetaEventEmitter{
 	 * Указатель на адаптер данных этого менеджера
 	 */
 	get adapter(){
-    const {adapters} = this.$p;
+    const {adapters} = this.root;
     return adapters[this.cachable] || adapters.pouch;
 	}
 
@@ -220,7 +227,7 @@ export class DataManager extends MetaEventEmitter{
 	 * @return {Array}
 	 */
   find_rows(selection, callback) {
-    return utils._find_rows.call(this, this, selection, callback);
+    return this.utils._find_rows.call(this, this, selection, callback);
   }
 
   /**
@@ -231,32 +238,32 @@ export class DataManager extends MetaEventEmitter{
    * @return {DataObj}
    */
   find(val, columns) {
-    return utils._find(this.#byRef, val, columns);
+    return this.utils._find(this.#byRef, val, columns);
   }
 
 	/**
 	 * Имя функции - конструктора объектов или строк табличных частей
 	 *
-	 * @method obj_constructor
-	 * @param {String} [ts_name]
+	 * @method objConstructor
+	 * @param {String} [tsName]
 	 * @param {Boolean|Object} [mode]
 	 * @return {String|Function|DataObj}
 	 */
-	obj_constructor(ts_name = '', mode) {
+	objConstructor(tsName = '', mode) {
 
-		if(!this.#constructorNames[ts_name]){
-			const fn_name = camelcase(this.className);
-			this.#constructorNames[ts_name] = ts_name ? `${fn_name}${camelcase(ts_name)}Row` : fn_name;
+		if(!this.#constructorNames[tsName]){
+			const fnName = camelcase(this.className, pascal);
+			this.#constructorNames[tsName] = tsName ? `${fnName}${camelcase(tsName, pascal)}Row` : fnName;
 		}
 
-		ts_name = this.#constructorNames[ts_name];
+		tsName = this.#constructorNames[tsName];
 
 		// если режим не указан, возвращаем имя функции - конструктора
 		if(!mode){
-			return ts_name;
+			return tsName;
 		}
 		// если булево - возвращаем саму функцию - конструктор
-		const constructor = this.$p[ts_name];
+		const constructor = this.root.classes[tsName];
 		if(mode === true ){
 			return constructor;
 		}
@@ -274,7 +281,7 @@ export class DataManager extends MetaEventEmitter{
 	 * @param [selection._top] {Number} - ограничивает длину возвращаемого массива
 	 * @return {Promise.<Array>}
 	 */
-	option_list(selection = {}, val){
+	optionList(selection = {}, val){
 
 		let l = [], input_by_string, text;
 
@@ -284,7 +291,7 @@ export class DataManager extends MetaEventEmitter{
           text: v.presentation,
           value: v.ref
         }
-        if (utils.is_equal(opt.value, val)) {
+        if (this.utils.is.equal(opt.value, val)) {
           opt.selected = true;
         }
         if (v.className === 'cat.property_values' && v.css) {
@@ -327,17 +334,16 @@ export class DataManager extends MetaEventEmitter{
 	 * Возвращает промис со структурой печатных форм объекта
 	 * @return {Object}
 	 */
-	printing_plates(){
+	printingPlates(){
 		return this.metadata().printing_plates;
 	}
 
   /**
    * Удаляет объект из alatable и локального кеша
-   * @method unload_obj
-   * @param ref
+   * @param obj
    */
-  unload_obj(obj) {
-    const {ref, id, date, number_doc} = obj;
+  unloadObj(obj) {
+    const {ref, id, date, numberDoc} = obj;
     delete this.#byRef[ref];
     const ind = this.#alatable.indexOf(obj);
     if(ind >= 0) {
@@ -346,10 +352,10 @@ export class DataManager extends MetaEventEmitter{
     if(id && this.#index.id[id]) {
       delete this.#index.id[id];
     }
-    else if(date && number_doc) {
-      const by_id = this.#index.year[utils.moment(date).format('YYYYMM')];
-      if(by_id[number_doc]) {
-        delete by_id[number_doc];
+    else if(date && numberDoc) {
+      const by_id = this.#index.year[this.utils.moment(date).format('YYYYMM')];
+      if(by_id[numberDoc]) {
+        delete by_id[numberDoc];
       }
     }
   }
@@ -387,28 +393,29 @@ export class DataManager extends MetaEventEmitter{
  * @constructor
  * @param className {string} - имя типа менеджера объекта
  */
-export class RefDataManager extends DataManager{
+export class RefDataManager extends DataManager {
 
 	/**
-	 * ### Создаёт новый объект типа объектов текущего менеджера
+	 * Создаёт новый объект типа объектов текущего менеджера
 	 * Для кешируемых объектов, все действия происходят на клиенте<br />
 	 * Для некешируемых, выполняется обращение к серверу для получения guid и значений реквизитов по умолчанию
 	 *
-	 * @method create
 	 * @param [attr] {Object} - значениями полей этого объекта будет заполнен создаваемый объект
 	 * @param [do_after_create] {Boolean} - признак, надо ли заполнять (инициализировать) создаваемый объект значениями полей по умолчанию
 	 * @return {Promise.<DataObj>}
 	 */
-	create(attr, do_after_create, force_obj){
+  create(attr, do_after_create, force_obj) {
+
+    const {utils} = this;
 
 		if(!attr || typeof attr !== "object"){
 			attr = {};
 		}
-		else if(utils.is_data_obj(attr)){
+		else if(utils.is.dataObj(attr)){
 			return Promise.resolve(attr);
 		}
 
-		if(!attr.ref || !utils.is_guid(attr.ref) || utils.is_empty_guid(attr.ref)){
+		if(!attr.ref || !utils.is.guid(attr.ref) || utils.is.emptyGuid(attr.ref)){
 			attr.ref = utils.generate_guid();
 		}
 
@@ -416,7 +423,7 @@ export class RefDataManager extends DataManager{
 
 		if(!o){
 
-			o = this.obj_constructor('', [attr, this]);
+			o = this.objConstructor('', [attr, this]);
 
       // Триггер после создания
       const after_create_res = do_after_create === false ? false : o.after_create();
@@ -430,15 +437,15 @@ export class RefDataManager extends DataManager{
       }
 
       // Если новый код или номер не были назначены в триггере - устанавливаем стандартное значение
-      let call_new_number_doc;
+      let callNumberDoc;
       if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
-        call_new_number_doc = !o.number_doc;
+        callNumberDoc = !o.numberDoc;
       }
       else{
-        call_new_number_doc = !o.id;
+        callNumberDoc = !o.id;
       }
 
-      return (call_new_number_doc ? o.new_number_doc() : Promise.resolve(o))
+      return (callNumberDoc ? o.newNumberDoc() : Promise.resolve(o))
         .then(() => {
           // выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
           return after_create_res instanceof Promise ? after_create_res : o;
@@ -456,13 +463,13 @@ export class RefDataManager extends DataManager{
 	 * @param {Boolean|String} [forse] - перезаполнять объект
    * при forse == "update_only", новые объекты не создаются, а только перезаполняются ранее загруженные в озу
 	 */
-	load_array(aattr, forse){
+	loadArray(aattr, forse){
 		const res = [];
-    const {wsql} = this.$p;
+    const {jobPrm} = this.root;
     const {grouping, tabular_sections} = this.metadata();
 		for(const attr of aattr){
 		  if(grouping === 'array' && attr.ref.length <= 3) {
-		    res.push.apply(res, this.load_array(attr.rows, forse));
+		    res.push.apply(res, this.loadArray(attr.rows, forse));
 		    continue;
       }
 			let obj = this.get(attr, false);
@@ -470,7 +477,7 @@ export class RefDataManager extends DataManager{
         if(forse === 'update_only') {
 					continue;
 				}
-				obj = this.obj_constructor('', [attr, this, true]);
+				obj = this.objConstructor('', [attr, this, true]);
 				obj.is_new() && obj._set_loaded();
 			}
 			else if(obj.is_new() || forse){
@@ -478,7 +485,7 @@ export class RefDataManager extends DataManager{
           obj._data._loading = true;
         }
         else if(forse === 'update_only' && attr.timestamp) {
-          if(attr.timestamp.user === (this.adapter.authorized || wsql.get_user_param('user_name'))) {
+          if(attr.timestamp.user === (this.adapter.authorized || jobPrm.get('user_name'))) {
             if(new Date() - moment(attr.timestamp.moment, "YYYY-MM-DDTHH:mm:ss ZZ").toDate() < 30000) {
               attr._rev && (obj._obj._rev = attr._rev);
               continue;
@@ -498,11 +505,11 @@ export class RefDataManager extends DataManager{
 
 	/**
 	 * Находит перую папку в пределах подчинения владельцу
-	 * @method first_folder
+	 * @method firstFolder
 	 * @param owner {DataObj|String}
 	 * @return {DataObj} - ссылка найденной папки или пустая ссылка
 	 */
-	first_folder(owner){
+	firstFolder(owner){
 		for(let i in this.byRef){
 			const o = this.byRef[i];
 			if(o.is_folder && (!owner || utils.is_equal(owner, o.owner))) return o;
@@ -517,7 +524,7 @@ export class RefDataManager extends DataManager{
 	 * @return {Object|String}
 	 */
 	sqlCreate(attr){
-		const {sql_mask, sql_type} = this.$p.md;
+		const {sqlMask, sqlType} = this.$p.md;
 		let t = this,
       sql = "CREATE TABLE IF NOT EXISTS ",
 			cmd = t.metadata(),
@@ -527,7 +534,7 @@ export class RefDataManager extends DataManager{
       sql += t.table_name+" (ref uuid PRIMARY KEY NOT NULL, _deleted boolean";
 
       if (t instanceof DocManager) {
-        sql += ", posted boolean, date timestamp with time zone, number_doc character(11)";
+        sql += ", posted boolean, date timestamp with time zone, numberDoc character(11)";
       }
       else {
         if (cmd.code_length)
@@ -545,7 +552,7 @@ export class RefDataManager extends DataManager{
           }
         }else
           f0 = f;
-        sql += ", " + f0 + sql_type(t, f, cmd.fields[f].type, true);
+        sql += ", " + f0 + sqlType(t, f, cmd.fields[f].type, true);
       }
 
       for(f in cmd["tabular_sections"])
@@ -556,12 +563,12 @@ export class RefDataManager extends DataManager{
       sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `_deleted` BOOLEAN";
 
       if(t instanceof DocManager)
-        sql += ", posted boolean, date Date, number_doc CHAR";
+        sql += ", posted boolean, date Date, numberDoc CHAR";
       else
         sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
 
       for(f in cmd.fields)
-        sql += sql_mask(f) + sql_type(t, f, cmd.fields[f].type);
+        sql += sql_mask(f) + sqlType(t, f, cmd.fields[f].type);
 
       for(f in cmd["tabular_sections"])
         sql += ", " + "`ts_" + f + "` JSON";
@@ -644,7 +651,7 @@ export class DataProcessorsManager extends DataManager{
 	 * @return {DataProcessorObj}
 	 */
 	create(attr = {}, loading){
-		return this.obj_constructor('', [attr, this, loading]);
+		return this.objConstructor('', [attr, this, loading]);
 	}
 
 	/**
@@ -665,9 +672,9 @@ export class DataProcessorsManager extends DataManager{
 	/**
 	 * fake-метод, не имеет смысла для обработок, т.к. они не кешируются в alasql
    * Добавлен для унификации формы объекта при закрытии
-	 * @method unload_obj
+	 * @method unloadObj
 	 */
-	unload_obj() {	}
+	unloadObj() {	}
 }
 
 /**
@@ -697,7 +704,7 @@ export class EnumManager extends RefDataManager{
 	}
 
   get(ref, create) {
-    if (!ref || ref == utils.blank.guid) {
+    if (!ref || ref == this.utils.blank.guid) {
       ref = "_";
     }
     return super.get(ref, create);
@@ -772,8 +779,9 @@ export class EnumManager extends RefDataManager{
 	 * @param [selection._top] {Number}
 	 * @return {Promise.<Array>}
 	 */
-  option_list(selection = {}, val){
+  optionList(selection = {}, val){
 		let l = [], synonym = "", sref;
+    const {is} = this.utils;
 
     function push(v){
       if(selection._dhtmlx){
@@ -781,7 +789,7 @@ export class EnumManager extends RefDataManager{
           text: v.presentation,
           value: v.ref
         }
-        if(utils.is_equal(v.value, val)){
+        if(is.equal(v.value, val)){
           v.selected = true;
         }
         l.push(v);
@@ -900,7 +908,7 @@ export class RegisterManager extends DataManager{
 
 	/**
 	 * сохраняет массив объектов в менеджере
-	 * @method load_array
+	 * @method loadArray
 	 * @param aattr {Array} - массив объектов для трансформации в объекты ссылочного типа
 	 * @param forse {Boolean} - перезаполнять объект
 	 */
@@ -913,7 +921,7 @@ export class RegisterManager extends DataManager{
       let obj = this.byRef[ref];
 
       if (!obj && !row._deleted) {
-        obj = this.obj_constructor('', [row, this, true]);
+        obj = this.objConstructor('', [row, this, true]);
         obj.is_new() && obj._set_loaded();
       }
       else if (obj && row._deleted) {
@@ -932,7 +940,7 @@ export class RegisterManager extends DataManager{
 	}
 
 	/**
-	 * Возаращает запросов для создания таблиц или извлечения данных
+	 * Возаращает запрос для создания таблиц или извлечения данных
 	 * @method get_sql_struct
 	 * @for RegisterManager
 	 * @param attr {Object}
@@ -940,7 +948,7 @@ export class RegisterManager extends DataManager{
 	 * @return {Object|String}
 	 */
 	get_sql_struct(attr) {
-		const {sql_mask, sql_type} = this.$p.md;
+		const {md: {sqlMask, sqlType}, utils}  = this.root;
 		var t = this,
 			cmd = t.metadata(),
 			res = {}, f,
@@ -1027,7 +1035,7 @@ export class RegisterManager extends DataManager{
 
 									else if(typeof sel[key] == "object"){
 
-                    if(utils.is_data_obj(sel[key])) {
+                    if(utils.is.dataObj(sel[key])) {
                       s += "\n AND (_t_." + key + " = '" + sel[key] + "') ";
                     }
                     else {
@@ -1101,14 +1109,14 @@ export class RegisterManager extends DataManager{
 						first_field = false;
 					}else
 						sql += ", " + f;
-					sql += sql_type(t, f, cmd.dimensions[f].type, true);
+					sql += sqlType(t, f, cmd.dimensions[f].type, true);
 				}
 
 				for(f in cmd.resources)
-					sql += ", " + f + sql_type(t, f, cmd.resources[f].type, true);
+					sql += ", " + f + sqlType(t, f, cmd.resources[f].type, true);
 
 				for(f in cmd.attributes)
-					sql += ", " + f + sql_type(t, f, cmd.attributes[f].type, true);
+					sql += ", " + f + sqlType(t, f, cmd.attributes[f].type, true);
 
 				sql += ", PRIMARY KEY (";
 				first_field = true;
@@ -1127,16 +1135,16 @@ export class RegisterManager extends DataManager{
 			}else{
 				sql += "`"+t.table_name+"` (ref CHAR PRIMARY KEY NOT NULL, `_deleted` BOOLEAN";
 
-				//sql += md.sql_mask(f) + md.sql_type(t, f, cmd.dimensions[f].type);
+				//sql += md.sqlMask(f) + md.sqlType(t, f, cmd.dimensions[f].type);
 
 				for(f in cmd.dimensions)
-					sql += sql_mask(f) + sql_type(t, f, cmd.dimensions[f].type);
+					sql += sql_mask(f) + sqlType(t, f, cmd.dimensions[f].type);
 
 				for(f in cmd.resources)
-					sql += sql_mask(f) + sql_type(t, f, cmd.resources[f].type);
+					sql += sql_mask(f) + sqlType(t, f, cmd.resources[f].type);
 
 				for(f in cmd.attributes)
-					sql += sql_mask(f) + sql_type(t, f, cmd.attributes[f].type);
+					sql += sql_mask(f) + sqlType(t, f, cmd.attributes[f].type);
 
 				// sql += ", PRIMARY KEY (";
 				// first_field = true;
@@ -1145,7 +1153,7 @@ export class RegisterManager extends DataManager{
 				// 		sql += "`" + f + "`";
 				// 		first_field = false;
 				// 	}else
-				// 		sql += md.sql_mask(f);
+				// 		sql += md.sqlMask(f);
 				// }
 			}
 
@@ -1246,14 +1254,14 @@ export class RegisterManager extends DataManager{
 
 		for(var j in dimensions){
 			key += (key ? "¶" : "");
-			if(dimensions[j].type.is_ref)
-				key += utils.fix_guid(attr[j]);
+			if(dimensions[j].type.isRef)
+				key += this.utils.fix.guid(attr[j]);
 
 			else if(!attr[j] && dimensions[j].type.digits)
 				key += "0";
 
 			else if(dimensions[j].date_part)
-				key += moment(attr[j] || utils.blank.date).format(moment.defaultFormatUtc);
+				key += moment(attr[j] || this.utils.blank.date).format(moment.defaultFormatUtc);
 
 			else if(attr[j]!=undefined)
 				key += String(attr[j]);
@@ -1273,7 +1281,7 @@ export class RegisterManager extends DataManager{
     let o = this.byRef[attr.ref];
     if(!o) {
 
-      o = this.obj_constructor('', [attr, this]);
+      o = this.objConstructor('', [attr, this]);
 
       // Триггер после создания
       let after_create_res = {};
@@ -1374,14 +1382,14 @@ export class CatManager extends RefDataManager{
 		if (_meta.hierarchical && _meta.group_hierarchy) {
 
 			/**
-			 * ### Признак "это группа"
+			 * Признак "это группа"
 			 * @property is_folder
 			 * @for CatObj
 			 * @type {Boolean}
 			 */
-			Object.defineProperty(this.obj_constructor('', true).prototype, 'is_folder', {
+			Object.defineProperty(this.objConstructor('', true).prototype, 'is_folder', {
 				get(){ return this._obj.is_folder || false},
-				set(v){ this._obj.is_folder = utils.fix_boolean(v)},
+				set(v){ this._obj.is_folder = this.utils.fix.boolean(v)},
 				enumerable: true,
 				configurable: true
 			})

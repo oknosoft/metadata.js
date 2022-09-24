@@ -46,7 +46,6 @@ const ss_selection_fields = {
     tooltip: '',
     type: {
       types: ['enm.comparison_types'],
-      is_ref: true
     }
   },
   right_value: {
@@ -68,7 +67,7 @@ const ss_selection_fields = {
   },
 };
 
-export const sys_fields = ['zone','id','number_doc','date','parent'];
+export const sys_fields = ['zone','id','numberDoc','date','parent'];
 
 export const sys = [{
   enm: {
@@ -450,7 +449,6 @@ export const sys = [{
           tooltip: 'Использование стандартного периода',
           type: {
             types: ['enm.standard_period'],
-            is_ref: true
           }
         },
         formula: {
@@ -458,7 +456,6 @@ export const sys = [{
           tooltip: 'Формула инициализации',
           type: {
             types: ['cat.formulas'],
-            is_ref: true
           }
         },
         output: {
@@ -466,7 +463,6 @@ export const sys = [{
           tooltip: 'Вывод результата',
           type: {
             types: ['enm.report_output'],
-            is_ref: true
           }
         },
         tag: {
@@ -535,7 +531,6 @@ export const sys = [{
               tooltip: 'Тип элемента управления',
               type: {
                 types: ['enm.data_field_kinds'],
-                is_ref: true
               }
             },
             formatter: {
@@ -543,7 +538,6 @@ export const sys = [{
               tooltip: 'Функция форматирования',
               type: {
                 types: ['cat.formulas'],
-                is_ref: true
               },
               choice_params: [
                 {
@@ -557,7 +551,6 @@ export const sys = [{
               tooltip: 'Компонент редактирования',
               type: {
                 types: ['cat.formulas'],
-                is_ref: true
               },
               choice_params: [
                 {
@@ -602,7 +595,6 @@ export const sys = [{
               tooltip: '',
               type: {
                 types: ['enm.sort_directions'],
-                is_ref: true
               }
             }
           }
@@ -670,7 +662,6 @@ export const sys = [{
               tooltip: 'По умолчанию - сумма',
               type: {
                 types: ['cat.formulas'],
-                is_ref: true
               }
             }
           }

@@ -179,7 +179,6 @@ export default {
           mandatory: true,
           type: {
             types: ['cat.scheme_settings'],
-            is_ref: true
           }
         }
       }

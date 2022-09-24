@@ -1,7 +1,12 @@
 
 import MetaEventEmitter from './meta/emitter'
+import {OwnerObj} from './meta/classes';
 
-export default class AbstracrAdapter extends MetaEventEmitter{
+export class DataAdapters extends OwnerObj {
+
+}
+
+export default class AbstracrAdapter extends MetaEventEmitter {
 
 	constructor($p) {
 		super();
@@ -22,7 +27,7 @@ export default class AbstracrAdapter extends MetaEventEmitter{
 	/**
 	 * Загружает объекты из базы данных по массиву ссылок
 	 *
-	 * @method load_array
+	 * @method loadArray
 	 * @param _mgr {DataManager}
 	 * @param refs {Array}
 	 * @param with_attachments {Boolean}

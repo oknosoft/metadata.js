@@ -1014,7 +1014,7 @@ function adapter({AbstracrAdapter}) {
           _manager.build_search(tmp, tObj);
         }
         else {
-          tmp.search = ((_obj.number_doc || '') + (_obj.note ? ' ' + _obj.note : '')).toLowerCase();
+          tmp.search = ((_obj.numberDoc || '') + (_obj.note ? ' ' + _obj.note : '')).toLowerCase();
         }
       }
 
@@ -1185,17 +1185,17 @@ function adapter({AbstracrAdapter}) {
       else if(_mgr instanceof classes.DocManager) {
         flds.push('posted');
         flds.push('date');
-        flds.push('number_doc');
+        flds.push('numberDoc');
       }
       else if(_mgr instanceof classes.TaskManager) {
         flds.push('name as presentation');
         flds.push('date');
-        flds.push('number_doc');
+        flds.push('numberDoc');
         flds.push('completed');
       }
       else if(_mgr instanceof classes.BusinessProcessManager) {
         flds.push('date');
-        flds.push('number_doc');
+        flds.push('numberDoc');
         flds.push('started');
         flds.push('finished');
       }
@@ -1331,7 +1331,7 @@ function adapter({AbstracrAdapter}) {
                 if(mf.type.date_part) {
                   o[fldsyn] = $p.moment(doc[fld]).format($p.moment._masks[mf.type.date_part]);
                 }
-                else if(mf.type.is_ref) {
+                else if(mf.type.isRef) {
                   if(!doc[fld] || doc[fld] == $p.utils.blank.guid) {
                     o[fldsyn] = '';
                   }
@@ -1912,7 +1912,7 @@ function adapter({AbstracrAdapter}) {
      */
     backup_database(do_zip) {
 
-      // получаем строку create_tables
+      // получаем строку createTables
 
       // получаем строки для каждой таблицы
 
@@ -1926,7 +1926,7 @@ function adapter({AbstracrAdapter}) {
      */
     restore_database(do_zip) {
 
-      // получаем строку create_tables
+      // получаем строку createTables
 
       // получаем строки для каждой таблицы
 

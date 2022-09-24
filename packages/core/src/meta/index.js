@@ -6,7 +6,6 @@
  */
 
 import MetaEventEmitter from './emitter';
-import utils from '../utils';
 import {DataManager} from '../mngrs';
 import mngrcollections from '../mngrcollections';
 import {sys, sys_fields} from './system';
@@ -19,11 +18,6 @@ import {TypeDef, MetaObj, MetaField, MetaFields, MetaTabs, } from './classes';
  * Важнейший объект `metadata.js`. Содержит описание всех классов данных приложения.<br />
  * По данным этого объекта, при старте приложения, формируются менеджеры данных, строятся динамические конструкторы объектов данных,
  * обеспечивается ссылочная типизация, рисуются автоформы объектов и списков.
- *
- * @class Meta
- * @static
- * @menuorder 02
- * @tooltip Описание метаданных
  */
 class Meta extends MetaEventEmitter {
 
@@ -40,9 +34,6 @@ class Meta extends MetaEventEmitter {
     dp: {},
     rep: {},
     cch: {},
-    cacc: {},
-    bp: {},
-    tsk: {}
   };
 
   /**
@@ -68,6 +59,9 @@ class Meta extends MetaEventEmitter {
    */
   static _sys = sys;
 
+  /**
+   * @param {MetaEngine} owner
+   */
   constructor(owner) {
     super(owner);
     // создаём конструкторы менеджеров данных
@@ -82,7 +76,7 @@ class Meta extends MetaEventEmitter {
    */
   init(raw) {
     for(const patch of Meta._sys) {
-      utils._patch(raw, patch);
+      this.owner.utils._patch(raw, patch);
     }
     for(const area of Object.keys(raw)) {
       if(this.#m[area]) {
@@ -130,7 +124,6 @@ class Meta extends MetaEventEmitter {
         synonym: '',
         tooltip: '',
         type: {
-          is_ref: false,
           types: ['string'],
         },
       };
@@ -140,7 +133,7 @@ class Meta extends MetaEventEmitter {
     const is_doc = 'doc,tsk,bp'.includes(np[0]),
       is_cat = 'cat,cch,cacc,tsk'.includes(np[0]);
 
-    if(is_doc && field == 'number_doc' && _meta.code_length) {
+    if(is_doc && field == 'numberDoc' && _meta.code_length) {
       res.synonym = 'Номер';
       res.tooltip = 'Номер документа';
       res.type.str_len = 11;
@@ -179,7 +172,7 @@ class Meta extends MetaEventEmitter {
     }
     else if(field == 'ref') {
       res.synonym = 'Ссылка';
-      res.type.is_ref = true;
+      res.type.isRef = true;
       if(type instanceof DataManager) {
         res.type._mgr = type;
         res.type.types[0] = `${type._owner.name}.${type.name}`;
@@ -196,103 +189,44 @@ class Meta extends MetaEventEmitter {
   }
 
   /**
-   * ### Возвращает структуру имён объектов метаданных конфигурации
+   * Возвращает структуру имён объектов метаданных конфигурации
    *
-   * @method classes
    * @return {Object}
    */
   classes() {
     const res = {};
-    for (const i in this._m) {
+    for (const i in this.#m) {
       res[i] = [];
-      for (const j in this._m[i])
+      for (const j in this.#m[i])
         res[i].push(j);
     }
     return res;
   }
 
   /**
-   * ### Возвращает массив используемых баз
+   * Возвращает массив используемых баз (типов кеширования)
    *
-   * @method bases
-   * @return {Array}
+   * @return {Array.<String>}
    */
   bases() {
-    const res = {};
-    const {_m} = this;
+    const res = new Set();
+    const _m = this.#m;
     for (let i in _m) {
       for (let j in _m[i]) {
         if(_m[i][j].cachable) {
-          let _name = _m[i][j].cachable.replace('_remote', '').replace('_ram', '').replace('_doc', '');
-          if(_name != 'meta' && _name != 'templates' && _name != 'e1cib' && !res[_name]) {
-            res[_name] = _name;
-          }
+          res.add(_m[i][j].cachable.replace(/_.*/, ''));
         }
       }
     }
-    return Object.keys(res);
+    return Array.from(res);
   }
 
   /**
-   * ### Возвращает англоязычный синоним строки
-   * TODO: перенести этот метод в плагин
-   *
-   * @method syns_js
-   * @param v {String}
-   * @return {String}
-   */
-  syns_js(v) {
-    const synJS = {
-      DeletionMark: '_deleted',
-      Description: 'name',
-      DataVersion: 'data_version',    // todo: не сохранять это поле в pouchdb
-      IsFolder: 'is_folder',
-      Number: 'number_doc',
-      Date: 'date',
-      Дата: 'date',
-      Posted: 'posted',
-      Code: 'id',
-      Parent_Key: 'parent',
-      Owner_Key: 'owner',
-      Owner: 'owner',
-      Ref_Key: 'ref',
-      Ссылка: 'ref',
-      LineNumber: 'row',
-    };
-    return synJS[v] || this._m.syns_js[this._m.syns_1с.indexOf(v)] || v;
-  }
-
-  /**
-   * ### Возвращает русскоязычный синоним строки
-   * TODO: перенести этот метод в плагин
-   *
-   * @method syns_1с
-   * @param v {String}
-   * @return {String}
-   */
-  syns_1с(v) {
-    const syn1c = {
-      _deleted: 'DeletionMark',
-      name: 'Description',
-      is_folder: 'IsFolder',
-      number_doc: 'Number',
-      date: 'Date',
-      posted: 'Posted',
-      id: 'Code',
-      ref: 'Ref_Key',
-      parent: 'Parent_Key',
-      owner: 'Owner_Key',
-      row: 'LineNumber',
-    };
-    return syn1c[v] || this._m.syns_1с[this._m.syns_js.indexOf(v)] || v;
-  }
-
-  /**
-   * ### Возвращает список доступных печатных форм
-   * @method printing_plates
+   * Возвращает список доступных печатных форм
+   * @method printingPlates
    * @return {Object}
    */
-  printing_plates(pp) {
+  printingPlates(pp) {
     if(pp) {
       for (const i in pp.doc) {
         this._m.doc[i].printing_plates = pp.doc[i];
@@ -306,15 +240,15 @@ class Meta extends MetaEventEmitter {
    * @return {DataManager|undefined}
    * @private
    */
-  find_mgr(id) {
+  findMgr(id) {
     return this.#index.mgrs[id];
   }
 
   /**
-   * ### Создаёт строку SQL с командами создания таблиц для всех объектов метаданных
-   * @method create_tables
+   * Создаёт строку SQL с командами создания таблиц для всех объектов метаданных
+   * @method createTables
    */
-  create_tables(callback, attr) {
+  createTables(callback, attr) {
 
     const {owner} = this;
     const data_names = [];
@@ -358,21 +292,20 @@ class Meta extends MetaEventEmitter {
   }
 
   /**
-   * ### Возвращает тип поля sql для типа данных
+   * Возвращает тип поля sql для типа данных
    *
-   * @method sql_type
    * @param mgr {DataManager}
    * @param f {String}
    * @param mf {Object} - описание метаданных поля
    * @param pg {Boolean} - использовать синтаксис postgreSQL
    * @return {*}
    */
-  sql_type(mgr, f, mf, pg) {
+  sqlType(mgr, f, mf, pg) {
     var sql;
     if((f == 'type' && mgr.table_name == 'cch_properties') || (f == 'svg' && mgr.table_name == 'cat_production_params')) {
       sql = ' JSON';
     }
-    else if(mf.is_ref || mf.types.indexOf('guid') != -1) {
+    else if(mf.isRef || mf.types.indexOf('guid') != -1) {
       if(!pg) {
         sql = ' CHAR';
       }
@@ -425,170 +358,18 @@ class Meta extends MetaEventEmitter {
 
   /**
    * ### Заключает имя поля в аппострофы
-   * @method sql_mask
+   * @method sqlMask
    * @param f
    * @param t
    * @return {string}
    * @private
    */
-  sql_mask(f, t) {
+  sqlMask(f, t) {
     //var mask_names = ["delete", "set", "value", "json", "primary", "content"];
     return ', ' + (t ? '_t_.' : '') + ('`' + f + '`');
   }
 
-  /**
-   * ### Возвращает структуру для инициализации таблицы на форме
-   * TODO: перенести этот метод в плагин
-   *
-   * @method ts_captions
-   * @param className
-   * @param ts_name
-   * @param source
-   * @return {boolean}
-   */
-  ts_captions(className, ts_name, source) {
-    if(!source) {
-      source = {};
-    }
 
-    var mts = this.get(className).tabular_sections[ts_name],
-      mfrm = this.get(className).form,
-      fields = mts ? mts.fields : {}, mf;
-
-    // если имеются метаданные формы, используем их
-    if(mfrm && mfrm.obj) {
-
-      if(!mfrm.obj.tabular_sections[ts_name]) {
-        return;
-      }
-
-      utils._mixin(source, mfrm.obj.tabular_sections[ts_name]);
-
-    }
-    else {
-
-      if(ts_name === 'contact_information') {
-        fields = {type: '', kind: '', presentation: ''};
-      }
-
-      source.fields = ['row'];
-      source.headers = '№';
-      source.widths = '40';
-      source.min_widths = '';
-      source.aligns = '';
-      source.sortings = 'na';
-      source.types = 'cntr';
-
-      for (var f in fields) {
-        mf = mts.fields[f];
-        if(!mf.hide) {
-          source.fields.push(f);
-          source.headers += ',' + (mf.synonym ? mf.synonym.replace(/,/g, ' ') : f);
-          source.types += ',' + this.control_by_type(mf.type);
-          source.sortings += ',na';
-        }
-      }
-    }
-
-    return true;
-
-  }
-
-  /**
-   * ### Возвращает имя класса по полному имени объекта метаданных 1С
-   * TODO: перенести этот метод в плагин
-   *
-   * @method className_from_1c
-   * @param name
-   */
-  className_from_1c(name) {
-
-    var pn = name.split('.');
-    if(pn.length == 1) {
-      return 'enm.' + name;
-    }
-    else if(pn[0] == 'Перечисление') {
-      name = 'enm.';
-    }
-    else if(pn[0] == 'Справочник') {
-      name = 'cat.';
-    }
-    else if(pn[0] == 'Документ') {
-      name = 'doc.';
-    }
-    else if(pn[0] == 'РегистрСведений') {
-      name = 'ireg.';
-    }
-    else if(pn[0] == 'РегистрНакопления') {
-      name = 'areg.';
-    }
-    else if(pn[0] == 'РегистрБухгалтерии') {
-      name = 'accreg.';
-    }
-    else if(pn[0] == 'ПланВидовХарактеристик') {
-      name = 'cch.';
-    }
-    else if(pn[0] == 'ПланСчетов') {
-      name = 'cacc.';
-    }
-    else if(pn[0] == 'Обработка') {
-      name = 'dp.';
-    }
-    else if(pn[0] == 'Отчет') {
-      name = 'rep.';
-    }
-
-    return name + this.syns_js(pn[1]);
-
-  }
-
-  /**
-   * ### Возвращает полное именя объекта метаданных 1С по имени класса metadata
-   * TODO: перенести этот метод в плагин
-   *
-   * @method className_to_1c
-   * @param name
-   */
-  className_to_1c(name) {
-
-    var pn = name.split('.');
-    if(pn.length == 1) {
-      return 'Перечисление.' + name;
-    }
-    else if(pn[0] == 'enm') {
-      name = 'Перечисление.';
-    }
-    else if(pn[0] == 'cat') {
-      name = 'Справочник.';
-    }
-    else if(pn[0] == 'doc') {
-      name = 'Документ.';
-    }
-    else if(pn[0] == 'ireg') {
-      name = 'РегистрСведений.';
-    }
-    else if(pn[0] == 'areg') {
-      name = 'РегистрНакопления.';
-    }
-    else if(pn[0] == 'accreg') {
-      name = 'РегистрБухгалтерии.';
-    }
-    else if(pn[0] == 'cch') {
-      name = 'ПланВидовХарактеристик.';
-    }
-    else if(pn[0] == 'cacc') {
-      name = 'ПланСчетов.';
-    }
-    else if(pn[0] == 'dp') {
-      name = 'Обработка.';
-    }
-    else if(pn[0] == 'rep') {
-      name = 'Отчет.';
-    }
-
-    return name + this.syns_1с(pn[1]);
-
-  }
 
 }
 

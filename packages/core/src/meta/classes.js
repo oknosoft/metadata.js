@@ -52,7 +52,10 @@ export class MetaObj {
       this.cachable = 'ram';
     }
     else {
-      Object.assign(this, raw);
+      const {fields, tabulars, ...other} = raw;
+      this.fields = new MetaFields(this, fields);
+      this.tabulars = new MetaTabulars(this, tabulars);
+      Object.assign(this, other);
     }
   }
 }
@@ -62,18 +65,25 @@ export class MetaObj {
  * Не путать с виртуальным справочником CatMeta_fields
  * @class MetaField
  */
-export class MetaField {
-
+export class MetaField extends OwnerObj {
+  constructor(owner, name, fields) {
+    super(owner);
+    const {type, ...other} = fields[name];
+    this.type = new TypeDef(type);
+    Object.assign(this, {name, ...other});
+  }
 }
 
 /**
  * Коллекция полей метаданных
  */
-export class MetaFields extends OwnerObj {
+export class MetaFields {
 
   constructor(owner, fields) {
-    super(owner);
-    Object.assign(this, fields);
+    this._owner = owner;
+    for(const name in fields) {
+      this[name] = new MetaField(this, name, fields);
+    }
   }
 }
 
@@ -83,7 +93,9 @@ export class MetaFields extends OwnerObj {
 export class MetaTabulars extends OwnerObj {
   constructor(owner, tabulars) {
     super(owner);
-    Object.assign(this, tabulars);
+    for(const name in tabulars) {
+      this[name] = new MetaTabular(this, name, tabulars);
+    }
   }
 }
 
@@ -91,9 +103,12 @@ export class MetaTabulars extends OwnerObj {
  * Метаданные табчасти
  */
 export class MetaTabular extends OwnerObj {
-  constructor(owner, tabular) {
+  constructor(owner, name, raw) {
     super(owner);
-    Object.assign(this, tabular);
+    const {fields, tabulars, ...other} = raw[name];
+    this.fields = new MetaFields(this, fields);
+    this.tabulars = new MetaTabulars(this, tabulars);
+    Object.assign(this, {name, ...other});
   }
 }
 
@@ -103,5 +118,13 @@ export class MetaTabular extends OwnerObj {
 export class TypeDef {
   constructor(def) {
     Object.assign(this, def);
+  }
+
+  get isRef() {
+    return this.types.some(type => type.includes('.'));
+  }
+
+  get isSingleRef() {
+    return this.types.length === 1 && this.isRef;
   }
 }

@@ -1,109 +1,41 @@
 /**
  * Конструкторы табличных частей
  *
- * @module  metadata
- * @submodule meta_tabulars
  */
 
-import utils from './utils';
+import {BaseDataObj} from './objs';
 
-class Iterator {
-
-  constructor(_obj) {
-    this._obj = _obj;
-    this._idx = 0;
-  }
-
-  next() {
-    if(this._idx >= this._obj.length) {
-      return {done: true}; // проверка на последний элемент
-    }
-    const _row = this._obj[this._idx];
-    this._idx++;
-    if(_row) {
-      return {value: _row._row, done: false};
-    }
-    return this.next();
-  }
-}
 
 /**
- * ### Абстрактный объект табличной части
- * - Физически, данные хранятся в {{#crossLink "DataObj"}}{{/crossLink}}, а точнее - в поле типа массив и именем табчасти объекта `_obj`
- * - Класс предоставляет методы для доступа и манипуляции данными табчасти
+ * Абстрактный объект табличной части
+ * Предоставляет методы для доступа и манипуляции данными табчасти
  *
- * @class TabularSection
- * @constructor
  * @param name {String} - имя табчасти
  * @param owner {DataObj} - владелец табличной части
- * @menuorder 21
- * @tooltip Табличная часть
  */
-export class TabularSection {
+export class TabularSection extends Array {
 
-	constructor(name, owner) {
-
-		// Если табчасти нет в данных владельца - создаём
-		if (!owner._obj[name]){
-			owner._obj[name] = []
-		}
-
-    /**
-     * Имя табличной части
-     * @property _name
-     * @type String
-     */
-		this._name = name;
-
-    /**
-     * Объект-владелец табличной части
-     * @property _owner
-     * @type DataObj
-     */
-    this._owner = owner;
-
+	constructor(owner, name) {
+    Object.defineProperties({
+      /**
+       * Объект-владелец табличной части
+       * @type DataObj
+       */
+      owner: {value: owner},
+      /**
+       * Метаданные табличной части
+       * @type MetaTabular
+       */
+      meta: {value: owner._manager.metadata(name)}
+    });
 	}
 
   toString() {
-	  const {_owner: {_manager}, _name} = this;
-    const {msg} = _manager._owner.$p;
-    return msg.tabular + ' ' + _manager.className + '.' + _name;
+	  const {owner: {_manager}, meta} = this;
+    const {msg} = _manager.root;
+    return msg.tabular + ' ' + _manager.className + '.' + meta.name;
   }
 
-	/**
-	 * ### Фактическое хранилище данных объекта
-	 * Оно же, запись в таблице объекта локальной базы данных
-	 * @property _obj
-	 * @type Object
-	 */
-  get _obj() {
-    const {_owner: {_obj}, _name} = this;
-    return _obj ? _obj[_name] : [];
-  }
-
-	/**
-	 * ### Возвращает строку табчасти по индексу
-	 * @method get
-	 * @param index {Number} - индекс строки табчасти
-	 * @return {TabularSectionRow}
-	 */
-  get(index) {
-    const row = this._obj[index];
-    return row ? row._row : null;
-  }
-
-	/**
-	 * ### Возвращает количество элементов в табчасти
-	 * @method count
-	 * @return {Number}
-	 *
-	 * @example
-	 *     // количество элементов в табчасти
-	 *     var count = ts.count();
-	 */
-  count() {
-    return this._obj.length;
-  }
 
 	/**
 	 * ### Очищает табличную часть
@@ -120,15 +52,15 @@ export class TabularSection {
       this.find_rows(selection).forEach((row) => this.del(row.row - 1));
     }
     else {
-      const {_obj, _owner, _name} = this;
-      _obj.length = 0;
+      const {_owner, _name} = this;
+      this.length = 0;
       !_owner._data._loading && _owner._manager.emit_async('rows', _owner, {[_name]: true});
     }
     return this;
   }
 
 	/**
-	 * ### Удаляет строку табличной части
+	 * Удаляет строку табличной части
 	 * @method del
 	 * @param val {Number|TabularSectionRow} - индекс или строка табчасти
 	 */
@@ -178,19 +110,19 @@ export class TabularSection {
 	}
 
 	/**
-	 * ### Находит первую строку, содержащую значение
+	 * Находит первую строку, содержащую значение
 	 * @method find
 	 * @param val {*} - значение для поиска
 	 * @param columns {String|Array} - колонки, в которых искать
 	 * @return {TabularSectionRow}
 	 */
 	find(val, columns) {
-		const res = utils._find(this._obj, val, columns);
+		const res = this.owner._manager.utils._find(this._obj, val, columns);
 		return res && res._row;
 	}
 
 	/**
-	 * ### Находит строки, соответствующие отбору
+	 * Находит строки, соответствующие отбору
 	 * Если отбор пустой, возвращаются все строки табчасти
 	 *
 	 * @method find_rows
@@ -217,7 +149,7 @@ export class TabularSection {
 		  delete selection[index];
     }
 
-		return utils._find_rows.call(this, _obj, selection, cb);
+		return this.owner._manager.utils._find_rows.call(this, _obj, selection, cb);
 	}
 
 	/**
@@ -245,7 +177,7 @@ export class TabularSection {
 	}
 
 	/**
-	 * ### Добавляет строку табчасти
+	 * Добавляет строку табчасти
 	 * @method add
 	 * @param attr {object} - объект со значениями полей. если некого поля нет в attr, для него используется пустое значение типа
 	 * @param silent {Boolean} - тихий режим, без генерации событий изменения объекта
@@ -260,7 +192,7 @@ export class TabularSection {
 
 		const {_owner, _name, _obj} = this;
     const {_manager, _data} = _owner;
-		const row = Constructor ? new Constructor(this) : _manager.obj_constructor(_name, this);
+		const row = Constructor ? new Constructor(this) : _manager.objConstructor(_name, this);
 
     // триггер
 		if(!_data._loading && _owner.add_row && _owner.add_row(row, attr) === false){
@@ -287,42 +219,15 @@ export class TabularSection {
 		return row;
 	}
 
-	/**
-	 * ### Выполняет цикл "для каждого"
-	 * @method each
-	 * @param fn {Function} - callback, в который передается строка табчасти
-	 */
-	each(fn) {
-	  for(const row of this._obj){
-	    if(fn.call(this, row._row) === false) break;
-    }
-	}
 
 	/**
-	 * ### Псевдоним для each
-	 * @method forEach
-	 * @type {TabularSection.each|*}
-	 */
-	get forEach() {
-		return this.each
-	}
-
-  /**
-   * ala map массива
-   * @param fn {Function}
-   */
-	map(fn) {
-    return this._obj.map((row, index) => fn(row._row, index));
-  }
-
-	/**
-	 * ### Сворачивает табличную часть
+	 * Сворачивает табличную часть
 	 * детали см. в {{#crossLink "TabularSection/aggregate:method"}}{{/crossLink}}
-	 * @method group_by
+	 * @method groupBy
 	 * @param [dimensions] {Array|String}
 	 * @param [resources] {Array|String}
 	 */
-	group_by(dimensions, resources) {
+	groupBy(dimensions, resources) {
 
 		try {
       const res = this.aggregate(dimensions, resources, 'SUM', true);
@@ -333,7 +238,87 @@ export class TabularSection {
 		}
 	}
 
-	/**
+  /**
+   * Вычисляет агрегатную функцию по табличной части
+   * - Не изменяет исходный объект. Если пропущен аргумент `aggr` - вычисляет сумму.
+   * - Стандартные агрегаторы: SUM, COUNT, MIN, MAX, FIRST, LAST, AVG, AGGR, ARRAY, REDUCE
+   * - AGGR - позволяет задать собственный агрегатор (функцию) для расчета итогов
+   *
+   * @method aggregate
+   * @param {Array|String} [dimensions] - список измерений
+   * @param {Array|String} [resources] - список ресурсов
+   * @param {String|Function} [aggr] - агрегатная функция
+   * @return {Number|Array} - Значение агрегатной фукнции или массив значений
+   *
+   * @example
+   *     // вычисляем сумму (итог) по полю amount табличной части
+   *     var total = ts.aggregate("", "amount");
+   *
+   *     // вычисляем максимальные суммы для всех номенклатур табличной части
+   *     // вернёт массив объектов {nom, amount}
+   *     var total = ts.aggregate("nom", "amount", "MAX", true);
+   */
+  aggregate(dimensions, resources, aggr = "sum", ret_array) {
+
+    if (typeof dimensions == "string") {
+      dimensions = dimensions.length ? dimensions.split(",") : []
+    }
+    if (typeof resources == "string") {
+      resources = resources.length ? resources.split(",") : [];
+    }
+
+    // для простых агрегатных функций, sql не используем
+    if (!dimensions.length && resources.length == 1 && aggr == "sum") {
+      return this._obj.reduce(function (sum, row, index, array) {
+        return sum + row[resources[0]];
+      }, 0);
+    }
+
+    let sql, res = true;
+
+    resources.forEach((f) => {
+      if (!sql){
+        sql = "select ";
+      }
+      else{
+        sql += ", ";
+      }
+      sql += aggr + "(`" + f + "`) `" + f + "`";
+    });
+    dimensions.forEach(function (f) {
+      if (!sql)
+        sql = "select `" + f + "`";
+      else
+        sql += ", `" + f + "`";
+    });
+    sql += " from ? ";
+    dimensions.forEach(function (f) {
+      if (res) {
+        sql += "group by ";
+        res = false;
+      }
+      else
+        sql += ", ";
+      sql += "`" + f + "`";
+    });
+
+    const {$p} = this._owner._manager._owner;
+    try {
+      res = $p.wsql.alasql(sql, [this._obj]);
+      if (!ret_array) {
+        if (resources.length == 1)
+          res = res.length ? res[0][resources[0]] : 0;
+        else
+          res = res.length ? res[0] : {};
+      }
+      return res;
+
+    } catch (err) {
+      $p.record_log(err);
+    }
+  };
+
+  /**
 	 * Сортирует табличную часть
 	 *
 	 * @method sort
@@ -346,89 +331,8 @@ export class TabularSection {
 	}
 
 	/**
-	 * ### Вычисляет агрегатную функцию по табличной части
-	 * - Не изменяет исходный объект. Если пропущен аргумент `aggr` - вычисляет сумму.
-	 * - Стандартные агрегаторы: SUM, COUNT, MIN, MAX, FIRST, LAST, AVG, AGGR, ARRAY, REDUCE
-	 * - AGGR - позволяет задать собственный агрегатор (функцию) для расчета итогов
+	 * Загружает табличную часть из массива объектов
 	 *
-	 * @method aggregate
-	 * @param {Array|String} [dimensions] - список измерений
-	 * @param {Array|String} [resources] - список ресурсов
-	 * @param {String|Function} [aggr] - агрегатная функция
-	 * @return {Number|Array} - Значение агрегатной фукнции или массив значений
-	 *
-	 * @example
-	 *     // вычисляем сумму (итог) по полю amount табличной части
-	 *     var total = ts.aggregate("", "amount");
-	 *
-	 *     // вычисляем максимальные суммы для всех номенклатур табличной части
-	 *     // вернёт массив объектов {nom, amount}
-	 *     var total = ts.aggregate("nom", "amount", "MAX", true);
-	 */
-	aggregate(dimensions, resources, aggr = "sum", ret_array) {
-
-		if (typeof dimensions == "string") {
-      dimensions = dimensions.length ? dimensions.split(",") : []
-    }
-    if (typeof resources == "string") {
-      resources = resources.length ? resources.split(",") : [];
-    }
-
-		// для простых агрегатных функций, sql не используем
-		if (!dimensions.length && resources.length == 1 && aggr == "sum") {
-			return this._obj.reduce(function (sum, row, index, array) {
-				return sum + row[resources[0]];
-			}, 0);
-		}
-
-		let sql, res = true;
-
-		resources.forEach((f) => {
-			if (!sql){
-        sql = "select ";
-      }
-      else{
-        sql += ", ";
-      }
-      sql += aggr + "(`" + f + "`) `" + f + "`";
-		});
-		dimensions.forEach(function (f) {
-			if (!sql)
-				sql = "select `" + f + "`";
-			else
-				sql += ", `" + f + "`";
-		});
-		sql += " from ? ";
-		dimensions.forEach(function (f) {
-			if (res) {
-				sql += "group by ";
-				res = false;
-			}
-			else
-				sql += ", ";
-			sql += "`" + f + "`";
-		});
-
-		const {$p} = this._owner._manager._owner;
-		try {
-			res = $p.wsql.alasql(sql, [this._obj]);
-			if (!ret_array) {
-				if (resources.length == 1)
-					res = res.length ? res[0][resources[0]] : 0;
-				else
-					res = res.length ? res[0] : {};
-			}
-			return res;
-
-		} catch (err) {
-			$p.record_log(err);
-		}
-	};
-
-	/**
-	 * ### Загружает табличнут часть из массива объектов
-	 *
-	 * @method load
 	 * @param aattr {Array} - массив объектов к загрузке
 	 */
 	load(aattr) {
@@ -455,13 +359,12 @@ export class TabularSection {
 	}
 
 	/**
-	 * ### Выгружает колонку табчасти в массив
+	 * Выгружает колонку табчасти в массив
 	 *
-	 * @method unload_column
 	 * @param column {String} - имя колонки
 	 * @return {Array}
 	 */
-	unload_column(column) {
+	unloadColumn(column) {
 
 		const res = [];
 
@@ -489,30 +392,20 @@ export class TabularSection {
 		return _obj.map(_obj => toJSON.call({_obj, _manager}));
 	}
 
-  /**
-   * Итератор
-   * @return {Iterator}
-   */
-  [Symbol.iterator]() {
-    return new Iterator(this._obj);
-  }
 }
 
 
 /**
- * ### Aбстрактная строка табличной части
+ * Aбстрактная строка табличной части
  *
- * @class TabularSectionRow
- * @constructor
+ * @extends BaseDataObj
  * @param owner {TabularSection} - табличная часть, которой принадлежит строка
- * @menuorder 22
- * @tooltip Строка табчасти
  */
-export class TabularSectionRow {
+export class TabularSectionRow extends BaseDataObj {
 
-	constructor(owner, attr) {
+	constructor(attr, owner, loading, direct) {
 
-		//var _obj = {};
+		super(attr, owner._manager, loading, direct);
 
 		Object.defineProperties(this, {
 
@@ -524,17 +417,7 @@ export class TabularSectionRow {
 			_owner: {
 				value: owner
 			},
-
-			/**
-			 * ### Фактическое хранилище данных объекта
-			 * Отображается в поле типа json записи в таблице объекта локальной базы данных
-			 * @property _obj
-			 * @type Object
-			 */
-			_obj: {
-				value: attr ? attr : {}
-			}
-		})
+		});
 	}
 
 
@@ -550,7 +433,7 @@ export class TabularSectionRow {
   }
 
 	get _manager() {
-		return this._owner._owner._manager;
+		return this.owner._manager;
 	}
 
 	get _data() {
@@ -575,8 +458,8 @@ export class TabularSectionRow {
 	 * @type Number
 	 */
 	_clone() {
-		const {_owner, _obj} = this
-		return utils._mixin(_owner._owner._manager.obj_constructor(_owner._name, _owner), _obj)
+    const {_manager} = th
+		return this.owner._manager.utils._mixin(_owner._owner._manager.objConstructor(_owner._name, _owner), _obj)
 	}
 
 	_setter(f, v) {

@@ -1,16 +1,30 @@
-import utils from './utils';
+import {OwnerObj} from './meta/classes';
 
 /**
  * Параметры работы программы
  * они же - параметры сеанса. БОльшая часть, заполняется из `cch.predefined_elmnts`
  */
-export default class JobPrm {
+export default class JobPrm extends OwnerObj {
 
   #params = {};
 
-	constructor($p) {
-		this.$p = $p;
+  /**
+   * @param {MetaEngine} owner
+   */
+	constructor(owner) {
+    super(owner);
+
+    /**
+     * Сюда внешний скрипт должен положить префикс проекта
+     * @type {String}
+     */
 		this.lsPrefix = '';
+
+    /**
+     * Сюда внешний скрипт может положить умолчания параметров
+     * @type {Array|null}
+     */
+    this.additionalPrms = null;
 	}
 
 	init(settings) {
@@ -34,7 +48,7 @@ export default class JobPrm {
 
     // подмешиваем id браузера
     if(!this.isSet('browser_uid')) {
-      nesesseryPrms.push({p: 'browser_uid', v: utils.generate_guid(), t: 'string'});
+      nesesseryPrms.push({p: 'browser_uid', v: this.owner.utils.generateGuid(), t: 'string'});
     }
 
     // подмешиваем к базовым параметрам настройки приложения
@@ -44,7 +58,7 @@ export default class JobPrm {
 
     // дополняем хранилище недостающими параметрами
     for(const prm of nesesseryPrms) {
-      if (prm.ls && this.isSet(prm.p)){
+      if ('ls' in prm && this.isSet(prm.p)){
         const v = this.get(prm.p, prm.t);
         if(this[prm.p] !== v) {
           this[prm.p] = v;
@@ -66,7 +80,7 @@ export default class JobPrm {
 
   /**
    * Обёрнутый localStorage
-   * @return {WindowLocalStorage}
+   * @type {Storage}
    * @private
    */
   get _ls() {
@@ -93,7 +107,7 @@ export default class JobPrm {
 
     const {_ls, lsPrefix} = this;
 
-    if(typeof value == 'object') {
+    if(typeof value === 'object') {
       this.#params[name] = value;
       value = JSON.stringify(value);
     }
@@ -173,7 +187,8 @@ export default class JobPrm {
    * @returns {*}
    */
   fetch_type(prm, type){
-    if(type == "object"){
+    const {fix} = this.owner.utils;
+    if(type === "object"){
       try{
         prm = JSON.parse(prm);
       }catch(e){
@@ -181,16 +196,16 @@ export default class JobPrm {
       }
       return prm;
     }
-    else if(type == "number"){
-      return utils.fix.number(prm, true);
+    else if(type === "number"){
+      return fix.number(prm, true);
     }
-    else if(type == "date"){
-      return utils.fix.date(prm, true);
+    else if(type === "date"){
+      return fix.date(prm, true);
     }
-    else if(type == "boolean"){
-      return utils.fix.boolean(prm);
+    else if(type === "boolean"){
+      return fix.boolean(prm);
     }
-    else if(type == "string"){
+    else if(type === "string"){
       return prm ? prm.toString() : '';
     }
     return prm;

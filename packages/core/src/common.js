@@ -5,16 +5,16 @@
  * @module  metadata
  */
 
-import utils from './utils';
-import Aes from '../lib/aes';
+import MetaUtils from './utils';
 import JobPrm from './jobprm';
 import Meta from './meta';
 import msg from './i18n.ru';
 import classes from './classes';
+import {DataAdapters} from './abstract_adapter'
 
 
 /**
- * ### Metadata.js - проект с открытым кодом
+ * Metadata.js - проект с открытым кодом
  * Приглашаем к сотрудничеству всех желающих. Будем благодарны за любую помощь
  *
  * ### Почему Metadata.js?
@@ -30,11 +30,6 @@ import classes from './classes';
  * - инструменты декларативного описания метаданных и автогенерации интерфейса, схожие по функциональности с метаданными и формами платформы 1С
  * - средства событийно-целостной репликации и эффективные классы обработки данных, не имеющие прямых аналогов в 1С
  *
- *
- * @class MetaEngine
- * @static
- * @menuorder 00
- * @tooltip Контекст metadata.js
  */
 class MetaEngine {
 
@@ -43,21 +38,17 @@ class MetaEngine {
   constructor() {
 
     /**
-     * ### Адаптеры для PouchDB, 1С и т.д.
-     * @property adapters
+     * Вспомогательные методы
+     * @type MetaUtils
+     */
+    this.utils = new MetaUtils(this);
+
+    /**
+     * Адаптеры для PouchDB, Postgres и т.д.
      * @type Object
      * @final
      */
-    this.adapters = {};
-
-    /**
-     * Aes для шифрования - дешифрования строк
-     *
-     * @property aes
-     * @type Aes
-     * @final
-     */
-    this.aes = new Aes('metadata.js');
+    this.adapters = new DataAdapters(this);
 
     /**
      * Параметры работы программы
@@ -124,13 +115,6 @@ class MetaEngine {
     console && console.log(err);
   }
 
-
-  /**
-   * Вспомогательные методы
-   */
-  get utils() {
-    return utils;
-  }
 
   /**
    * i18n
