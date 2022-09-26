@@ -120,11 +120,27 @@ export class TypeDef {
     Object.assign(this, def);
   }
 
+  /**
+   * Среди типов есть ссылочный
+   * @type Boolean
+   */
   get isRef() {
     return this.types.some(type => type.includes('.'));
   }
 
+  /**
+   * Это составной тип
+   * @type Boolean
+   */
+  get isComposite() {
+    return this.types.length > 1;
+  }
+
+  /**
+   * Этот тип не составной и ссылочный
+   * @type Boolean
+   */
   get isSingleRef() {
-    return this.types.length === 1 && this.isRef;
+    return !this.isComposite && this.isRef;
   }
 }

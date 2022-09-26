@@ -1,6 +1,4 @@
-### PouchDB data adapter for metadata.js
-
-[English version](README.en.md)
+# PouchDB data adapter for metadata.js
 
 Example initialization app with pouchdb adapter:
 ```javascript
@@ -13,4 +11,3 @@ MetaEngine
 const $p = new MetaEngine()
 ```
 
-For details, see [metadata.js](https://github.com/oknosoft/metadata.js)

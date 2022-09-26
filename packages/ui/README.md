@@ -1,4 +1,4 @@
-### React UI components for metadata.js
+# React UI components for metadata.js
 
 Компоненты визуального интерфейса metadata.js на базе [React](https://facebook.github.io/react/)
 

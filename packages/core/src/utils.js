@@ -105,8 +105,6 @@ export default class MetaUtils extends OwnerObj {
 
     const {classes} = this.owner;
 
-
-
     this.blob = {
       /**
        * ### Читает данные из блоба

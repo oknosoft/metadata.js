@@ -5,7 +5,6 @@
 
 
 import msg from './i18n.ru';
-import {BaseDataObj, DataObj, EnumObj, DocObj, RegisterRow} from './objs';
 import MetaEventEmitter from './meta/emitter';
 import camelcase from 'camelcase';
 
@@ -425,13 +424,6 @@ export class RefDataManager extends DataManager {
 
 			o = this.objConstructor('', [attr, this]);
 
-      // Триггер после создания
-      const after_create_res = do_after_create === false ? false : o.after_create();
-
-      if(o instanceof DocObj && o.date == utils.blank.date){
-        o.date = new Date();
-      }
-
       if(force_obj){
         return o;
       }
@@ -645,6 +637,11 @@ export class RefDataManager extends DataManager {
  */
 export class DataProcessorsManager extends DataManager{
 
+  constructor(owner, className) {
+    super(owner, className);
+    this.storable = false;
+  }
+
 	/**
 	 * Создаёт экземпляр объекта обработки
 	 * @method create
@@ -691,7 +688,9 @@ export class EnumManager extends RefDataManager{
 
 	constructor(owner, className) {
 		super(owner, className);
+
     const meta = this.metadata();
+    const {EnumObj} = this.root.classes;
 		for(var v of meta.values){
       const value = new EnumObj(v, this);
       if(v.latin) {
@@ -1243,9 +1242,6 @@ export class RegisterManager extends DataManager{
 
 	get_ref(attr){
 
-		if(attr instanceof RegisterRow)
-			attr = attr._obj;
-
 		if(attr.ref)
 			return attr.ref;
 
@@ -1422,35 +1418,7 @@ export class CatManager extends RefDataManager{
       });
     }
     return o || this.get();
-	};
-
-	/**
-	 * Для иерархических справочников возвращает путь элемента
-	 * @param ref {String|CatObj} - ссылка или объект данных
-	 * @return {string} - строка пути элемента
-	 */
-	path(ref) {
-		var res = [], tobj;
-
-		if (ref instanceof DataObj)
-			tobj = ref;
-		else
-			tobj = this.get(ref, true);
-
-		if (tobj)
-			res.push({ref: tobj.ref, presentation: tobj.presentation});
-
-		if (tobj && this.metadata().hierarchical) {
-			while (true) {
-				tobj = tobj.parent;
-				if (tobj.empty())
-					break;
-				res.push({ref: tobj.ref, presentation: tobj.presentation});
-			}
-		}
-
-		return res;
-	};
+	}
 
 }
 

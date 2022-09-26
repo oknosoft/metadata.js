@@ -5,8 +5,6 @@
  * @submodule meta_objs
  */
 
-import {DataManager, DataProcessorsManager, EnumManager, RegisterManager} from './mngrs';
-
 class InnerData {
   constructor(owner, loading) {
     /**
@@ -212,7 +210,7 @@ export class BaseDataObj {
     else if(f === 'ref') {
       _obj[f] = utils.fix.guid(v);
     }
-    else if(mf instanceof DataObj || mf instanceof DataManager) {
+    else if(mf instanceof DataObj) {
       _obj[f] = utils.fix.guid(v, false);
     }
     else if(mf.isRef) {
@@ -235,7 +233,7 @@ export class BaseDataObj {
         else {
           let mgr = this._manager.value_mgr(_obj, f, mf, false, v);
           if(mgr) {
-            if(mgr instanceof EnumManager) {
+            if(mgr.isEnum()) {
               if(typeof v === 'string') {
                 _obj[f] = v;
               }
@@ -596,8 +594,8 @@ export class DataObj extends BaseDataObj {
   constructor(attr, manager, loading, direct) {
 
     // если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
-    if(!(manager instanceof DataProcessorsManager) && !(manager instanceof EnumManager)) {
-      const tmp = manager.get(attr, true);
+    if(manager.storable !== false) {
+      const tmp = manager.get(attr, false);
       if(tmp) {
         return tmp;
       }
@@ -1164,7 +1162,7 @@ export class CatObj extends DataObj {
 
 
   /**
-   * ### Дети
+   * Дети
    * Возвращает массив элементов, находящихся в иерархии текущего
    *
    * @param folders_only {Boolean}
@@ -1181,7 +1179,7 @@ export class CatObj extends DataObj {
   }
 
   /**
-   * ### Родители
+   * Родители
    * Возвращает массив родителей, в иерархии которых находится текущий элемент
    */
   _parents() {
@@ -1195,7 +1193,7 @@ export class CatObj extends DataObj {
   }
 
   /**
-   * ### В иерархии
+   * В иерархии
    * Выясняет, находится ли текущий объект в указанной группе
    * @param group {Object|Array} - папка или массив папок
    */
@@ -1211,6 +1209,26 @@ export class CatObj extends DataObj {
       return parent._hierarchy(group);
     }
     return group == this._manager.utils.blank.guid;
+  }
+
+  /**
+   * Для иерархических справочников возвращает путь элемента
+   * @param ref {String|CatObj} - ссылка или объект данных
+   * @return {string} - строка пути элемента
+   */
+  _path() {
+    let tobj = this;
+    const res = [{ref: tobj.ref, presentation: tobj.presentation}];
+
+    while (true) {
+      tobj = tobj.parent;
+      if (!tobj || tobj.empty()) {
+        break;
+      }
+      res.push({ref: tobj.ref, presentation: tobj.presentation});
+    }
+
+    return res;
   }
 
 }
@@ -1359,7 +1377,6 @@ export class EnumObj extends DataObj {
   get order() {
     return this._getter('order');
   }
-
 
 
   /**

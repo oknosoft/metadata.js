@@ -22,6 +22,7 @@ node_modules
 
 # compiled
 /packages/core/dist/
+!/packages/core/package.json
 /packages/pouchdb/dist/
 /packages/ui/dist/
 

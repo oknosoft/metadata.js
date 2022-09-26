@@ -5,7 +5,7 @@
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (https://oknosoft.ru)",
   "license": "MIT",
   "engines": {
-    "node": "^16.13",
+    "node": "^18.9",
     "yarn": "^1.22"
   },
   "dependencies": {
