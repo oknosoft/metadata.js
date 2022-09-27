@@ -80,7 +80,7 @@ class Meta extends MetaEventEmitter {
     for(const area of Object.keys(raw)) {
       if(this.#m[area]) {
         for(const el in raw[area]) {
-          const obj = new MetaObj(area, raw[area][el]);
+          const obj = new MetaObj(this, area, raw[area][el]);
           this.#m[area][el] = obj;
           this.#index.meta[`${area}.${el}`] = obj;
           if(obj.id) {
@@ -107,84 +107,13 @@ class Meta extends MetaEventEmitter {
   get(type, field) {
     const key = type instanceof DataManager ? type.className : type;
     const meta = this.#index.meta[key];
+    if(!meta) {
+      throw new Error(`Unknown meta ${type}`);
+    }
     if(!field) {
       return meta;
     }
-    else if(meta?.fields?.[field]) {
-      return meta.fields[field];
-    }
-    else if(meta?.tabular_sections?.[field]) {
-      return meta.tabular_sections[field];
-    }
-
-    const res = {
-        multiline_mode: false,
-        note: '',
-        synonym: '',
-        tooltip: '',
-        type: {
-          types: ['string'],
-        },
-      };
-    if(!meta?.fields) {
-      return res;
-    }
-    const is_doc = 'doc,tsk,bp'.includes(np[0]),
-      is_cat = 'cat,cch,cacc,tsk'.includes(np[0]);
-
-    if(is_doc && field == 'numberDoc' && _meta.code_length) {
-      res.synonym = 'Номер';
-      res.tooltip = 'Номер документа';
-      res.type.str_len = 11;
-    }
-    else if(is_doc && field == 'date') {
-      res.synonym = 'Дата';
-      res.tooltip = 'Дата документа';
-      res.type.date_part = 'date_time';
-      res.type.types[0] = 'date';
-    }
-    else if(is_doc && field == 'posted') {
-      res.synonym = 'Проведен';
-      res.type.types[0] = 'boolean';
-    }
-    else if(is_cat && field == 'id' && _meta.code_length) {
-      res.synonym = 'Код';
-      res.mandatory = true;
-    }
-    else if(is_cat && field == 'name') {
-      res.synonym = 'Наименование';
-      res.mandatory = _meta.main_presentation_name;
-    }
-    else if(field == '_area') {
-      res.synonym = 'Область';
-    }
-    else if(field == 'presentation') {
-      res.synonym = 'Представление';
-    }
-    else if(field == '_deleted') {
-      res.synonym = 'Пометка удаления';
-      res.type.types[0] = 'boolean';
-    }
-    else if(field == 'is_folder') {
-      res.synonym = 'Это группа';
-      res.type.types[0] = 'boolean';
-    }
-    else if(field == 'ref') {
-      res.synonym = 'Ссылка';
-      res.type.isRef = true;
-      if(type instanceof DataManager) {
-        res.type._mgr = type;
-        res.type.types[0] = `${type._owner.name}.${type.name}`;
-      }
-      else {
-        res.type.types[0] = type;
-      }
-    }
-    else {
-      return;
-    }
-
-    return res;
+    return meta.get(field);
   }
 
   /**

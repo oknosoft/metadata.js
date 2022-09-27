@@ -33,7 +33,7 @@ export default class AbstracrAdapter extends MetaEventEmitter {
 	 * @param with_attachments {Boolean}
 	 * @return {*}
 	 */
-	load_array(_mgr, refs, with_attachments) {
+	load(_mgr, refs, with_attachments) {
 		return Promise.resolve([]);
 	}
 

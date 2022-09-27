@@ -452,13 +452,13 @@ export class RefDataManager extends DataManager {
 	 * @param {Boolean|String} [forse] - перезаполнять объект
    * при forse == "update_only", новые объекты не создаются, а только перезаполняются ранее загруженные в озу
 	 */
-	loadArray(aattr, forse){
+	load(aattr, forse){
 		const res = [];
     const {jobPrm} = this.root;
     const {grouping, tabular_sections} = this.metadata();
 		for(const attr of aattr){
 		  if(grouping === 'array' && attr.ref.length <= 3) {
-		    res.push.apply(res, this.loadArray(attr.rows, forse));
+		    res.push.apply(res, this.load(attr.rows, forse));
 		    continue;
       }
 			let obj = this.get(attr, false);
@@ -467,10 +467,10 @@ export class RefDataManager extends DataManager {
 					continue;
 				}
 				obj = this.objConstructor('', [attr, this, true]);
-				obj.is_new() && obj._set_loaded();
+				obj.isNew() && obj._set_loaded();
 			}
-			else if(obj.is_new() || forse){
-			  if(obj.is_new() || forse !== 'update_only') {
+			else if(obj.isNew() || forse){
+			  if(obj.isNew() || forse !== 'update_only') {
           obj._data._loading = true;
         }
         else if(forse === 'update_only' && attr.timestamp) {
@@ -699,6 +699,10 @@ export class EnumManager extends RefDataManager{
     }
 	}
 
+  get isEnum() {
+    return true;
+  }
+
   get(ref, create) {
     const {utils} = this;
     if (utils.is.emptyGuid(ref)) {
@@ -911,11 +915,10 @@ export class RegisterManager extends DataManager{
 
 	/**
 	 * сохраняет массив объектов в менеджере
-	 * @method loadArray
 	 * @param aattr {Array} - массив объектов для трансформации в объекты ссылочного типа
 	 * @param forse {Boolean} - перезаполнять объект
 	 */
-	load_array(aattr, forse) {
+  load(aattr, forse) {
 
 		const res = [];
 
@@ -925,7 +928,7 @@ export class RegisterManager extends DataManager{
 
       if (!obj && !row._deleted) {
         obj = this.objConstructor('', [row, this, true]);
-        obj.is_new() && obj._set_loaded();
+        obj.isNew() && obj._set_loaded();
       }
       else if (obj && row._deleted) {
         obj.unload();

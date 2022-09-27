@@ -25,6 +25,11 @@ if(typeof global != 'undefined'){
 
 const ctnames = '$eq,between,$between,$gte,gte,$gt,gt,$lte,lte,$lt,lt,ninh,inh,nin,$nin,in,$in,not,ne,$ne,nlk,lke,like,or,$or,$and'.split(',');
 
+export const object = 'object';
+export const number = 'number';
+export const string = 'string';
+export const boolean = 'boolean';
+
 /**
  * Отбрасываем часовой пояс при сериализации даты
  * @method toJSON
@@ -149,9 +154,9 @@ export default class MetaUtils extends OwnerObj {
           return wnd_print;
         }
 
-        const req = (!method || (typeof method == 'string' && method.toLowerCase().indexOf('post') != -1)) ?
+        const req = (!method || (typeof method == string && method.toLowerCase().indexOf('post') != -1)) ?
           this.post_ex(url,
-            typeof post_data == 'object' ? JSON.stringify(post_data) : post_data,
+            typeof post_data == object ? JSON.stringify(post_data) : post_data,
             true,
             xhr => xhr.responseType = 'blob')
           :
@@ -171,7 +176,7 @@ export default class MetaUtils extends OwnerObj {
       getAndSave(url, post_data, file_name) {
 
         return this.post_ex(url,
-          typeof post_data == 'object' ? JSON.stringify(post_data) : post_data, true, function (xhr) {
+          typeof post_data == object ? JSON.stringify(post_data) : post_data, true, function (xhr) {
             xhr.responseType = 'blob';
           })
           .then(function (req) {
@@ -284,7 +289,7 @@ export default class MetaUtils extends OwnerObj {
        * @return {Boolean} - true, если значение соответствует регурярному выражению guid
        */
       guid(v) {
-        if (typeof v !== 'string') {
+        if (typeof v !== string) {
           return false;
         }
         const {length} = v;
@@ -367,7 +372,7 @@ export default class MetaUtils extends OwnerObj {
           return true;
         }
         const tv1 = typeof v1,  tv2 = typeof v2;
-        if (tv1 === 'string' && tv2 === 'string' && v1.trim() === v2.trim()) {
+        if (tv1 === string && tv2 === string && v1.trim() === v2.trim()) {
           return true;
         }
         if (tv1 === tv2) {
@@ -390,7 +395,7 @@ export default class MetaUtils extends OwnerObj {
         if(Array.isArray(v1) && Array.isArray(v2)) {
           return v1.length === v2.length && v1.every((elm1, index) => this.equals(elm1, v2[index]));
         }
-        if(typeof v1 !== 'object' || typeof v2 !== 'object') {
+        if(typeof v1 !== object || typeof v2 !== object) {
           return false;
         }
         return Object.keys(v1).every((key) => v1[key] === v2[key]);
@@ -452,7 +457,7 @@ export default class MetaUtils extends OwnerObj {
           return ref.ref;
         }
 
-        if (ref && typeof ref == 'object') {
+        if (ref && typeof ref == object) {
           if (ref.hasOwnProperty('ref')){
             ref = ref.ref;
           }
@@ -461,7 +466,7 @@ export default class MetaUtils extends OwnerObj {
           }
         }
 
-        if(typeof ref === 'string') {
+        if(typeof ref === string) {
           const i = ref.indexOf('|');
           if(i >= 0) {
             ref = ref.substring(i + 1);
@@ -485,10 +490,10 @@ export default class MetaUtils extends OwnerObj {
        * @return {Number}
        */
       number(str, strict) {
-        if(typeof str === 'number') {
+        if(typeof str === number) {
           return str;
         }
-        else if(typeof str === 'string') {
+        else if(typeof str === string) {
           const v = parseFloat(str.replace(/\s|\xa0/g, '').replace(/,/, '.'));
           if (!isNaN(v)) {
             return v;
@@ -507,7 +512,7 @@ export default class MetaUtils extends OwnerObj {
        * @return {boolean}
        */
       boolean(str) {
-        if (typeof str === 'string') {
+        if (typeof str === string) {
           return !(!str || str.toLowerCase() === 'false');
         }
         return !!str;
@@ -531,7 +536,7 @@ export default class MetaUtils extends OwnerObj {
           return str;
         }
         if (type.isRef) {
-          if(type.types && type.types.some((type) => type.startsWith('enm') || type.startsWith('string'))){
+          if(type.types && type.types.some((type) => type.startsWith('enm') || type.startsWith(string))){
             return str;
           }
           return this.fix_guid(str);
@@ -564,12 +569,12 @@ export default class MetaUtils extends OwnerObj {
             }
           }
           if(_obj.hasOwnProperty(fld)) {
-            if (type.isRef && typeof _obj[fld] === 'object') {
+            if (type.isRef && typeof _obj[fld] === object) {
               if(!(fld === 'type' && obj.className && obj.className.indexOf('cch.') === 0)) {
                 _obj[fld] = this.fix.guid(_obj[fld], false);
               }
             }
-            else if (type.date_part && typeof _obj[fld] === 'string') {
+            else if (type.date_part && typeof _obj[fld] === string) {
               _obj[fld] = this.fix.date(_obj[fld], type.types.length === 1);
             }
           }
@@ -908,8 +913,8 @@ export default class MetaUtils extends OwnerObj {
    */
   _patch = (obj, patch) => {
     for (let area in patch) {
-      if (typeof patch[area] == 'object') {
-        if (obj[area] && typeof obj[area] == 'object') {
+      if (typeof patch[area] == object) {
+        if (obj[area] && typeof obj[area] == object) {
           this._patch(obj[area], patch[area]);
         }
         else {
@@ -929,7 +934,7 @@ export default class MetaUtils extends OwnerObj {
    */
   _clone = (obj) => {
     const {DataObj, DataManager} = this.owner.classes;
-    if (!obj || 'object' !== typeof obj) return obj;
+    if (!obj || object !== typeof obj) return obj;
     let p, v, c = 'function' === typeof obj.pop ? [] : {};
     for (p in obj) {
       if (obj.hasOwnProperty(p)) {
@@ -938,7 +943,7 @@ export default class MetaUtils extends OwnerObj {
           if('function' === typeof v || v instanceof DataObj || v instanceof DataManager || v instanceof Date) {
             c[p] = v;
           }
-          else if('object' === typeof v) {
+          else if(object === typeof v) {
             c[p] = this._clone(v);
           }
           else {
@@ -962,7 +967,7 @@ export default class MetaUtils extends OwnerObj {
    * @private
    */
   _find = (src, val, columns) => {
-    if (typeof val != 'object') {
+    if (typeof val != object) {
       for (let i in src) { // ищем по всем полям объекта
         const o = src[i];
         for (let j in o) {
@@ -1010,7 +1015,7 @@ export default class MetaUtils extends OwnerObj {
         for (let j in selection) {
 
           const sel = selection[j];
-          const is_obj = sel && typeof(sel) === 'object';
+          const is_obj = sel && typeof(sel) === object;
 
           // пропускаем служебные свойства
           if (j.substr(0, 1) == '_') {
@@ -1152,7 +1157,7 @@ export default class MetaUtils extends OwnerObj {
           // если свойство отбора является объектом `between`, сравниваем на _вхождение_
           else if (ctname === 'between') {
             let tmp = o[j];
-            if(typeof tmp != 'number') {
+            if(typeof tmp != number) {
               tmp = this.fix.date(o[j]);
             }
             ok = (tmp >= sel.between[0]) && (tmp <= sel.between[1]);

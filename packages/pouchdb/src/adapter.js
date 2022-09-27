@@ -1054,14 +1054,14 @@ function adapter({AbstracrAdapter}) {
             return db.put(doc);
           })
           .then(() => {
-            tObj.is_new() && tObj._set_loaded(tObj.ref);
+            tObj.isNew() && tObj._set_loaded(tObj.ref);
             return tObj;
           });
       }
       else {
         delete tmp.ref;
         let skip_save = hashable;
-        return (tObj.is_new() ? Promise.resolve(true) : db.get(tmp._id))
+        return (tObj.isNew() ? Promise.resolve(true) : db.get(tmp._id))
           .then((res) => {
             if(typeof res === 'object') {
               if(check_rev !== false && tmp._rev && tmp._rev !== res._rev) {
@@ -1099,7 +1099,7 @@ function adapter({AbstracrAdapter}) {
           })
           .then((res) => {
             if(res) {
-              tObj.is_new() && tObj._set_loaded(tObj.ref);
+              tObj.isNew() && tObj._set_loaded(tObj.ref);
               if(tmp._attachments) {
                 if(!tObj._attachments) {
                   tObj._attachments = {};
@@ -1370,7 +1370,7 @@ function adapter({AbstracrAdapter}) {
      * @param with_attachments {Boolean}
      * @return {*}
      */
-    load_array(_mgr, refs, with_attachments, db) {
+    load(_mgr, refs, with_attachments, db) {
       if(!refs || !refs.length) {
         return Promise.resolve(false);
       }
@@ -1415,7 +1415,7 @@ function adapter({AbstracrAdapter}) {
               options.skip = 1;
 
               // наполняем
-              _mgr.load_array(result.rows.map(({doc}) => {
+              _mgr.load(result.rows.map(({doc}) => {
                 doc.ref = doc._id.split('|')[1];
                 delete doc._id;
                 return doc;
@@ -1490,7 +1490,7 @@ function adapter({AbstracrAdapter}) {
                 delete doc.class_name;
               }
             }
-            return selection._raw ? docs : _mgr.load_array(docs);
+            return selection._raw ? docs : _mgr.load(docs);
           })
           .catch((err) => {
             err_handler(err);
@@ -1687,7 +1687,7 @@ function adapter({AbstracrAdapter}) {
             });
 
             if((result.rows.length < options.limit) || top && top_count > top && !calc_count) {
-              resolve(_raw ? res : _mgr.load_array(res));
+              resolve(_raw ? res : _mgr.load(res));
             }
             else {
               fetch_next_page();
@@ -1696,12 +1696,12 @@ function adapter({AbstracrAdapter}) {
           else {
             if(calc_count) {
               resolve({
-                rows: _raw ? res : _mgr.load_array(res),
+                rows: _raw ? res : _mgr.load(res),
                 _total_count: _total_count,
               });
             }
             else {
-              resolve(_raw ? res : _mgr.load_array(res));
+              resolve(_raw ? res : _mgr.load(res));
             }
           }
         }
@@ -1871,7 +1871,7 @@ function adapter({AbstracrAdapter}) {
         for (let mgr in res) {
           for (cn in res[mgr]) {
             if($p[mgr] && $p[mgr][cn]) {
-              $p[mgr][cn].load_array(res[mgr][cn], changes.update_only ? 'update_only' : true);
+              $p[mgr][cn].load(res[mgr][cn], changes.update_only ? 'update_only' : true);
             }
           }
         }

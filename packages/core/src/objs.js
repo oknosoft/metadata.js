@@ -1,9 +1,9 @@
-/**
+/*
  * Конструкторы объектов данных
  *
- * @module  metadata
- * @submodule meta_objs
  */
+
+import {string} from './utils';
 
 class InnerData {
   constructor(owner, loading) {
@@ -27,7 +27,7 @@ class InnerData {
      * Признак, что в текущий момент, объект "записывается"
      * @type {boolean}
      */
-    this.saving_trans = false;
+    this.trans = false;
     /**
      * Признак модифицированности
      * @type {boolean}
@@ -59,7 +59,7 @@ export class BaseDataObj {
     }
     else {
       // в режиме direct, новый объект не создаём - используем сырые данные
-      this.#obj = direct ? attr : {ref: manager.get_ref(attr)};
+      this.#obj = direct ? attr : {ref: manager.getRef(attr)};
 
       Object.defineProperties(this, {
 
@@ -105,8 +105,7 @@ export class BaseDataObj {
    * @type String
    */
   get ref() {
-    const {utils} = this._manager;
-    return this.#obj.ref ? utils.fix.guid(this.#obj.ref) : utils.blank.guid;
+    return this._manager.getRef(this.#obj);
   }
 
   /**
@@ -117,14 +116,17 @@ export class BaseDataObj {
     Object.assign(this.#obj, raw);
   }
 
-  _getter(f) {
-    const {utils} = this._manager;
+  _get(f) {
 
     const res = this.#obj[f];
-    // для перечислений, возвращаем сырые данные
-    if(!this._metadata) {
+    const {_manager} = this;
+
+    // для перечислений и табличных частей, возвращаем значение в лоб
+    if(_manager.isEnum || Array.isArray(_manager)) {
       return res;
     }
+
+    const {utils} = _manager;
     const {type} = this._metadata(f);
     const rtype = typeof res;
 
@@ -132,7 +134,7 @@ export class BaseDataObj {
       return res;
     }
     else if(f == 'ref') {
-      return utils.fix.guid(res);
+      return _manager.getRef(res);
     }
     else if(type.isRef) {
 
@@ -144,7 +146,7 @@ export class BaseDataObj {
         return res;
       }
 
-      const {_manager} = this;
+
       const mgr = _manager.value_mgr(_obj, f, type);
       if(mgr) {
         if(utils.is.dataMgr(mgr)) {
@@ -179,20 +181,24 @@ export class BaseDataObj {
     }
   }
 
+  _notify(f) {
+    const {_data, _manager} = this;
+    if(_data && !_data._loading) {
+      _data._modified = true;
+      _manager.emit_async('update', this, {[f]: this.#obj[f]});
+    }
+  }
+
   /**
-   * Устанваливает значение реквизита с приведением типов без проверки, отличается ли оно от предыдущего
-   * @param f
-   * @param v
-   * @param [mf]
+   * Устанваливает значение реквизита с приведением типов
+   * @param {String} f - имя поля
+   * @param {*} v - значение
    * @private
    */
-  __setter(f, v, mf) {
-
-    const {_obj, _data, _manager: {utils}} = this;
-
-    if(!mf){
-      mf = this._metadata(f).type;
-    }
+  _set(f, v) {
+    const {_data, _manager: {utils}} = this;
+    const mf = this._metadata(f).type;
+    const obj = this.#obj;
 
     // выполняем value_change с блокировкой эскалации
     if(!_data._loading) {
@@ -205,43 +211,43 @@ export class BaseDataObj {
     }
 
     if(f === 'type' && v.types) {
-      _obj[f] = v;
+      obj[f] = v;
     }
     else if(f === 'ref') {
-      _obj[f] = utils.fix.guid(v);
+      obj[f] = utils.fix.guid(v);
     }
     else if(mf instanceof DataObj) {
-      _obj[f] = utils.fix.guid(v, false);
+      obj[f] = utils.fix.guid(v, false);
     }
     else if(mf.isRef) {
 
-      if(mf.digits && typeof v === 'number' || mf.hasOwnProperty('str_len') && typeof v === 'string' && !utils.is.guid(v)) {
-        _obj[f] = v;
+      if(mf.digits && typeof v === 'number' || mf.hasOwnProperty('str_len') && typeof v === string && !utils.is.guid(v)) {
+        obj[f] = v;
       }
       else if(typeof v === 'boolean' && mf.types.indexOf('boolean') != -1) {
-        _obj[f] = v;
+        obj[f] = v;
       }
       else if(mf.date_part && v instanceof Date) {
-        _obj[f] = v;
+        obj[f] = v;
       }
       else {
-        _obj[f] = utils.fix.guid(v);
+        obj[f] = utils.fix.guid(v);
 
         if(utils.is.dataObj(v) && mf.types.indexOf(v._manager.className) != -1) {
 
         }
         else {
-          let mgr = this._manager.value_mgr(_obj, f, mf, false, v);
+          let mgr = this._manager.value_mgr(obj, f, mf, false, v);
           if(mgr) {
             if(mgr.isEnum()) {
-              if(typeof v === 'string') {
-                _obj[f] = v;
+              if(typeof v === string) {
+                obj[f] = v;
               }
               else if(!v) {
-                _obj[f] = '';
+                obj[f] = '';
               }
               else if(typeof v === 'object') {
-                _obj[f] = v.ref || v.name || '';
+                obj[f] = v.ref || v.name || '';
               }
 
             }
@@ -252,28 +258,28 @@ export class BaseDataObj {
               mgr.create(v);
             }
             else if(!utils.is.dataMgr(mgr)) {
-              _obj[f] = this.fetch_type(v, mgr);
+              obj[f] = this.fetch_type(v, mgr);
             }
           }
           else {
             if(typeof v !== 'object') {
-              _obj[f] = v;
+              obj[f] = v;
             }
           }
         }
       }
     }
     else if(mf.date_part) {
-      _obj[f] = utils.fix.date(v, !mf.hasOwnProperty('str_len'));
+      obj[f] = utils.fix.date(v, !mf.hasOwnProperty('str_len'));
     }
     else if(mf.digits) {
-      _obj[f] = utils.fix_number(v, !mf.hasOwnProperty('str_len'));
+      obj[f] = utils.fix_number(v, !mf.hasOwnProperty('str_len'));
     }
     else if(mf.types[0] == 'boolean') {
-      _obj[f] = utils.fix_boolean(v);
+      obj[f] = utils.fix_boolean(v);
     }
     else if(mf.types[0] == 'json') {
-      if(v && typeof v === 'string') {
+      if(v && typeof v === string) {
         try {
           v = JSON.parse(v);
         }
@@ -281,38 +287,16 @@ export class BaseDataObj {
       }
       if(typeof v === 'object') {
         const tmp = utils._clone(v);
-        if(tmp && typeof _obj[f] === 'object') {
-          Object.assign(_obj[f], tmp);
+        if(tmp && typeof obj[f] === 'object') {
+          Object.assign(obj[f], tmp);
         }
         else {
-          _obj[f] = tmp;
+          obj[f] = tmp;
         }
       }
     }
     else {
-      _obj[f] = v;
-    }
-
-  }
-
-  __notify(f) {
-    const {_data, _manager} = this;
-    if(_data && !_data._loading) {
-      _data._modified = true;
-      _manager.emit_async('update', this, {[f]: this._obj[f]});
-    }
-  }
-
-  /**
-   * Устанваливает значение, если оно отличается от предыдущего
-   * @param f
-   * @param v
-   * @private
-   */
-  _setter(f, v) {
-    if(this._obj[f] != v) {
-      this.__notify(f);
-      this.__setter(f, v);
+      obj[f] = v;
     }
   }
 
@@ -352,7 +336,7 @@ export class BaseDataObj {
   }
 
   /**
-   * ### valueOf
+   * valueOf
    * для операций сравнения возвращаем guid
    */
   valueOf() {
@@ -376,7 +360,7 @@ export class BaseDataObj {
         }
         else {
           if(!Meta.sys_fields.includes(fld) &&
-            (_obj[fld] === blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === 'string'))) {
+            (_obj[fld] === blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === string))) {
             continue;
           }
           res[fld] = _obj[fld];
@@ -423,12 +407,10 @@ export class BaseDataObj {
 
   /**
    * Возвращает "истина" для нового (еще не записанного или не прочитанного) объекта
-   * @method is_new
-   * @for DataObj
-   * @return {boolean}
+   * @return {Boolean}
    */
-  is_new() {
-    return !this._data || this._data._is_new;
+  isNew() {
+    return !this._data || this._data.isNew;
   }
 
   /**
@@ -437,9 +419,9 @@ export class BaseDataObj {
   _set_loaded(ref) {
     this._manager.push(this, ref || this.ref);
     Object.assign(this._data, {
-      _modified: false,
-      _is_new: false,
-      _loading: false,
+      modified: false,
+      isNew: false,
+      loading: false,
     });
     return this;
   }
@@ -486,7 +468,7 @@ export class BaseDataObj {
       if(silent) {
         _data._loading = false;
       }
-      if(!_not_set_loaded && (_data._loading || (!utils.is_empty_guid(this.ref) && (attr.id || attr.name || attr.numberDoc)))) {
+      if(!_not_set_loaded && (_data._loading || (!utils.is.emptyGuid(this.ref) && (attr.id || attr.name || attr.numberDoc)))) {
         this._set_loaded(this.ref);
       }
     }
@@ -612,7 +594,7 @@ export class DataObj extends BaseDataObj {
    * @type String
    */
   get _rev() {
-    return this._getter('_rev') || '';
+    return this._get('_rev') || '';
   }
   set _rev(v) {
   }
@@ -759,7 +741,7 @@ export class DataObj extends BaseDataObj {
 
     // выполняем обработчик перед записью
     const {_data, _manager} = this;
-    _data._saving_trans = true;
+    _data.trans = true;
     return _manager.emit_promise('before_save', this, attr)
       .then(() => {
         return this.before_save(attr);
@@ -777,7 +759,7 @@ export class DataObj extends BaseDataObj {
             _data._modified = false;
           }
           _data._saving = 0;
-          _data._saving_trans = false;
+          _data.trans = false;
           return this;
         };
 
@@ -863,7 +845,7 @@ export class DataObj extends BaseDataObj {
       for(const fld in meta) {
         if(meta[fld].type.isRef) {
           const v = obj[fld];
-          if(v instanceof DataObj && !v.empty() && v.is_new()) {
+          if(v instanceof DataObj && !v.empty() && v.isNew()) {
             const {_manager} = v;
             const {adapter} = _manager;
             const db = adapter.db(_manager);
@@ -891,7 +873,7 @@ export class DataObj extends BaseDataObj {
     for(const [adapter, mdb] of adapters) {
       for(const [db, refs] of mdb) {
         res.push(adapter
-          .load_array(null, Array.from(refs), false, db)
+          .load(null, Array.from(refs), false, db)
           .catch((err) => null));
       }
     }
@@ -968,7 +950,7 @@ export class DataObj extends BaseDataObj {
     const {_obj, _manager: {root}} = this;
     const {md, utils} = root;
 
-    if(this.empty() || this.is_new()){
+    if(this.empty() || this.isNew()){
       return res;
     }
 
@@ -977,7 +959,7 @@ export class DataObj extends BaseDataObj {
       if (type.isRef && _obj.hasOwnProperty(fld) && _obj[fld] && !utils.is_empty_guid(_obj[fld])) {
         const finded = type.types.some((type) => {
           const _mgr = md.mgr_by_className(type);
-          return _mgr && !_mgr.get(_obj[fld], false, false).is_new();
+          return _mgr && !_mgr.get(_obj[fld], false, false).isNew();
         });
         if (!finded) {
           res.push({'obj': _obj, fld, 'ts': '', 'row': 0, 'value': _obj[fld], type});
@@ -994,7 +976,7 @@ export class DataObj extends BaseDataObj {
             if (type.isRef && row.hasOwnProperty(fld) && row[fld] && !utils.is_empty_guid(row[fld])) {
               const finded = type.types.some((type) => {
                 const _mgr = md.mgr_by_className(type);
-                return _mgr && !_mgr.get(_obj[fld], false, false).is_new();
+                return _mgr && !_mgr.get(_obj[fld], false, false).isNew();
               });
               if (!finded) {
                 res.push({'obj': _obj, fld, ts, 'row': row.row, 'value': row[fld], type});
@@ -1019,7 +1001,7 @@ export class DataObj extends BaseDataObj {
     if(!extra_fields || !cch.properties) {
       return;
     }
-    if(typeof property === 'string') {
+    if(typeof property === string) {
       property = cch.properties.predefined(property);
     }
     if(!property) {
@@ -1120,38 +1102,29 @@ export class CatObj extends DataObj {
    * @type String
    */
   get presentation() {
-    return this.name || this.id || this._presentation || '';
-  }
-  set presentation(v) {
-    if(v) {
-      this._presentation = String(v);
-    }
+    return this.name || this.id || '';
   }
 
   /**
-   * ### Код элемента справочника
-   * @property id
+   * Код элемента справочника
    * @type String|Number
    */
   get id() {
-    return this._obj.id || '';
+    return this._get('id') || '';
   }
   set id(v) {
-    this.__notify('id');
-    this._obj.id = v;
+    this._set('id', v);
   }
 
   /**
-   * ### Наименование элемента справочника
-   * @property name
+   * Наименование элемента справочника
    * @type String
    */
   get name() {
-    return this._obj.name || '';
+    return this._get('name') || '';
   }
   set name(v) {
-    this.__notify('name');
-    this._obj.name = String(v);
+    this._set('name', v);
   }
 
 
@@ -1159,13 +1132,13 @@ export class CatObj extends DataObj {
    * Дети
    * Возвращает массив элементов, находящихся в иерархии текущего
    *
-   * @param folders_only {Boolean}
+   * @param foldersOnly {Boolean}
    * @return {Array.<DataObj>}
    */
-  _children(folders_only) {
+  _children(foldersOnly) {
     const res = [];
     this._manager.forEach((o) => {
-      if(o != this && (!folders_only || o.is_folder) && o._hierarchy(this)) {
+      if(o != this && (!foldersOnly || o.is_folder) && o._hierarchy(this)) {
         res.push(o);
       }
     });
@@ -1368,7 +1341,7 @@ export class EnumObj extends DataObj {
    * @type Number
    */
   get order() {
-    return this._getter('order');
+    return this._get('order');
   }
 
   /**
@@ -1384,7 +1357,7 @@ export class EnumObj extends DataObj {
    * @type String
    */
   get name() {
-    return this._getter('name');
+    return this._get('name');
   }
 
   /**
@@ -1392,7 +1365,7 @@ export class EnumObj extends DataObj {
    * @type String
    */
   get latin() {
-    return this._getter('latin');
+    return this._get('latin');
   }
 
   /**
@@ -1400,7 +1373,7 @@ export class EnumObj extends DataObj {
    * @type String
    */
   get synonym() {
-    return this._getter('synonym');
+    return this._get('synonym');
   }
 
   /**
@@ -1509,7 +1482,7 @@ export class RegisterRow extends DataObj {
    * Ключ записи регистра
    */
   get ref() {
-    return this._manager.get_ref(this);
+    return this._manager.getRef(this);
   }
 
   set ref(v) {
