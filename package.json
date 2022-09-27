@@ -6,13 +6,13 @@
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
-    "node": "^18.9",
+    "node": "^16.3",
     "yarn": "^1.22"
   },
   "dependencies": {
     "camelcase": "^7.0",
     "dayjs": "^1.11",
-    "uuid": "^8.3"
+    "uuid": "8.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.19",

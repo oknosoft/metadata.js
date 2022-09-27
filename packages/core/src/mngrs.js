@@ -107,7 +107,7 @@ export class DataManager extends MetaEventEmitter{
    * для сериализации возвращаем представление
    */
   toJSON() {
-    return {type: 'DataManager', className: this.className};
+    return {type: this.constructor.name, className: this.className};
   }
 
   /**
@@ -148,15 +148,12 @@ export class DataManager extends MetaEventEmitter{
    * Помещает элемент ссылочных данных в локальную коллекцию
    * Попутно, включает их в индексы и alatable
    * @param obj {DataObj}
-   * @param [new_ref] {String} - новое значение ссылки объекта
    */
-  push(obj, new_ref){
-    if (new_ref && (new_ref != obj.ref)) {
-      delete this.#byRef[obj.ref];
-      this.#byRef[new_ref] = obj;
-    }
-    else {
-      this.#byRef[obj.ref] = obj;
+  push(obj){
+    const ref = this.getRef(obj);
+    this.#byRef[ref] = obj;
+    if(!this.#alatable.includes(obj)) {
+      this.#alatable.push(obj);
     }
   }
 
@@ -168,9 +165,9 @@ export class DataManager extends MetaEventEmitter{
    * @return {DataObj|undefined}
    */
   get(ref, create = true) {
-    ref = this.utils.fix.guid(ref);
+    ref = this.getRef(ref);
     let o = this.#byRef[ref];
-    if (!o && !create) {
+    if (!o && create) {
       o = this.objConstructor('', [ref, this]);
     }
     return o;
@@ -181,7 +178,7 @@ export class DataManager extends MetaEventEmitter{
    * @param {Object} attr
    * @return {String}
    */
-  get_ref(attr){
+  getRef(attr){
     return this.utils.fix.guid(attr);
   }
 
@@ -692,9 +689,9 @@ export class EnumManager extends RefDataManager{
     const meta = this.metadata();
     const {EnumObj} = this.root.classes;
 		for(var v of meta.values){
-      const value = new EnumObj(v, this);
-      if(v.latin) {
-        Object.defineProperty(this, v.latin, {value});
+      const value = new EnumObj(v, this, true);
+      if(v.latin && !this.hasOwnProperty(v.name)) {
+        Object.defineProperty(this, v.name, {value});
       }
 		}
     if(meta.default) {
@@ -703,10 +700,17 @@ export class EnumManager extends RefDataManager{
 	}
 
   get(ref, create) {
-    if (!ref || ref == this.utils.blank.guid) {
+    const {utils} = this;
+    if (utils.is.emptyGuid(ref)) {
       ref = "_";
     }
-    return super.get(ref, create);
+    else if(utils.is.dataObj(ref) && ref._manager === this) {
+      return ref;
+    }
+    else if(typeof ref === 'object') {
+      ref = this.getRef(ref)
+    }
+    return this[ref] || super.get(ref, create);
   }
 
   /**
@@ -714,13 +718,13 @@ export class EnumManager extends RefDataManager{
    * @param {Object} attr
    * @return {String}
    */
-  get_ref(attr){
-    return attr.name;
+  getRef(attr){
+    return typeof attr === string ? attr : (attr.latin || attr.name);
   }
 
-	push(value, new_ref){
-    super.push(value, new_ref);
-		Object.defineProperty(this, new_ref, {value});
+	push(value){
+    super.push(value);
+		Object.defineProperty(this, value.ref, {value});
 	}
 
 	/**
@@ -780,7 +784,7 @@ export class EnumManager extends RefDataManager{
 	 */
   optionList(selection = {}, val){
 		let l = [], synonym = "", sref;
-    const {is} = this.utils;
+    const {utils} = this;
 
     function push(v){
       if(selection._dhtmlx){
@@ -788,7 +792,7 @@ export class EnumManager extends RefDataManager{
           text: v.presentation,
           value: v.ref
         }
-        if(is.equal(v.value, val)){
+        if(utils.is.equal(v.value, val)){
           v.selected = true;
         }
         l.push(v);
@@ -894,11 +898,11 @@ export class RegisterManager extends DataManager{
 
 		if (arr.length) {
 			if (return_row)
-				res = this.byRef[this.get_ref(arr[0])];
+				res = this.byRef[this.getRef(arr[0])];
 			else {
 				res = [];
 				for (var i in arr)
-					res.push(this.byRef[this.get_ref(arr[i])]);
+					res.push(this.byRef[this.getRef(arr[i])]);
 			}
 		}
 
@@ -916,7 +920,7 @@ export class RegisterManager extends DataManager{
 		const res = [];
 
     for (const row of aattr) {
-      const ref = this.get_ref(row);
+      const ref = this.getRef(row);
       let obj = this.byRef[ref];
 
       if (!obj && !row._deleted) {
@@ -1240,7 +1244,7 @@ export class RegisterManager extends DataManager{
 		return res;
 	}
 
-	get_ref(attr){
+  getRef(attr){
 
 		if(attr.ref)
 			return attr.ref;

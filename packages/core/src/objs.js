@@ -405,10 +405,10 @@ export class BaseDataObj {
    * @type Boolean
    */
   get _deleted() {
-    return !!this._obj._deleted;
+    return Boolean(this.#obj._deleted);
   }
   set _deleted(v) {
-    this._obj._deleted = !!v;
+    this.#obj._deleted = !!v;
   }
 
   /**
@@ -592,7 +592,6 @@ export class BaseDataObj {
 export class DataObj extends BaseDataObj {
 
   constructor(attr, manager, loading, direct) {
-
     // если объект с такой ссылкой уже есть в базе, возвращаем его и не создаём нового
     if(manager.storable !== false) {
       const tmp = manager.get(attr, false);
@@ -603,22 +602,17 @@ export class DataObj extends BaseDataObj {
 
     super(attr, manager, loading, direct);
 
-    if(manager.alatable && manager.push) {
-      manager.alatable.push(this._obj);
-      manager.push(this, this._obj.ref);
-    }
+    manager.push(this);
 
   }
 
   /**
-   * ### Ревизия
+   * Ревизия
    * Eё устанваливает адаптер при чтении и записи
-   * @property _rev
-   * @for DataObj
-   * @type Boolean
+   * @type String
    */
   get _rev() {
-    return this._obj._rev || '';
+    return this._getter('_rev') || '';
   }
   set _rev(v) {
   }
@@ -1358,14 +1352,13 @@ export class EnumObj extends DataObj {
 
   constructor(attr, manager, loading) {
 
+    const {ref, ...other} = attr;
     // выполняем конструктор родительского объекта
-    super(attr, manager, loading);
-
-    if(attr && typeof attr === 'object' && !loading) {
-      const {ref, latin, ...other} = attr;
+    super(other, manager, loading, true);
+    // дозаполняем при необходисомти
+    if(!loading) {
       super._assign(other);
     }
-
   }
 
   /**
@@ -1378,15 +1371,29 @@ export class EnumObj extends DataObj {
     return this._getter('order');
   }
 
+  /**
+   * Ссылка перечисления
+   * @type {String}
+   */
+  get ref() {
+    return this._manager.getRef(this);
+  }
 
   /**
-   * Наименование элемента перечисления
+   * Имя элемента перечисления
    * @type String
    */
   get name() {
     return this._getter('name');
   }
 
+  /**
+   * Latin-имя элемента перечисления
+   * @type String
+   */
+  get latin() {
+    return this._getter('latin');
+  }
 
   /**
    * Синоним элемента перечисления
@@ -1408,12 +1415,11 @@ export class EnumObj extends DataObj {
 
   /**
    * Проверяет, является ли ссылка объекта пустой
-   * @method empty
-   * @for EnumObj
    * @return {boolean} - true, если ссылка пустая
    */
   empty() {
-    return !this.ref || this.ref == '_';
+    const {ref} = this;
+    return !ref || ref == '_';
   }
 
   /**

@@ -21,6 +21,14 @@ class ManagersCollection extends OwnerObj {
     return this.owner.msg.meta_classes[this.name];
   }
 
+  /**
+   * toJSON
+   * для сериализации возвращаем представление
+   */
+  toJSON() {
+    return {type: this.constructor.name, name: this.toString()};
+  }
+
   create(name, Constructor, freeze) {
     this[name] = new (Constructor || this.#Manager)(this, this.name + '.' + name);
     freeze && Object.freeze(this[name]);

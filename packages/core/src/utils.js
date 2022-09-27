@@ -103,8 +103,6 @@ export default class MetaUtils extends OwnerObj {
   constructor(owner) {
     super(owner);
 
-    const {classes} = this.owner;
-
     this.blob = {
       /**
        * ### Читает данные из блоба
@@ -285,7 +283,7 @@ export default class MetaUtils extends OwnerObj {
        * @param v {*} - проверяемое значение
        * @return {Boolean} - true, если значение соответствует регурярному выражению guid
        */
-      guid: (v) => {
+      guid(v) {
         if (typeof v !== 'string') {
           return false;
         }
@@ -309,9 +307,7 @@ export default class MetaUtils extends OwnerObj {
        * @param v {*} - проверяемое значение
        * @return {Boolean} - true, если v эквивалентен пустому guid
        */
-      emptyGuid(v) {
-        return !v || v === this.blank.guid;
-      },
+      emptyGuid: (v) => !v || v === this.blank.guid,
 
       /**
        * Проверяет, является ли значенние Data-объектным типом
@@ -319,9 +315,7 @@ export default class MetaUtils extends OwnerObj {
        * @param v {*} - проверяемое значение
        * @return {Boolean} - true, если значение является ссылкой
        */
-      dataObj(v) {
-        return v instanceof classes.DataObj;
-      },
+      dataObj: (v) => v instanceof this.owner.classes.DataObj,
 
       /**
        * Проверяет, является ли значенние Data-документом
@@ -329,9 +323,7 @@ export default class MetaUtils extends OwnerObj {
        * @param v {*} - проверяемое значение
        * @return {Boolean} - true, если значение является ссылкой
        */
-      docObj(v) {
-        return v instanceof classes.DocObj;
-      },
+      docObj: (v) => v instanceof this.owner.classes.DataObj,
 
       /**
        * Проверяет, является ли значенние менеджером объектов данных
@@ -340,7 +332,7 @@ export default class MetaUtils extends OwnerObj {
        * @return {Boolean} - true, если значение является менеджером данных
        */
       dataMgr(v) {
-        return v instanceof classes.DataManager;
+        return v instanceof this.owner.classes.DataManager;
       },
 
       /**
@@ -350,7 +342,7 @@ export default class MetaUtils extends OwnerObj {
        * @return {Boolean} - true, если значение является менеджером данных
        */
       enmMgr(v) {
-        return v instanceof classes.EnumManager;
+        return v instanceof this.owner.classes.EnumManager;
       },
 
       /**
@@ -360,7 +352,7 @@ export default class MetaUtils extends OwnerObj {
        * @return {Boolean} - true, если значение является табличной частью
        */
       tabular(v) {
-        return v instanceof classes.TabularSectionRow || v instanceof classes.TabularSection;
+        return v instanceof this.owner.classes.TabularSectionRow || v instanceof this.owner.classes.TabularSection;
       },
 
       /**
@@ -394,7 +386,7 @@ export default class MetaUtils extends OwnerObj {
        * @param [v2] {Object|Array}
        * @return {boolean} - true, если значенния эквивалентны
        */
-      equals(v1, v2) {
+      equals: (v1, v2) => {
         if(Array.isArray(v1) && Array.isArray(v2)) {
           return v1.length === v2.length && v1.every((elm1, index) => this.equals(elm1, v2[index]));
         }
@@ -456,7 +448,7 @@ export default class MetaUtils extends OwnerObj {
        */
       guid: (ref, generate) => {
 
-        if (ref instanceof classes.DataObj) {
+        if (ref instanceof this.owner.classes.DataObj) {
           return ref.ref;
         }
 

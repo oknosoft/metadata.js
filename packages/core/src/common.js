@@ -10,7 +10,7 @@ import JobPrm from './jobprm';
 import Meta from './meta';
 import msg from './i18n.ru';
 import classes from './classes';
-import {DataAdapters} from './abstract_adapter'
+import {DataAdapters} from './adapter'
 
 
 /**
