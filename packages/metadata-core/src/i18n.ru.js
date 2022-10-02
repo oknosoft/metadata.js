@@ -164,40 +164,40 @@ const msg = new I18n({
 		meta_mgrs: {
 			mgr: 'Менеджер',
 			get enm() {
-				return this.mgr + ' перечислений';
+				return this.mgr + ' перечисления';
 			},
 			get cat() {
-				return this.mgr + ' справочников';
+				return this.mgr + ' справочника';
 			},
 			get doc() {
 				return this.mgr + ' документов';
 			},
 			get cch() {
-				return this.mgr + ' планов видов характеристик';
+				return this.mgr + ' плана видов характеристик';
 			},
 			get cacc() {
-				return this.mgr + ' планов счетов';
+				return this.mgr + ' плана счетов';
 			},
 			get tsk() {
 				return this.mgr + ' задач';
 			},
 			get ireg() {
-				return this.mgr + ' регистров сведений';
+				return this.mgr + ' регистра сведений';
 			},
 			get areg() {
-				return this.mgr + ' регистров накопления';
+				return this.mgr + ' регистра накопления';
 			},
 			get accreg() {
-				return this.mgr + ' регистров бухгалтерии';
+				return this.mgr + ' регистра бухгалтерии';
 			},
 			get bp() {
-				return this.mgr + ' бизнес-процессов';
+				return this.mgr + ' бизнес-процесса';
 			},
 			get dp() {
-				return this.mgr + ' обработок';
+				return this.mgr + ' обработки';
 			},
 			get rep() {
-				return this.mgr + ' отчетов';
+				return this.mgr + ' отчета';
 			},
 		},
 		meta_cat_mgr: 'Менеджер справочников',

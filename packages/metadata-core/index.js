@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.30-beta.11, built:2022-09-18
+ metadata-core v2.0.30-beta.11, built:2022-10-01
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -149,40 +149,40 @@ const msg = new I18n({
 		meta_mgrs: {
 			mgr: 'Менеджер',
 			get enm() {
-				return this.mgr + ' перечислений';
+				return this.mgr + ' перечисления';
 			},
 			get cat() {
-				return this.mgr + ' справочников';
+				return this.mgr + ' справочника';
 			},
 			get doc() {
 				return this.mgr + ' документов';
 			},
 			get cch() {
-				return this.mgr + ' планов видов характеристик';
+				return this.mgr + ' плана видов характеристик';
 			},
 			get cacc() {
-				return this.mgr + ' планов счетов';
+				return this.mgr + ' плана счетов';
 			},
 			get tsk() {
 				return this.mgr + ' задач';
 			},
 			get ireg() {
-				return this.mgr + ' регистров сведений';
+				return this.mgr + ' регистра сведений';
 			},
 			get areg() {
-				return this.mgr + ' регистров накопления';
+				return this.mgr + ' регистра накопления';
 			},
 			get accreg() {
-				return this.mgr + ' регистров бухгалтерии';
+				return this.mgr + ' регистра бухгалтерии';
 			},
 			get bp() {
-				return this.mgr + ' бизнес-процессов';
+				return this.mgr + ' бизнес-процесса';
 			},
 			get dp() {
-				return this.mgr + ' обработок';
+				return this.mgr + ' обработки';
 			},
 			get rep() {
-				return this.mgr + ' отчетов';
+				return this.mgr + ' отчета';
 			},
 		},
 		meta_cat_mgr: 'Менеджер справочников',
@@ -2025,6 +2025,9 @@ class DataManager extends MetaEventEmitter{
 		return Promise.resolve(this._printing_plates);
 	}
   unload_obj(ref) {
+    if(ref === utils$1.blank.ref) {
+      return;
+    }
     delete this.by_ref[ref];
     this.alatable.some((o, i, a) => {
       if(o.ref == ref){
