@@ -4,6 +4,8 @@
  */
 
 import {string} from './utils';
+import {OwnerObj} from './meta/classes';
+import {own} from './meta/symbols';
 
 class InnerData {
   constructor(owner, loading) {
@@ -36,7 +38,7 @@ class InnerData {
   }
 }
 
-export class BaseDataObj {
+export class BaseDataObj extends OwnerObj {
 
   /**
    * Фактическое хранилище данных объекта
@@ -47,14 +49,12 @@ export class BaseDataObj {
 
   constructor(attr, manager, loading, direct) {
 
+    super(manager);
+
     if(Array.isArray(manager)) {
       this.#obj = direct ? attr : {};
-      const {owner} = manager;
-
       Object.defineProperties(this, {
-        _owner: {value: owner},
-        _manager: {value: owner._manager},
-        _data: {value: owner._data},
+        _data: {value: manager.owner._data},
       });
     }
     else {
@@ -62,14 +62,6 @@ export class BaseDataObj {
       this.#obj = direct ? attr : {ref: manager.getRef(attr)};
 
       Object.defineProperties(this, {
-
-        /**
-         * Указатель на менеджер данного объекта
-         * @property _manager
-         * @type DataManager
-         * @final
-         */
-        _manager: {value: manager},
 
         /**
          * Внутренние и пользовательские данные - аналог `AdditionalProperties` _Дополнительные свойства_ в 1С
@@ -89,12 +81,19 @@ export class BaseDataObj {
   }
 
   /**
-   * Метаданные текущего объекта
-   * @method _metadata
-   * @for DataObj
-   * @param field_name
-   * @type Object
+   * Указатель на менеджера данного объекта
+   * @property _manager
+   * @type DataManager
    * @final
+   */
+  get _manager() {
+    return this[own];
+  }
+
+  /**
+   * Метаданные текущего объекта
+   * @param field_name
+   * @type MetaObj
    */
   _metadata(field_name) {
     return this._manager.metadata(field_name);

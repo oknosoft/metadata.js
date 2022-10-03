@@ -4,6 +4,7 @@
  */
 
 import {BaseDataObj} from './objs';
+import {own, alias} from './meta/symbols';
 
 
 /**
@@ -15,40 +16,63 @@ import {BaseDataObj} from './objs';
  */
 export class TabularSection extends Array {
 
+  /**
+   * Объект-владелец табличной части
+   * @type DataObj
+   */
+  #own;
+
+  /**
+   * Метаданные табличной части
+   * @type MetaTabular
+   */
+  #meta;
+
 	constructor(owner, name, raw) {
     super();
-    Object.defineProperties({
-      /**
-       * Объект-владелец табличной части
-       * @type DataObj
-       */
-      owner: {value: owner},
-      /**
-       * Метаданные табличной части
-       * @type MetaTabular
-       */
-      meta: {value: owner._manager.metadata(name)}
-    });
+    this.#own = owner;
+    this.#meta = owner._manager.metadata(name);
     if(Array.isArray(raw)) {
       this.load(raw);
     }
 	}
 
   toString() {
-	  const {owner: {_manager}, meta} = this;
-    const {msg} = _manager.root;
-    return msg.tabular + ' ' + _manager.className + '.' + meta.name;
+	  const {_manager: root} = this;
+    return `${root.msg.tabular} ${this.#meta.className}`;
+  }
+
+  get [own]() {
+    return this.#own;
+  }
+
+  /**
+   * Указатель на менеджера данного объекта
+   * @property _manager
+   * @type DataManager
+   * @final
+   */
+  get _manager() {
+    return this[own]._manager;
+  }
+
+  /**
+   * Метаданные табчасти
+   * @param {String} name - имя поля, данные которого интересуют
+   * @type MetaObj
+   */
+  _metadata(name) {
+    return this.#meta.get(name);
   }
 
 
 	/**
-	 * ### Очищает табличную часть
-	 * @method clear
+	 * @summary Очищает табличную часть
 	 * @return {TabularSection}
 	 *
 	 * @example
-	 *     // Очищает табличнут часть
-	 *     ts.clear();
+	 * // Очищает табличнут часть
+	 * ts.clear();
 	 *
 	 */
   clear(selection) {
@@ -65,7 +89,6 @@ export class TabularSection extends Array {
 
 	/**
 	 * Удаляет строку табличной части
-	 * @method del
 	 * @param val {Number|TabularSectionRow} - индекс или строка табчасти
 	 */
 	del(val) {
@@ -103,8 +126,6 @@ export class TabularSection extends Array {
 
 		const drows = _obj.splice(index, 1);
 
-		_obj.forEach((row, index) => row.row = index + 1);
-
     // триггер
     !_data._loading && _owner.after_del_row(_name, drows);
 
@@ -115,7 +136,6 @@ export class TabularSection extends Array {
 
 	/**
 	 * Находит первую строку, содержащую значение
-	 * @method find
 	 * @param val {*} - значение для поиска
 	 * @param columns {String|Array} - колонки, в которых искать
 	 * @return {TabularSectionRow}

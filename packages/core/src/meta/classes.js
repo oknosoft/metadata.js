@@ -204,11 +204,20 @@ export class MetaTabulars extends OwnerObj {
  */
 export class MetaTabular extends OwnerObj {
   constructor(owner, name, raw) {
-    super(owner);
+    super(owner, name);
     const {fields, tabulars, ...other} = raw[name];
     this.fields = new MetaFields(this, fields);
     this.tabulars = new MetaTabulars(this, tabulars);
     Object.assign(this, other);
+  }
+
+  get(name) {
+    return name ? (this.fields[name] || this.tabulars[name]) : this;
+  }
+
+  get className() {
+    const owner = this[own][own];
+    return `${owner.className}.${this[alias]}`;
   }
 }
 
