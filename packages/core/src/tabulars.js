@@ -15,7 +15,8 @@ import {BaseDataObj} from './objs';
  */
 export class TabularSection extends Array {
 
-	constructor(owner, name) {
+	constructor(owner, name, raw) {
+    super();
     Object.defineProperties({
       /**
        * Объект-владелец табличной части
@@ -28,6 +29,9 @@ export class TabularSection extends Array {
        */
       meta: {value: owner._manager.metadata(name)}
     });
+    if(Array.isArray(raw)) {
+      this.load(raw);
+    }
 	}
 
   toString() {
@@ -117,7 +121,7 @@ export class TabularSection extends Array {
 	 * @return {TabularSectionRow}
 	 */
 	find(val, columns) {
-		const res = this.owner._manager.utils._find(this._obj, val, columns);
+		const res = this[own]._manager.utils._find(this._obj, val, columns);
 		return res && res._row;
 	}
 
@@ -149,7 +153,7 @@ export class TabularSection extends Array {
 		  delete selection[index];
     }
 
-		return this.owner._manager.utils._find_rows.call(this, _obj, selection, cb);
+		return this[own]._manager.utils._find_rows.call(this, _obj, selection, cb);
 	}
 
 	/**
@@ -333,21 +337,21 @@ export class TabularSection extends Array {
 	/**
 	 * Загружает табличную часть из массива объектов
 	 *
-	 * @param aattr {Array} - массив объектов к загрузке
+	 * @param {Array.<Object>} raw - массив объектов к загрузке
 	 */
-	load(aattr) {
+	load(raw) {
 
-    const {_owner, _name, _obj} = this;
-    const {_manager, _data} = _owner;
+    const {owner, meta, _obj} = this;
+    const {_manager, _data} = owner;
     const {_loading} = _data;
 
-    if(!_loading){
+    if (!_loading) {
       _data._loading = true;
     }
 
     this.clear();
 
-		for(let row of aattr instanceof TabularSection ? aattr._obj : (Array.isArray(aattr) ? aattr : [])){
+    for (const row of raw) {
       this.add(row);
     }
 
@@ -433,11 +437,11 @@ export class TabularSectionRow extends BaseDataObj {
   }
 
 	get _manager() {
-		return this.owner._manager;
+		return this[own]._manager;
 	}
 
 	get _data() {
-    return this._owner._owner._data;
+    return this[own]._owner._data;
   }
 
 	/**
@@ -459,7 +463,7 @@ export class TabularSectionRow extends BaseDataObj {
 	 */
 	_clone() {
     const {_manager} = th
-		return this.owner._manager.utils._mixin(_owner._owner._manager.objConstructor(_owner._name, _owner), _obj)
+		return this[own]._manager.utils._mixin(_owner._owner._manager.objConstructor(_owner._name, _owner), _obj)
 	}
 
 	_setter(f, v) {

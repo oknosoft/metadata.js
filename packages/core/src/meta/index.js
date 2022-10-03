@@ -8,8 +8,9 @@
 import MetaEventEmitter from './emitter';
 import {DataManager} from '../mngrs';
 import mngrcollections from '../mngrcollections';
-import {sys, sys_fields} from './system';
-import {TypeDef, MetaObj, MetaField, MetaFields, MetaTabulars, } from './classes';
+import {sys, sysFields} from './system';
+import {own} from './symbols';
+import {TypeDef, MetaObj, MetaField, MetaFields, MetaTabulars, OwnerObj} from './classes';
 
 
 /**
@@ -24,16 +25,7 @@ class Meta extends MetaEventEmitter {
    * Хранилище объектов описания метаданных
    * @type {Object}
    */
-  #m = {
-    enm: {},
-    cat: {},
-    doc: {},
-    ireg: {},
-    areg: {},
-    dp: {},
-    rep: {},
-    cch: {},
-  };
+  #m = {};
 
   /**
    * Индекс по id и className
@@ -48,7 +40,7 @@ class Meta extends MetaEventEmitter {
    * Служебные поля, которые сохраняем при прочистке
    * @type {Array.<string>}
    */
-  static sys_fields = sys_fields;
+  static sysFields = sysFields;
 
   /**
    * Системные метаданные
@@ -64,7 +56,7 @@ class Meta extends MetaEventEmitter {
   constructor(owner) {
     super(owner);
     // создаём конструкторы менеджеров данных
-    mngrcollections(owner);
+    mngrcollections(owner, this, this.#m);
   }
 
   /**
@@ -74,17 +66,26 @@ class Meta extends MetaEventEmitter {
    * @param [raw] {Object} - сырой объект с описанием метаданных
    */
   init(raw) {
+    const owner = this[own];
     for(const patch of Meta._sys) {
-      this.owner.utils._patch(raw, patch);
+      owner.utils._patch(raw, patch);
     }
     for(const area of Object.keys(raw)) {
-      if(this.#m[area]) {
+      if(owner[area]) {
+        // создаём поля метаданных верхнего уровня
+        const curr = new OwnerObj(this, area);
+        this.#m[area] = curr;
+        // и собственно, метаданные на соответствующих уровнях
         for(const el in raw[area]) {
-          const obj = new MetaObj(this, area, raw[area][el]);
-          this.#m[area][el] = obj;
-          this.#index.meta[`${area}.${el}`] = obj;
+          const obj = new MetaObj(curr, el, raw[area][el]);
+          curr[el] = obj;
+          const mgr = owner[area][el];
+          const {meta, mgrs} = this.#index;
+          meta[`${area}.${el}`] = obj;
+          mgrs[`${area}.${el}`] = mgr;
           if(obj.id) {
-            this.#index.meta[obj.id] = obj;
+            meta[obj.id] = obj;
+            mgrs[obj.id] = mgr;
           }
           delete raw[area][el];
         };
@@ -110,33 +111,38 @@ class Meta extends MetaEventEmitter {
     if(!meta) {
       throw new Error(`Unknown meta ${type}`);
     }
-    if(!field) {
-      return meta;
-    }
     return meta.get(field);
   }
 
   /**
-   * Возвращает структуру имён объектов метаданных конфигурации
-   *
-   * @return {Object}
+   * @summary Возвращает менеджер объекта по имени или идентификатору класса
+   * @param id {String}
+   * @return {DataManager|undefined}
+   * @private
    */
-  classes() {
+  mgr(id) {
+    return this.#index.mgrs[id];
+  }
+
+  /**
+   * @summary Возвращает структуру имён объектов метаданных конфигурации
+   *
+   * @type {Object}
+   */
+  get classes() {
     const res = {};
-    for (const i in this.#m) {
-      res[i] = [];
-      for (const j in this.#m[i])
-        res[i].push(j);
+    for (const area in this.#m) {
+      res[area] = Object.keys(this.#m[area]);
     }
     return res;
   }
 
   /**
-   * Возвращает массив используемых баз (типов кеширования)
+   * @summary Возвращает массив используемых баз (типов кеширования)
    *
-   * @return {Array.<String>}
+   * @type {Array.<String>}
    */
-  bases() {
+  get bases() {
     const res = new Set();
     const _m = this.#m;
     for (let i in _m) {
@@ -150,26 +156,16 @@ class Meta extends MetaEventEmitter {
   }
 
   /**
-   * Возвращает список доступных печатных форм
+   * @summary Возвращает список доступных печатных форм
    * @method printingPlates
    * @return {Object}
    */
   printingPlates(pp) {
     if(pp) {
       for (const i in pp.doc) {
-        this._m.doc[i].printing_plates = pp.doc[i];
+        this.#m.doc[i].printing_plates = pp.doc[i];
       }
     }
-  }
-
-  /**
-   * Возвращает менеджер объекта по имени или идентификатору класса
-   * @param id {String}
-   * @return {DataManager|undefined}
-   * @private
-   */
-  findMgr(id) {
-    return this.#index.mgrs[id];
   }
 
   /**
@@ -178,7 +174,7 @@ class Meta extends MetaEventEmitter {
    */
   createTables(callback, attr) {
 
-    const {owner} = this;
+    const owner = this[own];
     const data_names = [];
     const managers = this.classes();
 
@@ -209,7 +205,7 @@ class Meta extends MetaEventEmitter {
     }
 
     // TODO переписать на промисах и генераторах и перекинуть в синкер
-    for (let mgr of 'enm,cch,cacc,cat,bp,tsk,doc,ireg,areg'.split(',')) {
+    for (let mgr in managers) {
       for (let className in managers[mgr]) {
         data_names.push({'class': owner[mgr], 'name': managers[mgr][className]});
       }

@@ -67,7 +67,7 @@ const ss_selection_fields = {
   },
 };
 
-export const sys_fields = ['zone','id','numberDoc','date','parent'];
+export const sysFields = ['zone','id','numberDoc','date','parent'];
 
 export const sys = [{
   enm: {

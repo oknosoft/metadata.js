@@ -1,3 +1,6 @@
+
+import {own, alias} from './symbols';
+
 /**
  * Абстрактный класс со ссылкой на владельца
  */
@@ -5,41 +8,45 @@ export class OwnerObj {
   /**
    * Ссылка на владельца
    */
-  #owner;
+  #own;
 
-  constructor(owner) {
-    this.#owner = owner;
+  /**
+   * Имя коллекции
+   */
+  #alias;
+
+  constructor(owner, alias) {
+    this.#own = owner;
+    if(alias) {
+      this.#alias = alias ;
+    }
   }
 
-  get owner() {
-    return this.#owner;
+  get [own]() {
+    return this.#own;
+  }
+
+  get [alias]() {
+    return this.#alias || this.#own.toString();
   }
 }
 
 /**
- * Описание метаданных объекта
- * Не путать с виртуальным справочником CatMeta_objs
+ * @summary Описание метаданных объекта
+ * Не путать с виртуальным справочником CatMetaObjs
  * @class MetaObj
  */
 export class MetaObj extends OwnerObj {
 
   /**
-   * Имя коллекции
-   * @type String
-   */
-  #area;
-
-  /**
    *
    * @param {Meta} owner - Корень метаданных
-   * @param {String} area - Имя коллекции
+   * @param {String} alias - Имя коллекции
    * @param {Object} raw - Сырое описание метаданных
    */
-  constructor(owner, area, raw) {
+  constructor(owner, alias, raw) {
 
-    super(owner);
-
-    this.#area = area;
+    super(owner, alias);
 
     if(Array.isArray(raw)) {
       this.values = [];
@@ -64,6 +71,9 @@ export class MetaObj extends OwnerObj {
   }
 
   get(field) {
+    if(!field) {
+      return this;
+    }
     const {fields, tabulars} = this;
     if(fields[field]) {
       return fields[field];
@@ -75,8 +85,9 @@ export class MetaObj extends OwnerObj {
   }
 
   toString() {
-    const {msg} = this.owner.owner;
-    return `${msg.meta[this.#area]}.${this.name}`;
+    const owner = this[own];
+    const {msg} = owner[own];
+    return `${msg.meta[owner[alias]]}.${this[alias]}`;
   }
 
   system(field) {
@@ -105,11 +116,11 @@ export class MetaObj extends OwnerObj {
       case 'ref':
         res.synonym = 'Ссылка';
         res.type.isRef = true;
-        //res.type.types[0] = `${type._owner.name}.${type.name}`;
+        //res.type.types[0] = `${type[owner].name}.${type.name}`;
         return res;
     }
 
-    switch (this.#area) {
+    switch (this[own][alias]) {
       case 'doc':
         switch (field) {
           case 'posted':
@@ -150,26 +161,26 @@ export class MetaObj extends OwnerObj {
 }
 
 /**
- * Описание метаданных поля
- * Не путать с виртуальным справочником CatMeta_fields
+ * @summary Описание метаданных поля
+ * @desc Не путать с виртуальным справочником CatMetaFields
  * @class MetaField
  */
 export class MetaField extends OwnerObj {
   constructor(owner, name, fields) {
-    super(owner);
+    super(owner, name);
     const {type, ...other} = fields[name];
     this.type = new TypeDef(type);
-    Object.assign(this, {name, ...other});
+    Object.assign(this, other);
   }
 }
 
 /**
- * Коллекция полей метаданных
+ * @summary Коллекция полей метаданных
  */
-export class MetaFields {
+export class MetaFields extends OwnerObj {
 
   constructor(owner, fields) {
-    this._owner = owner;
+    super(owner);
     for(const name in fields) {
       this[name] = new MetaField(this, name, fields);
     }
@@ -177,7 +188,7 @@ export class MetaFields {
 }
 
 /**
- * Коллекция метаданных табличных частей
+ * @summary Коллекция метаданных табличных частей
  */
 export class MetaTabulars extends OwnerObj {
   constructor(owner, tabulars) {
@@ -189,7 +200,7 @@ export class MetaTabulars extends OwnerObj {
 }
 
 /**
- * Метаданные табчасти
+ * @summary Метаданные табчасти
  */
 export class MetaTabular extends OwnerObj {
   constructor(owner, name, raw) {
@@ -197,12 +208,12 @@ export class MetaTabular extends OwnerObj {
     const {fields, tabulars, ...other} = raw[name];
     this.fields = new MetaFields(this, fields);
     this.tabulars = new MetaTabulars(this, tabulars);
-    Object.assign(this, {name, ...other});
+    Object.assign(this, other);
   }
 }
 
 /**
- * Описание типа
+ * @summary Описание типа
  */
 export class TypeDef {
   constructor(def) {
@@ -210,7 +221,7 @@ export class TypeDef {
   }
 
   /**
-   * Среди типов есть ссылочный
+   * @summary Среди типов есть ссылочный
    * @type Boolean
    */
   get isRef() {
@@ -218,7 +229,7 @@ export class TypeDef {
   }
 
   /**
-   * Это составной тип
+   * @summary Это составной тип
    * @type Boolean
    */
   get isComposite() {
@@ -226,7 +237,7 @@ export class TypeDef {
   }
 
   /**
-   * Этот тип не составной и ссылочный
+   * @summary Этот тип не составной и ссылочный
    * @type Boolean
    */
   get isSingleRef() {

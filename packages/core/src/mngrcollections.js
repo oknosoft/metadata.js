@@ -1,6 +1,7 @@
 import {
   EnumManager, CatManager, DocManager, InfoRegManager, AccumRegManager,
   DataProcessorsManager, ChartOfCharacteristicManager} from './mngrs';
+import {own, alias} from './meta/symbols';
 
 import {OwnerObj} from './meta/classes';
 
@@ -12,13 +13,12 @@ class ManagersCollection extends OwnerObj {
   #Manager;
 
   constructor(owner, name, Manager) {
-    super(owner);
+    super(owner, name);
     this.#Manager = Manager;
-    this.name = name;
   }
 
   toString() {
-    return this.owner.msg.meta_classes[this.name];
+    return this[owner].msg.meta_classes[this[alias]];
   }
 
   /**
@@ -30,7 +30,7 @@ class ManagersCollection extends OwnerObj {
   }
 
   create(name, Constructor, freeze) {
-    this[name] = new (Constructor || this.#Manager)(this, this.name + '.' + name);
+    this[name] = new (Constructor || this.#Manager)(this, this[alias] + '.' + name);
     freeze && Object.freeze(this[name]);
   }
 
@@ -49,7 +49,6 @@ class ManagersCollection extends OwnerObj {
  * - Тип элементов коллекции: {{#crossLink "EnumManager"}}{{/crossLink}}
  *
  * @class Enumerations
- * @static
  */
 class Enumerations extends ManagersCollection {
   //#Manager;
@@ -65,7 +64,6 @@ class Enumerations extends ManagersCollection {
  * - Тип элементов коллекции: {{#crossLink "CatManager"}}{{/crossLink}}
  *
  * @class Catalogs
- * @static
  */
 class Catalogs extends ManagersCollection {
   constructor(owner) {
@@ -79,7 +77,6 @@ class Catalogs extends ManagersCollection {
  * - Тип элементов коллекции: {{#crossLink "DocManager"}}{{/crossLink}}
  *
  * @class Documents
- * @static
  */
 class Documents extends ManagersCollection {
   constructor(owner) {
@@ -93,7 +90,6 @@ class Documents extends ManagersCollection {
  * - Тип элементов коллекции: {{#crossLink "InfoRegManager"}}{{/crossLink}}
  *
  * @class InfoRegs
- * @static
  */
 class InfoRegs extends ManagersCollection {
   constructor(owner) {
@@ -107,7 +103,6 @@ class InfoRegs extends ManagersCollection {
  * - Тип элементов коллекции: {{#crossLink "RegisterManager"}}{{/crossLink}}
  *
  * @class AccumRegs
- * @static
  */
 class AccumRegs extends ManagersCollection {
   constructor(owner) {
@@ -121,7 +116,6 @@ class AccumRegs extends ManagersCollection {
  * - Тип элементов коллекции: {{#crossLink "DataProcessorsManager"}}{{/crossLink}}
  *
  * @class DataProcessors
- * @static
  */
 class DataProcessors extends ManagersCollection {
   constructor(owner) {
@@ -135,7 +129,6 @@ class DataProcessors extends ManagersCollection {
  * - Тип элементов коллекции: {{#crossLink "DataProcessorsManager"}}{{/crossLink}}
  *
  * @class Reports
- * @static
  */
 class Reports extends ManagersCollection {
   constructor(owner) {
@@ -150,7 +143,6 @@ class Reports extends ManagersCollection {
  * - Тип элементов коллекции: {{#crossLink "ChartOfCharacteristicManager"}}{{/crossLink}}
  *
  * @class ChartsOfCharacteristics
- * @static
  */
 class ChartsOfCharacteristics extends ManagersCollection {
   constructor(owner) {
@@ -158,74 +150,74 @@ class ChartsOfCharacteristics extends ManagersCollection {
   }
 }
 
-function mngrs($p) {
+function mngrs(owner, meta, raw) {
 
   // создаём коллекции менеджеров
-  Object.defineProperties($p, {
+  Object.defineProperties(owner, {
 
     /**
      * Коллекция менеджеров перечислений
      * @property enm
      * @type Enumerations
-     * @static
+     * @memberOf MetaEngine#
      */
-    enm: {value: new Enumerations($p)},
+    enm: {value: new Enumerations(owner)},
 
     /**
      * Коллекция менеджеров справочников
      * @property cat
      * @type Catalogs
-     * @static
+     * @memberOf MetaEngine#
      */
-    cat: {value: new Catalogs($p)},
+    cat: {value: new Catalogs(owner)},
 
     /**
      * Коллекция менеджеров документов
      * @property doc
      * @type Documents
-     * @static
+     * @memberOf MetaEngine#
      */
-    doc: {value: new Documents($p)},
+    doc: {value: new Documents(owner)},
 
     /**
      * Коллекция менеджеров регистров сведений
      * @property ireg
      * @type InfoRegs
-     * @static
+     * @memberOf MetaEngine#
      */
-    ireg: {value: new InfoRegs($p)},
+    ireg: {value: new InfoRegs(owner)},
 
     /**
      * Коллекция менеджеров регистров накопления
      * @property areg
      * @type AccumRegs
-     * @static
+     * @memberOf MetaEngine#
      */
-    areg: {value: new AccumRegs($p)},
+    areg: {value: new AccumRegs(owner)},
 
     /**
      * Коллекция менеджеров обработок
      * @property dp
      * @type DataProcessors
-     * @static
+     * @memberOf MetaEngine#
      */
-    dp: {value: new DataProcessors($p)},
+    dp: {value: new DataProcessors(owner)},
 
     /**
      * Коллекция менеджеров отчетов
      * @property rep
      * @type Reports
-     * @static
+     * @memberOf MetaEngine#
      */
-    rep: {value: new Reports($p)},
+    rep: {value: new Reports(owner)},
 
     /**
      * Коллекция менеджеров планов видов характеристик
      * @property cch
      * @type ChartsOfCharacteristics
-     * @static
+     * @memberOf MetaEngine#
      */
-    cch: {value: new ChartsOfCharacteristics($p)},
+    cch: {value: new ChartsOfCharacteristics(owner)},
 
   });
 

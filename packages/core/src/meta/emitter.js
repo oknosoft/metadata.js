@@ -1,6 +1,7 @@
 
 
 import EventEmitter from 'events'
+import {own} from './symbols';
 
 /**
  * MetaEventEmitter будет прототипом менеджеров данных
@@ -10,16 +11,16 @@ export default class MetaEventEmitter extends EventEmitter{
   /**
    * Ссылка на владельца
    */
-  #owner;
+  #own;
 
   constructor(owner) {
     super();
-    this.#owner = owner;
+    this.#own = owner;
     this.setMaxListeners(40);
   }
 
-  get owner() {
-    return this.#owner;
+  get [own]() {
+    return this.#own;
   }
 
 	/**

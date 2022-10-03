@@ -7,6 +7,7 @@
  */
 
 import {OwnerObj} from './meta/classes';
+import {own} from './meta/symbols';
 
 import Aes from '../lib/aes';
 const {v1: uuidv1} = require('uuid');
@@ -320,7 +321,7 @@ export default class MetaUtils extends OwnerObj {
        * @param v {*} - проверяемое значение
        * @return {Boolean} - true, если значение является ссылкой
        */
-      dataObj: (v) => v instanceof this.owner.classes.DataObj,
+      dataObj: (v) => v instanceof this.classes.DataObj,
 
       /**
        * Проверяет, является ли значенние Data-документом
@@ -328,7 +329,7 @@ export default class MetaUtils extends OwnerObj {
        * @param v {*} - проверяемое значение
        * @return {Boolean} - true, если значение является ссылкой
        */
-      docObj: (v) => v instanceof this.owner.classes.DataObj,
+      docObj: (v) => v instanceof this.classes.DataObj,
 
       /**
        * Проверяет, является ли значенние менеджером объектов данных
@@ -337,7 +338,7 @@ export default class MetaUtils extends OwnerObj {
        * @return {Boolean} - true, если значение является менеджером данных
        */
       dataMgr(v) {
-        return v instanceof this.owner.classes.DataManager;
+        return v instanceof this.classes.DataManager;
       },
 
       /**
@@ -347,7 +348,7 @@ export default class MetaUtils extends OwnerObj {
        * @return {Boolean} - true, если значение является менеджером данных
        */
       enmMgr(v) {
-        return v instanceof this.owner.classes.EnumManager;
+        return v instanceof this.classes.EnumManager;
       },
 
       /**
@@ -357,7 +358,8 @@ export default class MetaUtils extends OwnerObj {
        * @return {Boolean} - true, если значение является табличной частью
        */
       tabular(v) {
-        return v instanceof this.owner.classes.TabularSectionRow || v instanceof this.owner.classes.TabularSection;
+        const {classes} = this;
+        return v instanceof classes.TabularSectionRow || v instanceof classes.TabularSection;
       },
 
       /**
@@ -453,7 +455,7 @@ export default class MetaUtils extends OwnerObj {
        */
       guid: (ref, generate) => {
 
-        if (ref instanceof this.owner.classes.DataObj) {
+        if (ref instanceof this.classes.DataObj) {
           return ref.ref;
         }
 
@@ -615,6 +617,10 @@ export default class MetaUtils extends OwnerObj {
       },
     });
 
+  }
+
+  get classes() {
+    return this[own].classes;
   }
 
   /**
@@ -933,7 +939,7 @@ export default class MetaUtils extends OwnerObj {
    * @return {Object|Array} - копия объекта
    */
   _clone = (obj) => {
-    const {DataObj, DataManager} = this.owner.classes;
+    const {DataObj, DataManager} = this.classes;
     if (!obj || object !== typeof obj) return obj;
     let p, v, c = 'function' === typeof obj.pop ? [] : {};
     for (p in obj) {

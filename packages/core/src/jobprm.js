@@ -1,4 +1,5 @@
 import {OwnerObj} from './meta/classes';
+import {own} from './meta/symbols';
 
 /**
  * Параметры работы программы
@@ -48,7 +49,7 @@ export default class JobPrm extends OwnerObj {
 
     // подмешиваем id браузера
     if(!this.isSet('browser_uid')) {
-      nesesseryPrms.push({p: 'browser_uid', v: this.owner.utils.generateGuid(), t: 'string'});
+      nesesseryPrms.push({p: 'browser_uid', v: this[own].utils.generateGuid(), t: 'string'});
     }
 
     // подмешиваем к базовым параметрам настройки приложения
@@ -187,7 +188,7 @@ export default class JobPrm extends OwnerObj {
    * @returns {*}
    */
   fetch_type(prm, type){
-    const {fix} = this.owner.utils;
+    const {fix} = this[own].utils;
     if(type === "object"){
       try{
         prm = JSON.parse(prm);

@@ -82,6 +82,10 @@ export class BaseDataObj {
       });
     }
 
+    for(const name in this._metadata.tabulars) {
+      this.#obj[name] = new manager.objConstructor(name, [this, name, this.#obj[name]]);
+    }
+
   }
 
   /**
@@ -359,7 +363,7 @@ export class BaseDataObj {
           res[fld] = this[fld].toJSON();
         }
         else {
-          if(!Meta.sys_fields.includes(fld) &&
+          if(!Meta.sysFields.includes(fld) &&
             (_obj[fld] === blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === string))) {
             continue;
           }

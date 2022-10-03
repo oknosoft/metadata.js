@@ -8,6 +8,7 @@ import msg from './i18n.ru';
 import MetaEventEmitter from './meta/emitter';
 import camelcase from 'camelcase';
 
+import {own, alias} from './meta/symbols';
 const string = 'string';
 const pascal = {pascalCase: true, preserveConsecutiveUppercase: true};
 
@@ -80,6 +81,12 @@ export class DataManager extends MetaEventEmitter{
   };
 
   /**
+   * Указатель на метаданные текущего менеджера
+   * @type MetaObj
+   */
+  #meta;
+
+  /**
    * В этом свойстве хранятся имена конструктора объекта и конструкторов табличных частей
    * @type Object
    */
@@ -96,10 +103,11 @@ export class DataManager extends MetaEventEmitter{
 		 */
 		this.className = className;
 
+    this.#meta = owner[own].md.get(this);
 	}
 
 	toString(){
-		return msg.meta_mgrs[this.owner.name]
+		return msg.meta_mgrs[this[own][alias]];
 	}
 
   /**
@@ -124,7 +132,7 @@ export class DataManager extends MetaEventEmitter{
    * @type {MetaEngine}
    */
   get root() {
-    return this.owner.owner;
+    return this[own][own];
   }
 
   /**
@@ -141,7 +149,7 @@ export class DataManager extends MetaEventEmitter{
 	 * @return {MetaObj} - объект метаданных
 	 */
 	metadata(field) {
-    return this.root.md.get(this, field);
+    return this.#meta.get(field);
 	}
 
   /**
@@ -152,7 +160,7 @@ export class DataManager extends MetaEventEmitter{
   push(obj){
     const ref = this.getRef(obj);
     this.#byRef[ref] = obj;
-    if(!this.#alatable.includes(obj)) {
+    if(!obj.empty() && !this.#alatable.includes(obj)) {
       this.#alatable.push(obj);
     }
   }
@@ -357,17 +365,24 @@ export class DataManager extends MetaEventEmitter{
   }
 
   /**
-   * Перебор объектов в ОЗУ
+   * Array.forEach() Перебор объектов в ОЗУ
    */
   forEach(...args) {
     return this.#alatable.forEach(...args);
   }
 
   /**
-   * Map объектов в ОЗУ
+   * Array.map() объектов в ОЗУ
    */
   map(...args) {
     return this.#alatable.forEach(...args);
+  }
+
+  /**
+   * Array.filter() объектов в ОЗУ
+   */
+  filter(...args) {
+    return this.#alatable.filter(...args);
   }
 
   /**

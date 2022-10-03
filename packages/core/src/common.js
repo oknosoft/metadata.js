@@ -10,6 +10,7 @@ import JobPrm from './jobprm';
 import Meta from './meta';
 import msg from './i18n.ru';
 import classes from './classes';
+import * as symbols from './meta/symbols';
 import {DataAdapters} from './adapter'
 
 
@@ -132,11 +133,27 @@ class MetaEngine {
   };
 
   /**
+   * дублируем ссылку на символы в объекте
+   * @type {Object}
+   */
+  get symbols() {
+    return symbols;
+  };
+
+  /**
    * дублируем ссылку на конструкторы в конструкторе
    * @type {Object}
    */
   static get classes() {
     return classes;
+  };
+
+  /**
+   * дублируем ссылку на символы в конструкторе
+   * @type {Object}
+   */
+  static get symbols() {
+    return symbols;
   };
 
   /**
