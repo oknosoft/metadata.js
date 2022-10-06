@@ -5,7 +5,7 @@
 
 import {string} from './utils';
 import {OwnerObj} from './meta/classes';
-import {own} from './meta/symbols';
+import {own, get, set, hash, notify} from './meta/symbols';
 
 class InnerData {
   constructor(owner, loading) {
@@ -119,7 +119,7 @@ export class BaseDataObj extends OwnerObj {
     Object.assign(this.#obj, raw);
   }
 
-  _get(f) {
+  [get](f) {
 
     const res = this.#obj[f];
     const {_manager} = this;
@@ -184,7 +184,7 @@ export class BaseDataObj extends OwnerObj {
     }
   }
 
-  _notify(f) {
+  [notify](f) {
     const {_data, _manager} = this;
     if(_data && !_data._loading) {
       _data._modified = true;
@@ -198,7 +198,7 @@ export class BaseDataObj extends OwnerObj {
    * @param {*} v - значение
    * @private
    */
-  _set(f, v) {
+  [set](f, v) {
     const {_data, _manager: {utils}} = this;
     const mf = this._metadata(f).type;
     const obj = this.#obj;
@@ -305,9 +305,9 @@ export class BaseDataObj extends OwnerObj {
 
   /**
    * Рассчитывает hash объекта
-   * @private
+   * @return {Number}
    */
-  _hash() {
+  [hash]() {
     // накапливаем строку из всех реквизитов и табличных частей
     let str = '';
     const {_obj, _manager} = this;
@@ -339,16 +339,15 @@ export class BaseDataObj extends OwnerObj {
   }
 
   /**
-   * valueOf
-   * для операций сравнения возвращаем guid
+   * @summary Для операций сравнения возвращаем guid
    */
   valueOf() {
     return this.ref;
   }
 
   /**
-   * toJSON
-   * для сериализации возвращаем внутренний _obj
+   * @summary Сериализация
+   * @desc Для сериализации возвращаем внутренний _obj
    */
   toJSON() {
     const res = {};
@@ -377,8 +376,8 @@ export class BaseDataObj extends OwnerObj {
   }
 
   /**
-   * ### toString
-   * для строкового представления используем
+   * @summary Приведение к строке
+   * @desc для строкового представления используем presentation
    */
   toString() {
     return this.presentation;
@@ -597,7 +596,7 @@ export class DataObj extends BaseDataObj {
    * @type String
    */
   get _rev() {
-    return this._get('_rev') || '';
+    return this[get]('_rev') || '';
   }
   set _rev(v) {
   }
@@ -669,7 +668,7 @@ export class DataObj extends BaseDataObj {
    * @param {Array} [attr.fields] - массив полей, которые нужно проверить. Если не задан, проверяются все поля
    * @return {boolean}
    */
-  check_mandatory(attr) {
+  checkMandatory(attr) {
     const {fields, tabular_sections} = this._metadata();
     const {_manager} = this;
     const {msg, cch: {properties}, classes, utils} = _manager.root;
@@ -814,7 +813,7 @@ export class DataObj extends BaseDataObj {
 
         // если не указаны обязательные реквизиты...
         try {
-          this.check_mandatory();
+          this.checkMandatory();
         }
         catch (e) {
           return reset_mandatory(e);
@@ -840,7 +839,7 @@ export class DataObj extends BaseDataObj {
    * Загружает недостающие объекты, ссылки на которые есть в текущем объекте
    * @return {Promise<DataObj>}
    */
-  load_linked_refs() {
+  loadLinked() {
     const adapters = new Map();
     const {fields, tabular_sections} = this._metadata();
 
@@ -885,14 +884,13 @@ export class DataObj extends BaseDataObj {
   }
 
   /**
-   * ### Возвращает присоединенный объект или файл
-   * @method get_attachment
+   * @summary Возвращает присоединенный объект или файл
    * @for DataObj
    * @param att_id {String} - идентификатор (имя) вложения
    */
-  get_attachment(att_id) {
+  getAttachment(att_id) {
     const {_manager, ref} = this;
-    return _manager.adapter.get_attachment(_manager, ref, att_id);
+    return _manager.adapter.getAttachment(_manager, ref, att_id);
   }
 
   /**
@@ -1113,10 +1111,10 @@ export class CatObj extends DataObj {
    * @type String|Number
    */
   get id() {
-    return this._get('id') || '';
+    return this[get]('id') || '';
   }
   set id(v) {
-    this._set('id', v);
+    this[set]('id', v);
   }
 
   /**
@@ -1124,10 +1122,10 @@ export class CatObj extends DataObj {
    * @type String
    */
   get name() {
-    return this._get('name') || '';
+    return this[get]('name') || '';
   }
   set name(v) {
-    this._set('name', v);
+    this[set]('name', v);
   }
 
 
@@ -1230,11 +1228,11 @@ export class DocObj extends DataObj {
    * @type {String|Number}
    */
   get numberDoc() {
-    return this._obj.numberDoc || '';
+    return this[get]('numberDoc') || '';
   }
   set numberDoc(v) {
-    this.__notify('numberDoc');
-    this._obj.numberDoc = v;
+    this[notify]('numberDoc');
+    this[set](numberDoc, v);
   }
 
   /**
@@ -1243,11 +1241,11 @@ export class DocObj extends DataObj {
    * @type {Date}
    */
   get date() {
-    return this._obj.date instanceof Date ? this._obj.date : this._manager.utils.blank.date;
+    return this[get]('date') || '';
   }
   set date(v) {
-    this.__notify('date');
-    this._obj.date = this._manager.utils.fix_date(v, true);
+    this[notify]('date');
+    this[set]('date', v);
   }
 
   /**
@@ -1274,7 +1272,7 @@ export class DocObj extends DataObj {
     return this._obj.posted || false;
   }
   set posted(v) {
-    this.__notify('posted');
+    this[notify]('posted');
     this._obj.posted = this._manager.utils.fix.boolean(v);
   }
 
@@ -1344,7 +1342,7 @@ export class EnumObj extends DataObj {
    * @type Number
    */
   get order() {
-    return this._get('order');
+    return this[get]('order');
   }
 
   /**
@@ -1360,7 +1358,7 @@ export class EnumObj extends DataObj {
    * @type String
    */
   get name() {
-    return this._get('name');
+    return this[get]('name');
   }
 
   /**
@@ -1368,7 +1366,7 @@ export class EnumObj extends DataObj {
    * @type String
    */
   get latin() {
-    return this._get('latin');
+    return this[get]('latin');
   }
 
   /**
@@ -1376,7 +1374,7 @@ export class EnumObj extends DataObj {
    * @type String
    */
   get synonym() {
-    return this._get('synonym');
+    return this[get]('synonym');
   }
 
   /**

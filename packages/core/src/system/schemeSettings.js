@@ -1,5 +1,6 @@
+// метаданные и класс компоновки
 
-const ss_selection_fields = {
+const selection_fields = {
   parent: {
     synonym: 'Родитель',
     tooltip: '',
@@ -67,27 +68,9 @@ const ss_selection_fields = {
   },
 };
 
-export const sysFields = ['zone','id','numberDoc','date','parent'];
-
-export const sys = [{
+export const meta = {
   enm: {
-    accumulation_record_type: [
-      {
-        order: 0,
-        name: 'debit',
-        synonym: 'Приход',
-      },
-      {
-        order: 1,
-        name: 'credit',
-        synonym: 'Расход',
-      },
-      {
-        tag: 'Вид движения регистра накопления',
-        description: 'Системное перечисление',
-      },
-    ],
-    comparison_types: [
+    cmpTypes: [
       {
         order: 0,
         name: 'gt',
@@ -164,7 +147,7 @@ export const sys = [{
         description: 'Системное перечисление',
       },
     ],
-    sort_directions: [
+    sortDirections: [
       {
         order: 0,
         name: 'asc',
@@ -181,7 +164,7 @@ export const sys = [{
         description: 'Для компоновки',
       },
     ],
-    standard_period: [
+    standardPeriod: [
       {
         order: 0,
         name: 'custom',
@@ -385,15 +368,15 @@ export const sys = [{
     ],
   },
   cat: {
-    scheme_settings: {
-      name: 'scheme_settings',
+    schemeSettings: {
+      name: 'Компоновка',
       synonym: 'Настройки отчетов и списков',
-      input_by_string: ['name'],
+      inputBy: ['name'],
       hierarchical: false,
-      has_owners: false,
-      group_hierarchy: true,
-      main_presentation_name: true,
-      code_length: 0,
+      hasOwners: false,
+      groupHierarchy: true,
+      mainPresentation: "name",
+      codeLength: 0,
       fields: {
         obj: {
           synonym: 'Объект',
@@ -473,7 +456,7 @@ export const sys = [{
           }
         }
       },
-      tabular_sections: {
+      tabulars: {
         fields: {
           name: 'fields',
           synonym: 'Доступные поля',
@@ -670,7 +653,7 @@ export const sys = [{
           name: 'selection',
           synonym: 'Отбор',
           tooltip: '',
-          fields: ss_selection_fields,
+          fields: selection_fields,
         },
         params: {
           name: 'params',
@@ -765,11 +748,11 @@ export const sys = [{
             }
           }
         },
-        conditional_appearance: {
+        conditionalAppearance: {
           name: 'conditional_appearance',
           synonym: 'Условное оформление',
           tooltip: '',
-          fields: Object.assign({}, ss_selection_fields, {
+          fields: Object.assign({}, selection_fields, {
             columns: {
               synonym: 'Колонки',
               tooltip: 'Список колонок через запятую, к которым будет применено оформление (по умолчанию - ко всей строке)',
@@ -793,64 +776,8 @@ export const sys = [{
       id: 'ss',
     },
   },
-  ireg: {
-    log: {
-      name: 'log',
-      note: '',
-      synonym: 'Журнал событий',
-      dimensions: {
-        date: {
-          synonym: 'Дата',
-          tooltip: 'Время события',
-          type: {types: ['number'], digits: 15, fraction: 0},
-        },
-        sequence: {
-          synonym: 'Порядок',
-          tooltip: 'Порядок следования',
-          type: {types: ['number'], digits: 6, fraction: 0},
-        },
-      },
-      resources: {
-        'class': {
-          synonym: 'Класс',
-          tooltip: 'Класс события',
-          type: {types: ['string'], str_len: 100},
-        },
-        note: {
-          synonym: 'Комментарий',
-          multiline_mode: true,
-          tooltip: 'Текст события',
-          type: {types: ['string'], str_len: 0},
-        },
-        obj: {
-          synonym: 'Объект',
-          multiline_mode: true,
-          tooltip: 'Объект, к которому относится событие',
-          type: {types: ['string'], str_len: 0},
-        },
-        user: {
-          synonym: 'Пользователь',
-          tooltip: 'Пользователь, в сеансе которого произошло событие',
-          type: {types: ['string'], str_len: 100},
-        },
-      },
-    },
-    log_view: {
-      name: 'log_view',
-      note: '',
-      synonym: 'Просмотр журнала событий',
-      dimensions: {
-        key: {
-          synonym: 'Ключ',
-          tooltip: 'Ключ события',
-          type: {types: ['string'], str_len: 100},
-        },
-        user: {
-          synonym: 'Пользователь',
-          tooltip: 'Пользователь, отметивыший событие, как просмотренное',
-          type: {types: ['string'], str_len: 100},
-        },
-      },
-    },
-  },
-}];
+};
+
+export default function ({classes}) {
+
+};

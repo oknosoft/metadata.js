@@ -90,7 +90,7 @@ export class DataManager extends MetaEventEmitter{
    * В этом свойстве хранятся имена конструктора объекта и конструкторов табличных частей
    * @type Object
    */
-  #constructorNames = {};
+  #constructors = {};
 
 	constructor(owner, className) {
 
@@ -255,12 +255,12 @@ export class DataManager extends MetaEventEmitter{
 	 */
 	objConstructor(tsName = '', mode) {
 
-		if(!this.#constructorNames[tsName]){
+		if(!this.#constructors[tsName]){
 			const fnName = camelcase(this.className, pascal);
-			this.#constructorNames[tsName] = tsName ? `${fnName}${camelcase(tsName, pascal)}Row` : fnName;
+			this.#constructors[tsName] = tsName ? `${fnName}${camelcase(tsName, pascal)}Row` : fnName;
 		}
 
-		tsName = this.#constructorNames[tsName];
+		tsName = this.#constructors[tsName];
 
 		// если режим не указан, возвращаем имя функции - конструктора
 		if(!mode){
@@ -589,9 +589,9 @@ export class RefDataManager extends DataManager {
    * @param att_id
    * @return {Promise}
    */
-  get_attachment(ref, att_id) {
+  getAttachment(ref, att_id) {
     const {adapter} = this;
-    return adapter.get_attachment ? adapter.get_attachment(this, ref, att_id) : Promise.reject();
+    return adapter.getAttachment ? adapter.getAttachment(this, ref, att_id) : Promise.reject();
   }
 
   /**
