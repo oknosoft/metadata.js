@@ -128,6 +128,8 @@ const msg = new I18n({
 			ts_row: 'Строка табличной части',
 			dp: 'Обработка',
 			rep: 'Отчет',
+      fields: 'Поля',
+      field: 'Поле',
 		},
     meta_parents: {
       enm: 'перечисления',

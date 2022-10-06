@@ -18,7 +18,7 @@ export class OwnerObj {
   constructor(owner, alias) {
     this.#own = owner;
     if(alias) {
-      this.#alias = alias ;
+      this.#alias = alias;
     }
   }
 
@@ -27,7 +27,11 @@ export class OwnerObj {
   }
 
   get [alias]() {
-    return this.#alias || this.#own.toString();
+    return this.#alias || '';
+  }
+
+  toString() {
+    return `${this[own].toString()}.${this[alias]}`;
   }
 }
 
@@ -84,10 +88,13 @@ export class MetaObj extends OwnerObj {
     return this.system(field);
   }
 
+  get root() {
+    return this[own][own][own];
+  }
+
   toString() {
-    const owner = this[own];
-    const {msg} = owner[own];
-    return `${msg.meta[owner[alias]]}.${this[alias]}`;
+    const {root} = this;
+    return `${root.msg.meta[this[own][alias]]}.${this.name}`;
   }
 
   system(field) {
@@ -172,6 +179,11 @@ export class MetaField extends OwnerObj {
     this.type = new TypeDef(type);
     Object.assign(this, other);
   }
+
+  toString() {
+    return `${this[own].toString()}.${this.synonym}`;
+  }
+
 }
 
 /**
@@ -184,6 +196,12 @@ export class MetaFields extends OwnerObj {
     for(const name in fields) {
       this[name] = new MetaField(this, name, fields);
     }
+  }
+
+  toString() {
+    const owner = this[own];
+    const {msg} = owner.root;
+    return `${owner.toString()}.${msg.meta.fields}`
   }
 }
 

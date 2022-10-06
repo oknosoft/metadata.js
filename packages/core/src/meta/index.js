@@ -8,7 +8,7 @@
 import MetaEventEmitter from './emitter';
 import {DataManager} from '../mngrs';
 import mngrcollections from '../mngrcollections';
-import {sys, sysFields} from './system';
+import sys, {sysFields} from '../system';
 import {own} from './symbols';
 import {TypeDef, MetaObj, MetaField, MetaFields, MetaTabulars, OwnerObj} from './classes';
 
