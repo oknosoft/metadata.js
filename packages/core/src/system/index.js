@@ -1,7 +1,7 @@
 
 import {meta as log} from './log';
 import {meta as schemeSettings} from './schemeSettings';
-import {meta as accounts} from './accounts';
+import accountsClasses, {meta as accounts} from './accounts';
 
 const meta = [
   log,
@@ -11,6 +11,9 @@ const meta = [
 
 export const sysFields = ['zone','id','numberDoc','date','parent'];
 export const sysObjs = [];
+export const sysClasses = [
+  accountsClasses,
+];
 
 for(const curr of meta) {
   for(const cname in curr) {

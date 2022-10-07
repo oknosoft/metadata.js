@@ -4,8 +4,9 @@
  */
 
 import {string} from './utils';
-import {OwnerObj} from './meta/classes';
 import {own, get, set, hash, notify} from './meta/symbols';
+import {OwnerObj} from './meta/classes';
+import {TabularSection} from './tabulars';
 
 class InnerData {
   constructor(owner, loading) {
@@ -74,8 +75,8 @@ export class BaseDataObj extends OwnerObj {
       });
     }
 
-    for(const name in this._metadata.tabulars) {
-      this.#obj[name] = new manager.objConstructor(name, [this, name, this.#obj[name]]);
+    for(const name in this._metadata().tabulars) {
+      this.#obj[name] = new TabularSection(this, name, this.#obj[name]);
     }
 
   }
@@ -125,18 +126,19 @@ export class BaseDataObj extends OwnerObj {
     const {_manager} = this;
 
     // для перечислений и табличных частей, возвращаем значение в лоб
-    if(_manager.isEnum || Array.isArray(_manager)) {
+    if(_manager.isEnum) {
       return res;
     }
 
-    const {utils} = _manager;
-    const {type} = this._metadata(f);
     const rtype = typeof res;
 
     if(f === 'type' && rtype === 'object') {
       return res;
     }
-    else if(f == 'ref') {
+
+    const {utils} = _manager;
+    const {type} = this._metadata(f);
+    if(f == 'ref') {
       return _manager.getRef(res);
     }
     else if(type.isRef) {
@@ -148,7 +150,6 @@ export class BaseDataObj extends OwnerObj {
       if(type.hasOwnProperty('str_len') && !utils.is.guid(res)) {
         return res;
       }
-
 
       const mgr = _manager.value_mgr(_obj, f, type);
       if(mgr) {
@@ -1494,6 +1495,118 @@ export class RegisterRow extends DataObj {
     return this._metadata().obj_presentation || this._metadata().synonym;
   }
 }
+
+/**
+ * Aбстрактная строка табличной части
+ *
+ * @extends BaseDataObj
+ * @param owner {TabularSection} - табличная часть, которой принадлежит строка
+ */
+export class TabularSectionRow extends BaseDataObj {
+
+  constructor(attr, owner, loading, direct) {
+
+    super(attr, owner, loading, direct);
+
+    Object.defineProperties(this, {
+
+      /**
+       * Указатель на владельца данной строки табличной части
+       * @property _owner
+       * @type TabularSection
+       */
+      _owner: {
+        value: owner
+      },
+    });
+  }
+
+
+  /**
+   * ### Метаданые строки табличной части
+   * @property _metadata
+   * @for TabularSectionRow
+   * @type Number
+   */
+  _metadata(field_name) {
+    const {_owner} = this;
+    return field_name ? _owner._owner._metadata(_owner._name).fields[field_name] : _owner._owner._metadata(_owner._name);
+  }
+
+  get _manager() {
+    return this[own]._manager;
+  }
+
+  get _data() {
+    return this[own]._owner._data;
+  }
+
+  /**
+   * ### Номер строки табличной части
+   * @property row
+   * @for TabularSectionRow
+   * @type Number
+   * @final
+   */
+  get row() {
+    return this._obj.row || 0
+  }
+
+  /**
+   * ### Копирует строку табличной части
+   * @method _clone
+   * @for TabularSectionRow
+   * @type Number
+   */
+  _clone() {
+    const {_manager} = th
+    return this[own]._manager.utils._mixin(_owner._owner._manager.objConstructor(_owner._name, _owner), _obj)
+  }
+
+  _setter(f, v) {
+
+    const {_owner, _obj} = this;
+    const _meta = this._metadata(f);
+
+    if (_obj[f] == v || (!v && _obj[f] == utils.blank.guid)){
+      return;
+    }
+
+    // obj, {f: oldValue}
+    const {_manager, _data} = _owner._owner;
+
+    // признак того, что тип уже приведён
+    let fetched_type;
+
+    // учтём связь по типу
+    if (_meta.choice_type) {
+      const prop = _meta.choice_type.path.length == 2 ? this[_meta.choice_type.path[1]] : _owner._owner[_meta.choice_type.path[0]];
+      if (prop && prop.type){
+        fetched_type = prop.type;
+        v = utils.fetch_type(v, fetched_type);
+      }
+    }
+
+    // установим модифицированность и оповестим мир
+    if(!_data._loading){
+      _manager.emit_async('update', this, {[f]: _obj[f]});
+      _data._modified = true;
+    }
+
+    this.__setter(f, v, fetched_type);
+
+  }
+
+  /**
+   * ### При изменении реквизита шапки или табличной части
+   *
+   * @event VALUE_CHANGE
+   */
+  value_change(f, mf, v) {
+    return this;
+  }
+
+};
 
 
 

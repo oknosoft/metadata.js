@@ -8,7 +8,7 @@
 import MetaEventEmitter from './emitter';
 import {DataManager} from '../mngrs';
 import mngrcollections from '../mngrcollections';
-import sys, {sysFields} from '../system';
+import sys, {sysFields, sysClasses} from '../system';
 import {own} from './symbols';
 import {TypeDef, MetaObj, MetaField, MetaFields, MetaTabulars, OwnerObj} from './classes';
 
@@ -96,6 +96,22 @@ class Meta extends MetaEventEmitter {
       }
     }
     return this;
+  }
+
+  createManagers(plugins = [], exclude = []) {
+    const root = this[own];
+    for(const member in this.#m.enm) {
+      if(exclude.includes(`enm.${member}`)) {
+        continue;
+      }
+      root.enm.create(member);
+    }
+    for(const method of sysClasses) {
+      method(root, exclude);
+    }
+    for(const method of plugins) {
+      method(root, exclude);
+    }
   }
 
   /**
@@ -292,8 +308,6 @@ class Meta extends MetaEventEmitter {
     //var mask_names = ["delete", "set", "value", "json", "primary", "content"];
     return ', ' + (t ? '_t_.' : '') + ('`' + f + '`');
   }
-
-
 
 }
 

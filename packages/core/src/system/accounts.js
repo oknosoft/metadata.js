@@ -29,39 +29,6 @@ export const meta = {
             strLen: 2
           }
         },
-        branch: {
-          synonym: "Отдел",
-          tooltip: "",
-          choice: "elm",
-          type: {
-            types: [
-              "cat.branches"
-            ]
-          }
-        },
-        suffix: {
-          synonym: "Суффикс CouchDB",
-          multiline: false,
-          tooltip: "Для разделения данных в CouchDB",
-          mandatory: true,
-          type: {
-            types: [
-              "string"
-            ],
-            strLen: 4
-          }
-        },
-        roles: {
-          synonym: "Роли Couchdb",
-          multiline: false,
-          tooltip: "",
-          type: {
-            types: [
-              "string"
-            ],
-            strLen: 1000
-          }
-        },
         pushOnly: {
           synonym: "Только push",
           tooltip: "Для пользователя установлен режим push-only (изменения мигрируют в одну сторону - от пользователя на сервер)",
@@ -193,9 +160,8 @@ export const meta = {
               tooltip: "",
               type: {
                 types: [
-                  "string"
-                ],
-                strLen: 1000
+                  "json"
+                ]
               }
             }
           }
@@ -247,6 +213,60 @@ export const meta = {
   },
 };
 
-export default function ({classes}) {
+export default function ({cat, classes, symbols}, exclude) {
+  const {CatObj, TabularSectionRow} = classes;
+  const {get, set} = symbols;
 
+  // базовое поведение класса, задаём сразу
+  class CatAccounts extends CatObj{
+    get prefix(){return this[get]('prefix')}
+    set prefix(v){this[set]('prefix',v)}
+    get pushOnly(){return this[get]('push_only')}
+    set pushOnly(v){this[set]('push_only',v)}
+    get subscription(){return this[get]('subscription')}
+    set subscription(v){this[set]('subscription',v)}
+    get ips(){return this[get]('ips')}
+    set ips(v){this[set]('ips',v)}
+    get direct(){return this[get]('direct')}
+    set direct(v){this[set]('direct',v)}
+    get owner(){return this[get]('owner')}
+    set owner(v){this[set]('owner',v)}
+    get aclObjs(){return this[get]('aclObjs')}
+    get subscribers(){return this[get]('subscribers')}
+    get ids(){return this[get]('ids')}
+  }
+  classes.CatAccounts = CatAccounts;
+  class CatAccountsAclObjsRow extends TabularSectionRow{
+    get obj(){return this[get]('obj')}
+    set obj(v){this[set]('obj',v)}
+    get type(){return this[get]('type')}
+    set type(v){this[set]('type',v)}
+    get byDefault(){return this[get]('byDefault')}
+    set byDefault(v){this[set]('byDefault',v)}
+  }
+  classes.CatAccountsAclObjsRow = CatAccountsAclObjsRow;
+  class CatAccountsSubscribersRow extends TabularSectionRow{
+    get abonent(){return this[get]('abonent')}
+    set abonent(v){this[set]('abonent',v)}
+    get branch(){return this[get]('branch')}
+    set branch(v){this[set]('branch',v)}
+    get roles(){return this[get]('roles')}
+    set roles(v){this[set]('roles',v)}
+  }
+  classes.CatAccountsSubscribersRow = CatAccountsSubscribersRow;
+  class CatAccountsIdsRow extends TabularSectionRow{
+    get identifier(){return this[get]('identifier')}
+    set identifier(v){this[set]('identifier',v)}
+    get server(){return this[get]('server')}
+    set server(v){this[set]('server',v)}
+    get passwordHash(){return this[get]('password_hash')}
+    set passwordHash(v){this[set]('password_hash',v)}
+  }
+  classes.CatAccountsIdsRow = CatAccountsIdsRow;
+
+  // но оставляем возможность дополнить-переопределить
+  // если пользователь попросил не спешить с созданием менеджера - не спешим
+  if(!exclude.includes('cat.accounts')) {
+    cat.create('accounts');
+  }
 };

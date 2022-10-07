@@ -229,6 +229,14 @@ export class MetaTabular extends OwnerObj {
     Object.assign(this, other);
   }
 
+  /**
+   * Описание типа табчасти
+   * @type {TypeDef}
+   */
+  get type() {
+    return tabularType;
+  }
+
   get(name) {
     return name ? (this.fields[name] || this.tabulars[name]) : this;
   }
@@ -256,6 +264,14 @@ export class TypeDef {
   }
 
   /**
+   * @summary Это табличная часть
+   * @type Boolean
+   */
+  get isTabular() {
+    return this.types[0] === 'tabular';
+  }
+
+  /**
    * @summary Это составной тип
    * @type Boolean
    */
@@ -271,3 +287,5 @@ export class TypeDef {
     return !this.isComposite && this.isRef;
   }
 }
+
+const tabularType = new TypeDef({types: ['tabular']});
