@@ -55,10 +55,14 @@ export class TabularSection extends Array {
     return this[own]._manager;
   }
 
+  get _data() {
+    return this[own]._data;
+  }
+
   /**
    * Метаданные табчасти
    * @param {String} name - имя поля, данные которого интересуют
-   * @type MetaObj
+   * @return {MetaTabular|MetaField}
    */
   _metadata(name) {
     return this.#meta.get(name);
@@ -76,13 +80,15 @@ export class TabularSection extends Array {
 	 */
   clear(selection) {
     if(selection) {
-      this.find_rows(selection).forEach((row) => this.del(row.row - 1));
+      for(const row of this.find_rows(selection)) {
+        this.splice(this.indexOf(row), 1);
+      }
     }
     else {
-      const {_owner, _name} = this;
       this.length = 0;
-      !_owner._data._loading && _owner._manager.emit_async('rows', _owner, {[_name]: true});
     }
+    const {_data, _manager} = this;
+    !_data._loading && _manager.emit_async('rows', this[own], {[this.#meta[alias]]: true});
     return this;
   }
 
@@ -91,32 +97,6 @@ export class TabularSection extends Array {
 	 * @param val {Number|TabularSectionRow} - индекс или строка табчасти
 	 */
 	del(val) {
-
-		const {_obj, _owner, _name} = this;
-    const {_data, _manager} = _owner;
-
-		let index;
-
-    if(typeof val == 'undefined') {
-      return;
-    }
-    else if(typeof val == 'number') {
-      index = val;
-    }
-		else if (val.row && _obj[val.row - 1] && _obj[val.row - 1]._row === val){
-      index = val.row - 1;
-    }
-		else {
-		  for(let i = 0; i < _obj.length; i++){
-        if (_obj[i]._row === val) {
-          index = i;
-          break;
-        }
-      }
-		}
-		if (index == undefined || !_obj[index]){
-      return;
-    }
 
 		// триггер
     if(!_data._loading && _owner.del_row(_obj[index]._row) === false){
@@ -213,31 +193,23 @@ export class TabularSection extends Array {
 	 */
 	add(attr = {}, silent, Constructor) {
 
-		const {_owner, _name, _obj} = this;
-    const {_manager, _data} = _owner;
-		const row = Constructor ? new Constructor(this) : _manager.objConstructor(_name, this);
+    const {_manager, _data} = this;
+    const owner = this[own];
+    //attr, owner, loading, direct
+    if(!Constructor) {
+      Constructor = _manager.objConstructor(this.#meta[alias], true);
+    }
+		const row = new Constructor(attr, this, _data.loading || silent, true);
 
     // триггер
-		if(!_data._loading && _owner.add_row && _owner.add_row(row, attr) === false){
+		if(!_data._loading && !silent && owner.add_row(row, attr) === false){
 		  return;
     }
 
-		// присваиваем типизированные значения по умолчанию
-		for (const f in row._metadata().fields){
-		  if(!row._obj[f]) {
-        row[f] = attr[f] || "";
-      }
-		}
-
-    row._obj.row = _obj.push(row._obj);
-    Object.defineProperty(row._obj, '_row', {
-      value: row,
-      enumerable: false
-    });
-
     // obj, {ts_name: null}
-    !_data._loading && !silent && _manager.emit_async('rows', _owner, {[_name]: true});
+    !_data._loading && !silent && _manager.emit_async('rows', owner, {[this.#meta[alias]]: true});
 		_data._modified = true;
+    this.push(row);
 
 		return row;
 	}
@@ -360,8 +332,7 @@ export class TabularSection extends Array {
 	 */
 	load(raw) {
 
-    const {owner, meta, _obj} = this;
-    const {_manager, _data} = owner;
+    const {_manager, _data} = this;
     const {_loading} = _data;
 
     if (!_loading) {
@@ -376,7 +347,6 @@ export class TabularSection extends Array {
 
     // obj, {ts_name: null}
     _data._loading = _loading;
-    !_loading && _manager.emit_async('rows', _owner, {[_name]: true});
 
 		return this;
 	}

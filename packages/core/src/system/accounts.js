@@ -95,16 +95,6 @@ export const meta = {
                 ]
               }
             },
-            type: {
-              synonym: "Тип",
-              tooltip: "",
-              type: {
-                types: [
-                  "string"
-                ],
-                strLen: 50
-              }
-            },
             byDefault: {
               synonym: "По умолчанию",
               tooltip: "",
@@ -221,8 +211,8 @@ export default function ({cat, classes, symbols}, exclude) {
   class CatAccounts extends CatObj{
     get prefix(){return this[get]('prefix')}
     set prefix(v){this[set]('prefix',v)}
-    get pushOnly(){return this[get]('push_only')}
-    set pushOnly(v){this[set]('push_only',v)}
+    get pushOnly(){return this[get]('pushOnly')}
+    set pushOnly(v){this[set]('pushOnly',v)}
     get subscription(){return this[get]('subscription')}
     set subscription(v){this[set]('subscription',v)}
     get ips(){return this[get]('ips')}
@@ -239,8 +229,6 @@ export default function ({cat, classes, symbols}, exclude) {
   class CatAccountsAclObjsRow extends TabularSectionRow{
     get obj(){return this[get]('obj')}
     set obj(v){this[set]('obj',v)}
-    get type(){return this[get]('type')}
-    set type(v){this[set]('type',v)}
     get byDefault(){return this[get]('byDefault')}
     set byDefault(v){this[set]('byDefault',v)}
   }

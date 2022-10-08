@@ -1,5 +1,6 @@
 
 import {own, alias} from './symbols';
+import {enmFields} from '../system'
 
 /**
  * Абстрактный класс со ссылкой на владельца
@@ -65,6 +66,7 @@ export class MetaObj extends OwnerObj {
         }
       }
       this.cachable = 'ram';
+      this.fields = new MetaFields(this, enmFields);
     }
     else {
       const {fields, tabulars, ...other} = raw;
@@ -82,10 +84,10 @@ export class MetaObj extends OwnerObj {
     if(fields[field]) {
       return fields[field];
     }
-    else if(tabulars[field]) {
+    else if(tabulars?.[field]) {
       return tabulars[field];
     }
-    return this.system(field);
+    return this.system(field, fields);
   }
 
   get root() {
@@ -97,20 +99,19 @@ export class MetaObj extends OwnerObj {
     return `${root.msg.meta[this[own][alias]]}.${this.name}`;
   }
 
-  system(field) {
+  system(field, fields) {
 
-    const res = {
-      multiline: false,
-      note: '',
-      synonym: '',
-      tooltip: '',
-      type: {
-        types: ['string'],
-      },
-    };
+    const res = new MetaField(fields, field, {[field]: {
+        multiline: false,
+        note: '',
+        synonym: '',
+        tooltip: '',
+        type: {types: ['string']},
+      }});
 
     switch (field) {
       case 'presentation':
+      case 'latin':
         res.synonym = 'Представление';
         return res;
       case '_deleted':
@@ -122,7 +123,6 @@ export class MetaObj extends OwnerObj {
         return res;
       case 'ref':
         res.synonym = 'Ссылка';
-        res.type.isRef = true;
         //res.type.types[0] = `${type[owner].name}.${type.name}`;
         return res;
     }
@@ -182,6 +182,14 @@ export class MetaField extends OwnerObj {
 
   toString() {
     return `${this[own].toString()}.${this.synonym}`;
+  }
+
+  fixSingle(v) {
+    return v;
+  }
+
+  fixRef(v) {
+    return v;
   }
 
 }
@@ -245,6 +253,10 @@ export class MetaTabular extends OwnerObj {
     const owner = this[own][own];
     return `${owner.className}.${this[alias]}`;
   }
+
+  fixSingle(v) {
+    return v;
+  }
 }
 
 /**
@@ -261,6 +273,14 @@ export class TypeDef {
    */
   get isRef() {
     return this.types.some(type => type.includes('.'));
+  }
+
+  /**
+   * @summary Это JSON объект
+   * @type Boolean
+   */
+  get isJson() {
+    return this.types[0] === 'json';
   }
 
   /**
@@ -286,6 +306,15 @@ export class TypeDef {
   get isSingleRef() {
     return !this.isComposite && this.isRef;
   }
+
+  /**
+   * @summary Этот тип не составной и простой (строка, число, булево)
+   * @type Boolean
+   */
+  get isSingleType() {
+    return !this.isComposite && !this.isRef;
+  }
+
 }
 
 const tabularType = new TypeDef({types: ['tabular']});

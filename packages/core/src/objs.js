@@ -5,7 +5,7 @@
 
 import {string} from './utils';
 import {own, get, set, hash, notify} from './meta/symbols';
-import {OwnerObj} from './meta/classes';
+import {OwnerObj, TypeDef} from './meta/classes';
 import {TabularSection} from './tabulars';
 
 class InnerData {
@@ -39,6 +39,11 @@ class InnerData {
   }
 }
 
+/**
+ * @summary Предок DataObj
+ * @desc Ключевое отличие: экземпляры BaseDataObj, болтаются в воздухе, в то сремя,
+ * как обычные DataObj, сразу попадают в коллекцию своего владельца
+ */
 export class BaseDataObj extends OwnerObj {
 
   /**
@@ -54,9 +59,6 @@ export class BaseDataObj extends OwnerObj {
 
     if(Array.isArray(manager)) {
       this.#obj = direct ? attr : {};
-      Object.defineProperties(this, {
-        _data: {value: manager.owner._data},
-      });
     }
     else {
       // в режиме direct, новый объект не создаём - используем сырые данные
@@ -75,8 +77,12 @@ export class BaseDataObj extends OwnerObj {
       });
     }
 
-    for(const name in this._metadata().tabulars) {
+    const {tabulars, fields} = this._metadata();
+    for(const name in tabulars) {
       this.#obj[name] = new TabularSection(this, name, this.#obj[name]);
+    }
+    if(fields?.type) {
+      this.#obj.type = new TypeDef(this.#obj.type);
     }
 
   }
@@ -123,25 +129,40 @@ export class BaseDataObj extends OwnerObj {
   [get](f) {
 
     const res = this.#obj[f];
-    const {_manager} = this;
+    const fMeta = this._metadata(f);
+    const {type} = fMeta;
+
+    // для простых типов, возвращаем почти в лоб
+    if(type.isSingleType) {
+      return fMeta.fixSingle(res, type);
+    }
+
+    // для простых ссылочных, тоже почти в лоб
+    if(type.isSingleRef) {
+      return fMeta.fixRef(res, type);
+    }
+
+    // для дальнейшего разбора, потребуется тип значения
+    const rtype = typeof res;
+
+    if(type.isJson) {
+      // TODO: надо добиться, чтобы всегда
+      return rtype === 'object' ? res : {};
+    }
+
 
     // для перечислений и табличных частей, возвращаем значение в лоб
     if(_manager.isEnum) {
       return res;
     }
 
-    const rtype = typeof res;
-
     if(f === 'type' && rtype === 'object') {
       return res;
     }
 
     const {utils} = _manager;
-    const {type} = this._metadata(f);
-    if(f == 'ref') {
-      return _manager.getRef(res);
-    }
-    else if(type.isRef) {
+
+    if(type.isRef) {
 
       if(type.digits && rtype === 'number') {
         return res;
@@ -1523,14 +1544,12 @@ export class TabularSectionRow extends BaseDataObj {
 
 
   /**
-   * ### Метаданые строки табличной части
-   * @property _metadata
-   * @for TabularSectionRow
-   * @type Number
+   * @summary Метаданые строки табличной части
+   * @param {String} name - имя поля, данные которого интересуют
+   * @return {MetaTabular|MetaField}
    */
-  _metadata(field_name) {
-    const {_owner} = this;
-    return field_name ? _owner._owner._metadata(_owner._name).fields[field_name] : _owner._owner._metadata(_owner._name);
+  _metadata(name) {
+    return this[own]._metadata(name);
   }
 
   get _manager() {
@@ -1538,63 +1557,24 @@ export class TabularSectionRow extends BaseDataObj {
   }
 
   get _data() {
-    return this[own]._owner._data;
+    return this[own][own]._data;
   }
 
   /**
-   * ### Номер строки табличной части
-   * @property row
-   * @for TabularSectionRow
+   * Номер строки табличной части
    * @type Number
    * @final
    */
   get row() {
-    return this._obj.row || 0
+    return this[own].indexOf(this) + 1;
   }
 
   /**
-   * ### Копирует строку табличной части
-   * @method _clone
-   * @for TabularSectionRow
-   * @type Number
+   * Копирует строку табличной части
    */
   _clone() {
     const {_manager} = th
     return this[own]._manager.utils._mixin(_owner._owner._manager.objConstructor(_owner._name, _owner), _obj)
-  }
-
-  _setter(f, v) {
-
-    const {_owner, _obj} = this;
-    const _meta = this._metadata(f);
-
-    if (_obj[f] == v || (!v && _obj[f] == utils.blank.guid)){
-      return;
-    }
-
-    // obj, {f: oldValue}
-    const {_manager, _data} = _owner._owner;
-
-    // признак того, что тип уже приведён
-    let fetched_type;
-
-    // учтём связь по типу
-    if (_meta.choice_type) {
-      const prop = _meta.choice_type.path.length == 2 ? this[_meta.choice_type.path[1]] : _owner._owner[_meta.choice_type.path[0]];
-      if (prop && prop.type){
-        fetched_type = prop.type;
-        v = utils.fetch_type(v, fetched_type);
-      }
-    }
-
-    // установим модифицированность и оповестим мир
-    if(!_data._loading){
-      _manager.emit_async('update', this, {[f]: _obj[f]});
-      _data._modified = true;
-    }
-
-    this.__setter(f, v, fetched_type);
-
   }
 
   /**
