@@ -66,12 +66,12 @@ class Meta extends MetaEventEmitter {
    * @param [raw] {Object} - сырой объект с описанием метаданных
    */
   init(raw) {
-    const owner = this[own];
+    const root = this[own];
     for(const patch of Meta._sys) {
-      owner.utils._patch(raw, patch);
+      root.utils._patch(raw, patch);
     }
     for(const area of Object.keys(raw)) {
-      if(owner[area]) {
+      if(root[area]) {
         // создаём поля метаданных верхнего уровня
         const curr = new OwnerObj(this, area);
         this.#m[area] = curr;
@@ -79,13 +79,10 @@ class Meta extends MetaEventEmitter {
         for(const el in raw[area]) {
           const obj = new MetaObj(curr, el, raw[area][el]);
           curr[el] = obj;
-          const mgr = owner[area][el];
-          const {meta, mgrs} = this.#index;
+          const {meta} = this.#index;
           meta[`${area}.${el}`] = obj;
-          mgrs[`${area}.${el}`] = mgr;
           if(obj.id) {
             meta[obj.id] = obj;
-            mgrs[obj.id] = mgr;
           }
           delete raw[area][el];
         };
@@ -100,17 +97,36 @@ class Meta extends MetaEventEmitter {
 
   createManagers(plugins = [], exclude = []) {
     const root = this[own];
+    // менеджеры перечислений
     for(const member in this.#m.enm) {
       if(exclude.includes(`enm.${member}`)) {
         continue;
       }
       root.enm.create(member);
     }
+    // менеджеры системных объектов
     for(const method of sysClasses) {
       method(root, exclude);
     }
+    // все остальные менеджеры
     for(const method of plugins) {
       method(root, exclude);
+    }
+    // строим индекс для доступа к менеджеру по id и className
+    const {classes} = this;
+    const {mgrs} = this.#index;
+    for(const area in classes) {
+      for(const el of classes[area]) {
+        const mgr = root[area][el];
+        if(!mgr) {
+          continue;
+        }
+        const meta = this.get(mgr);
+        mgrs[`${area}.${el}`] = mgr;
+        if(meta.id) {
+          mgrs[meta.id] = mgr;
+        }
+      }
     }
   }
 

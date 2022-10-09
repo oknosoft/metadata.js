@@ -2,11 +2,13 @@
 import {meta as log} from './log';
 import {meta as schemeSettings} from './schemeSettings';
 import accountsClasses, {meta as accounts} from './accounts';
+import usersClasses, {meta as users} from './users';
 
 const meta = [
   log,
   schemeSettings,
   accounts,
+  users,
 ];
 
 /**
@@ -43,6 +45,7 @@ export const sysFields = ['zone','id','numberDoc','date','parent'];
 export const sysObjs = [];
 export const sysClasses = [
   accountsClasses,
+  usersClasses,
 ];
 
 for(const curr of meta) {

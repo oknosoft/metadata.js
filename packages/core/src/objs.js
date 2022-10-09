@@ -139,7 +139,7 @@ export class BaseDataObj extends OwnerObj {
 
     // для простых ссылочных, тоже почти в лоб
     if(type.isSingleRef) {
-      return fMeta.fixRef(res, type);
+      return fMeta.fixSingleRef(res, type.types[0]);
     }
 
     // для дальнейшего разбора, потребуется тип значения

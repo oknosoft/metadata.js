@@ -188,8 +188,9 @@ export class MetaField extends OwnerObj {
     return v;
   }
 
-  fixRef(v) {
-    return v;
+  fixSingleRef(v, id) {
+    const mgr = this[own].mgr(id);
+    return mgr.get(v);
   }
 
 }
@@ -210,6 +211,14 @@ export class MetaFields extends OwnerObj {
     const owner = this[own];
     const {msg} = owner.root;
     return `${owner.toString()}.${msg.meta.fields}`
+  }
+
+  mgr(id) {
+    let owner = this[own];
+    while (!(owner instanceof MetaObj)) {
+      owner = owner[own];
+    }
+    return owner[own][own].mgr(id);
   }
 }
 
