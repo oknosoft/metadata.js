@@ -1,4 +1,4 @@
-import {OwnerObj} from './meta/classes';
+import {OwnerObj} from './meta/metaObjs';
 import {own} from './meta/symbols';
 
 /**

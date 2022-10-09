@@ -94,6 +94,10 @@ export class MetaObj extends OwnerObj {
     return this[own][own][own];
   }
 
+  get className() {
+    return `${this[own][alias]}.${this[alias]}`;
+  }
+
   toString() {
     const {root} = this;
     return `${root.msg.meta[this[own][alias]]}.${this.name}`;
@@ -165,6 +169,19 @@ export class MetaObj extends OwnerObj {
     }
     throw new Error(`Unknown field ${field} in ${this}`);
   }
+
+  /**
+   * @summary Возвращает список доступных печатных форм
+   * @method printingPlates
+   * @return {Object}
+   */
+  get printingPlates() {
+    // if(pp) {
+    //   for (const i in pp.doc) {
+    //     this.#m.doc[i].printing_plates = pp.doc[i];
+    //   }
+    // }
+  }
 }
 
 /**
@@ -186,11 +203,6 @@ export class MetaField extends OwnerObj {
 
   fixSingle(v) {
     return v;
-  }
-
-  fixSingleRef(v, id) {
-    const mgr = this[own].mgr(id);
-    return mgr.get(v);
   }
 
 }

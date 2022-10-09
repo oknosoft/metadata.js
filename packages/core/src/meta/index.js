@@ -10,7 +10,7 @@ import {DataManager} from '../mngrs';
 import mngrcollections from '../mngrcollections';
 import sys, {sysFields, sysClasses} from '../system';
 import {own} from './symbols';
-import {TypeDef, MetaObj, MetaField, MetaFields, MetaTabulars, OwnerObj} from './classes';
+import {TypeDef, MetaObj, MetaField, MetaFields, MetaTabulars, OwnerObj} from './metaObjs';
 
 
 /**
@@ -185,19 +185,6 @@ class Meta extends MetaEventEmitter {
       }
     }
     return Array.from(res);
-  }
-
-  /**
-   * @summary Возвращает список доступных печатных форм
-   * @method printingPlates
-   * @return {Object}
-   */
-  printingPlates(pp) {
-    if(pp) {
-      for (const i in pp.doc) {
-        this.#m.doc[i].printing_plates = pp.doc[i];
-      }
-    }
   }
 
   /**

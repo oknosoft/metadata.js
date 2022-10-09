@@ -5,7 +5,7 @@
 
 import {string} from './utils';
 import {own, get, set, hash, notify} from './meta/symbols';
-import {OwnerObj, TypeDef} from './meta/classes';
+import {OwnerObj, TypeDef} from './meta/metaObjs';
 import {TabularSection} from './tabulars';
 
 class InnerData {
@@ -139,15 +139,26 @@ export class BaseDataObj extends OwnerObj {
 
     // для простых ссылочных, тоже почти в лоб
     if(type.isSingleRef) {
-      return fMeta.fixSingleRef(res, type.types[0]);
+      const mgr = fMeta[own].mgr(type.types[0]);
+      return mgr.get(res);
     }
-
-    // для дальнейшего разбора, потребуется тип значения
-    const rtype = typeof res;
 
     if(type.isJson) {
       // TODO: надо добиться, чтобы всегда
       return rtype === 'object' ? res : {};
+    }
+
+    // для дальнейшего разбора, потребуется тип значения
+    const rtype = typeof res;
+    // если доступны ссылочные и на входе строка
+    if(type.isRef && rtype === string) {
+      const parts = res.split(':');
+      if(parts.length === 2) {
+        const mgr = fMeta[own].mgr(parts[0]);
+        if(mgr) {
+          return mgr.get(parts[1]);
+        }
+      }
     }
 
 
@@ -334,7 +345,7 @@ export class BaseDataObj extends OwnerObj {
     let str = '';
     const {_obj, _manager} = this;
     const {fields, tabular_sections} = _manager.metadata();
-    const sfields = ['date','numberDoc','posted','id','name','_deleted','is_folder','ref'];
+    const sfields = ['date','numberDoc','posted','id','name','_deleted','isFolder','ref'];
 
     for(const fld of Object.keys(fields).concat(sfields)) {
       const v = _obj[fld];
@@ -621,6 +632,15 @@ export class DataObj extends BaseDataObj {
     return this[get]('_rev') || '';
   }
   set _rev(v) {
+  }
+
+  /**
+   *
+   * @type {boolean}
+   */
+  get isFolder() {
+    const {hierarchical, groupHierarchy} = this._metadata();
+    return hierarchical && groupHierarchy && this[get]('isFolder') ? true : false;
   }
 
   /**
@@ -1161,7 +1181,7 @@ export class CatObj extends DataObj {
   _children(foldersOnly) {
     const res = [];
     this._manager.forEach((o) => {
-      if(o != this && (!foldersOnly || o.is_folder) && o._hierarchy(this)) {
+      if(o != this && (!foldersOnly || o.isFolder) && o._hierarchy(this)) {
         res.push(o);
       }
     });
@@ -1567,6 +1587,10 @@ export class TabularSectionRow extends BaseDataObj {
    */
   get row() {
     return this[own].indexOf(this) + 1;
+  }
+
+  get className() {
+    return this._metadata().className;
   }
 
   /**

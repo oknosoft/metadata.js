@@ -3,7 +3,7 @@ import {
   DataProcessorsManager, ChartOfCharacteristicManager} from './mngrs';
 import {own, alias} from './meta/symbols';
 
-import {OwnerObj} from './meta/classes';
+import {OwnerObj} from './meta/metaObjs';
 
 class ManagersCollection extends OwnerObj {
 

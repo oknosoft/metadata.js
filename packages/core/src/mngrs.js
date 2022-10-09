@@ -509,14 +509,14 @@ export class RefDataManager extends DataManager {
 
 	/**
 	 * Находит перую папку в пределах подчинения владельцу
-	 * @method firstFolder
+	 * TODO:
 	 * @param owner {DataObj|String}
 	 * @return {DataObj} - ссылка найденной папки или пустая ссылка
 	 */
 	firstFolder(owner){
 		for(let i in this.byRef){
 			const o = this.byRef[i];
-			if(o.is_folder && (!owner || utils.is_equal(owner, o.owner))) return o;
+			if(o.isFolder && (!owner || utils.is_equal(owner, o.owner))) return o;
 		}
 		return this.get();
 	}
@@ -543,7 +543,7 @@ export class RefDataManager extends DataManager {
       else {
         if (cmd.code_length)
           sql += ", id character(" + cmd.code_length + ")";
-        sql += ", name character varying(50), is_folder boolean";
+        sql += ", name character varying(50), isFolder boolean";
       }
 
       for(f in cmd.fields){
@@ -569,7 +569,7 @@ export class RefDataManager extends DataManager {
       if(t instanceof DocManager)
         sql += ", posted boolean, date Date, numberDoc CHAR";
       else
-        sql += ", id CHAR, name CHAR, is_folder BOOLEAN";
+        sql += ", id CHAR, name CHAR, isFolder BOOLEAN";
 
       for(f in cmd.fields)
         sql += sql_mask(f) + sqlType(t, f, cmd.fields[f].type);
@@ -1076,7 +1076,7 @@ export class RegisterManager extends DataManager{
 									else
 										s += "\n AND (_t_." + key + " = " + sel[key] + ") ";
 
-								} else if(key=="is_folder" && cmd.hierarchical && cmd.group_hierarchy){
+								} else if(key=="isFolder" && cmd.hierarchical && cmd.group_hierarchy){
 									//if(sel[key])
 									//	s += "\n AND _t_." + key + " ";
 									//else
@@ -1379,40 +1379,13 @@ export class AccumRegManager extends RegisterManager{
 }
 
 /**
- * ### Абстрактный менеджер справочника
- * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
+ * @summary Абстрактный менеджер справочника
+ * @desc Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
  * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "Catalogs"}}{{/crossLink}}
  *
- * @class CatManager
  * @extends RefDataManager
- * @constructor
- * @param className {string}
  */
 export class CatManager extends RefDataManager{
-
-	constructor(owner, className) {
-
-		super(owner, className);
-
-		const _meta = this.metadata() || {}
-
-		// реквизиты по метаданным
-		if (_meta.hierarchical && _meta.group_hierarchy) {
-
-			/**
-			 * Признак "это группа"
-			 * @property is_folder
-			 * @for CatObj
-			 * @type {Boolean}
-			 */
-			Object.defineProperty(this.objConstructor('', true).prototype, 'is_folder', {
-				get(){ return this._obj.is_folder || false},
-				set(v){ this._obj.is_folder = this.utils.fix.boolean(v)},
-				enumerable: true,
-				configurable: true
-			})
-		}
-	}
 
 	/**
 	 * Возвращает объект по наименованию
@@ -1420,7 +1393,7 @@ export class CatManager extends RefDataManager{
 	 * @param name {String|Object} - искомое наименование
 	 * @return {DataObj}
 	 */
-	by_name(name) {
+	byName(name) {
 		return this.find({name}) || this.get();
 	}
 
@@ -1430,7 +1403,7 @@ export class CatManager extends RefDataManager{
 	 * @param id {String|Object} - искомый код
 	 * @return {DataObj}
 	 */
-	by_id(id) {
+	byId(id) {
     let o = this._by_id[id];
     if(!o) {
       this.find_rows({id}, obj => {

@@ -1,6 +1,6 @@
 
 import MetaEventEmitter from './meta/emitter'
-import {OwnerObj} from './meta/classes';
+import {OwnerObj} from './meta/metaObjs';
 
 export class DataAdapters extends OwnerObj {
 
