@@ -7,14 +7,11 @@ import {OwnerObj} from './meta/metaObjs';
 
 class ManagersCollection extends OwnerObj {
 
-  /**
-   * Ссылка на конструктор членов
-   */
-  #Manager;
-
-  constructor(owner, name, Manager) {
+  constructor(owner, name, Manager, Obj, dir) {
     super(owner, name);
-    this.#Manager = Manager;
+    this.Manager = Manager;
+    this.Obj = Obj;
+    this.dir = dir;
   }
 
   toString() {
@@ -30,13 +27,13 @@ class ManagersCollection extends OwnerObj {
   }
 
   create(name, Constructor, freeze) {
-    this[name] = new (Constructor || this.#Manager)(this, this[alias] + '.' + name);
+    this[name] = new (Constructor || this.Manager)(this, this[alias] + '.' + name);
     freeze && Object.freeze(this[name]);
   }
 
   forEach(cb) {
     for(const el in this) {
-      if(this[el] instanceof this.#Manager) {
+      if(this[el] instanceof this.Manager) {
         cb(this[el]);
       }
     }
@@ -63,7 +60,7 @@ class Enumerations extends ManagersCollection {
  */
 class Catalogs extends ManagersCollection {
   constructor(owner) {
-    super(owner, 'cat', CatManager);
+    super(owner, 'cat', CatManager, CatObj, 'catalogs');
   }
 }
 
@@ -75,7 +72,7 @@ class Catalogs extends ManagersCollection {
  */
 class Documents extends ManagersCollection {
   constructor(owner) {
-    super(owner, 'doc', DocManager);
+    super(owner, 'doc', DocManager, DocObj, 'documents');
   }
 }
 
@@ -87,7 +84,7 @@ class Documents extends ManagersCollection {
  */
 class InfoRegs extends ManagersCollection {
   constructor(owner) {
-    super(owner, 'ireg', InfoRegManager);
+    super(owner, 'ireg', InfoRegManager, RegisterRow, 'ireg');
   }
 }
 
@@ -99,7 +96,7 @@ class InfoRegs extends ManagersCollection {
  */
 class AccumRegs extends ManagersCollection {
   constructor(owner) {
-    super(owner, 'areg', AccumRegManager);
+    super(owner, 'areg', AccumRegManager, RegisterRow, 'areg');
   }
 }
 
@@ -111,7 +108,7 @@ class AccumRegs extends ManagersCollection {
  */
 class DataProcessors extends ManagersCollection {
   constructor(owner) {
-    super(owner, 'dp', DataProcessorsManager);
+    super(owner, 'dp', DataProcessorsManager, DataProcessorObj, 'dataprocessors');
   }
 }
 
@@ -123,7 +120,7 @@ class DataProcessors extends ManagersCollection {
  */
 class Reports extends ManagersCollection {
   constructor(owner) {
-    super(owner, 'rep', DataProcessorsManager);
+    super(owner, 'rep', DataProcessorsManager, DataProcessorObj, 'reports');
   }
 }
 
@@ -136,7 +133,7 @@ class Reports extends ManagersCollection {
  */
 class ChartsOfCharacteristics extends ManagersCollection {
   constructor(owner) {
-    super(owner, 'cch', ChartOfCharacteristicManager);
+    super(owner, 'cch', ChartOfCharacteristicManager, CatObj, 'chartscharacteristics');
   }
 }
 

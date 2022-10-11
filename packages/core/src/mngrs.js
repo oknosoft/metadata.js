@@ -597,7 +597,7 @@ export class RefDataManager extends DataManager {
   /**
    * ### Сохраняет присоединенный файл
    *
-   * @method save_attachment
+   * @method saveAttachment
    * @for DataManager
    * @param ref
    * @param att_id
@@ -606,9 +606,9 @@ export class RefDataManager extends DataManager {
    * @return {Promise}
    * @async
    */
-  save_attachment(ref, att_id, attachment, type) {
+  saveAttachment(ref, att_id, attachment, type) {
     const {adapter} = this;
-    return adapter.save_attachment ? adapter.save_attachment(this, ref, att_id, attachment, type) : Promise.reject();
+    return adapter.saveAttachment ? adapter.saveAttachment(this, ref, att_id, attachment, type) : Promise.reject();
   }
 
   /**
@@ -617,20 +617,20 @@ export class RefDataManager extends DataManager {
    * @param att_id
    * @return {Promise}
    */
-  delete_attachment(ref, att_id) {
+  deleteAttachment(ref, att_id) {
     const {adapter} = this;
-    return adapter.delete_attachment ? adapter.delete_attachment(this, ref, att_id) : Promise.reject();
+    return adapter.deleteAttachment ? adapter.deleteAttachment(this, ref, att_id) : Promise.reject();
   }
 
   /**
    * Возвращает массив оборванных ссылок в объектах текущего менеджера
    * @return {Array}
    */
-  broken_links() {
+  brokenLinks() {
     const res = [];
     const push = res.push.bind(res);
     for(const ref in this.byRef) {
-      this.byRef[ref].broken_links().forEach(push);
+      this.byRef[ref].brokenLinks().forEach(push);
     }
     return res;
   }

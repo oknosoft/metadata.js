@@ -36,6 +36,11 @@ class InnerData {
      * @type {boolean}
      */
     this.modified = false;
+    /**
+     * Список обработанных полей для valueChange
+     * @type {Array.<String>}
+     */
+    this.stack = [];
   }
 }
 
@@ -81,6 +86,7 @@ export class BaseDataObj extends OwnerObj {
     for(const name in tabulars) {
       this.#obj[name] = new TabularSection(this, name, this.#obj[name]);
     }
+    // TODO: заменить на метод класса MetaObj
     if(fields?.type) {
       this.#obj.type = new TypeDef(this.#obj.type);
     }
@@ -99,11 +105,11 @@ export class BaseDataObj extends OwnerObj {
 
   /**
    * Метаданные текущего объекта
-   * @param field_name
-   * @type MetaObj
+   * @param {String} [name] - Имя поля
+   * @return {MetaObj}
    */
-  _metadata(field_name) {
-    return this._manager.metadata(field_name);
+  _metadata(name) {
+    return this._manager.metadata(name);
   }
 
   get className() {
@@ -449,20 +455,6 @@ export class BaseDataObj extends OwnerObj {
   }
 
   /**
-   * Метод для ручной установки признака _прочитан_ (не новый)
-   */
-  _set_loaded(ref) {
-    this._manager.push(this, ref || this.ref);
-    Object.assign(this._data, {
-      modified: false,
-      isNew: false,
-      loading: false,
-    });
-    return this;
-  }
-
-
-  /**
    * Проверяет, является ли ссылка объекта пустой
    * @method empty
    * @return {boolean} - true, если ссылка пустая
@@ -472,120 +464,51 @@ export class BaseDataObj extends OwnerObj {
   }
 
   /**
-   * Применяет атрибуты к объекту
-   *
-   * @param {Object} attr
-   * @param {Array.<String>} [include]
-   * @param {Array.<String>} [exclude]
-   * @param {Boolean} [silent]
-   * @return {DataObj}
-   * @private
-   */
-  _mixin(attr, include, exclude, silent) {
-    if(Object.isFrozen(this)) {
-      return this;
-    }
-    if(attr && typeof attr == 'object') {
-      const {_not_set_loaded} = attr;
-      const {_data, _manager} = this;
-      const {utils} = _manager;
-      _not_set_loaded && delete attr._not_set_loaded;
-      if(silent) {
-        if(_data._loading) {
-          silent = false;
-        }
-        _data._loading = true;
-      }
-      utils._mixin(this, attr, include, exclude);
-      if(_data._loading) {
-        _manager.emit('mixin', this);
-      }
-      if(silent) {
-        _data._loading = false;
-      }
-      if(!_not_set_loaded && (_data._loading || (!utils.is.emptyGuid(this.ref) && (attr.id || attr.name || attr.numberDoc)))) {
-        this._set_loaded(this.ref);
-      }
-    }
-    return this;
-  }
-
-
-  /**
-   * После создания
-   * Возникает после создания объекта. В обработчике можно установить значения по умолчанию для полей и табличных частей
+   * @summary После создания
+   * @desc Возникает после создания объекта. В обработчике можно установить значения по умолчанию для полей и табличных частей
    * или заполнить объект на основании данных связанного объекта
    *
    * @event AFTER_CREATE
    */
-  after_create() {
+  async fillDefault() {
     return this;
   }
 
   /**
-   * После чтения объекта с сервера
-   * Имеет смысл для объектов с типом кеширования ("doc", "remote", "meta", "e1cib").
-   * т.к. структура _DataObj_ может отличаться от прототипа в базе-источнике, в обработчике можно дозаполнить или пересчитать реквизиты прочитанного объекта
+   * @summary После чтения объекта с сервера
+   * @desc После чтения, но до заполнения реквизитов. В обработчике можно модифицировать сырые данные
    *
    * @event AFTER_LOAD
    */
-  after_load() {
+  async beforeLoad(raw) {
     return this;
   }
 
   /**
-   * Перед записью
-   * Возникает перед записью объекта. В обработчике можно проверить корректность данных, рассчитать итоги и т.д.
-   * Запись можно отклонить, если у пользователя недостаточно прав, либо введены некорректные данные
+   * @summary Перед записью
+   * @desc Возникает перед записью объекта. В обработчике можно проверить корректность данных, рассчитать итоги и т.д.
+   * Запись можно отклонить, выбросив ошибку, если у пользователя недостаточно прав, либо введены некорректные данные
    *
    * @event BEFORE_SAVE
    */
-  before_save() {
+  async beforeSave() {
     return this;
   }
 
   /**
-   * После записи
-   *
+   * @summary После записи
    * @event AFTER_SAVE
    */
-  after_save() {
+  async afterSave() {
     return this;
   }
 
   /**
-   * При изменении реквизита шапки или табличной части
-   *
+   * @summary При изменении реквизита шапки или табличной части
+   * @desc Синхронный метод с защитой от самовозбуждения циклических пересчётов
    * @event VALUE_CHANGE
    */
-  value_change(f, mf, v) {
-    return this;
-  }
-
-  /**
-   * При добавлении строки табличной части
-   *
-   * @event ADD_ROW
-   */
-  add_row(row) {
-    return this;
-  }
-
-  /**
-   * При удалении строки табличной части
-   *
-   * @event DEL_ROW
-   */
-  del_row(row) {
-    return this;
-  }
-
-  /**
-   * После удаления строки табличной части
-   *
-   * @event AFTER_DEL_ROW
-   */
-  after_del_row(name) {
+  valueChange(f, mf, v) {
     return this;
   }
 
@@ -928,16 +851,16 @@ export class DataObj extends BaseDataObj {
   /**
    * @summary Возвращает присоединенный объект или файл
    * @for DataObj
-   * @param att_id {String} - идентификатор (имя) вложения
+   * @param id {String} - идентификатор (имя) вложения
    */
-  getAttachment(att_id) {
+  getAttachment(id) {
     const {_manager, ref} = this;
-    return _manager.adapter.getAttachment(_manager, ref, att_id);
+    return _manager.adapter.getAttachment(_manager, ref, id);
   }
 
   /**
    * Сохраняет объект или файл во вложении
-   * Вызывает {{#crossLink "DataManager/save_attachment:method"}} одноименный метод менеджера {{/crossLink}} и передаёт ссылку на себя в качестве контекста
+   * Вызывает {{#crossLink "DataManager/saveAttachment:method"}} одноименный метод менеджера {{/crossLink}} и передаёт ссылку на себя в качестве контекста
    *
    * @param {String} name - идентификатор (имя) вложения
    * @param {Blob|String} attachment - вложение
@@ -945,9 +868,9 @@ export class DataObj extends BaseDataObj {
    * @return Promise.<DataObj>
    * @async
    */
-  save_attachment(name, attachment, type) {
+  saveAttachment(name, attachment, type) {
     const {_manager, ref, _obj, _attachments} = this;
-    return _manager.save_attachment(ref, name, attachment, type)
+    return _manager.saveAttachment(ref, name, attachment, type)
       .then((att) => {
         if(!_attachments) {
           this._attachments = {};
@@ -969,9 +892,9 @@ export class DataObj extends BaseDataObj {
    * @param {String} name - идентификатор (имя) вложения
    * @async
    */
-  delete_attachment(name) {
+  deleteAttachment(name) {
     const {_manager, ref, _obj, _attachments} = this;
-    return _manager.delete_attachment(ref, name)
+    return _manager.deleteAttachment(ref, name)
       .then((att) => {
         if(_attachments) {
           delete _attachments[name];
@@ -987,7 +910,7 @@ export class DataObj extends BaseDataObj {
    * Возвращает массив оборванных ссылок в реквизитах и табличных частях объекта
    * @return {Array}
    */
-  broken_links() {
+  brokenLinks() {
     const res = [];
     const {fields, tabular_sections} = this._metadata();
     const {_obj, _manager: {root}} = this;
@@ -1094,7 +1017,7 @@ export class DataObj extends BaseDataObj {
    *
    * @type Array.<CchProperties>
    */
-  get _extra_props() {
+  get _extraProps() {
     const {cat, cch, md} = this._manager.root;
     // ищем предопределенный элемент, сответствующий классу данных
     const dests = cat.destinations || cch.destinations;
@@ -1168,6 +1091,20 @@ export class CatObj extends DataObj {
   }
   set name(v) {
     this[set]('name', v);
+  }
+
+  get parent() {
+
+  }
+  set parent(v) {
+
+  }
+
+  get owner() {
+
+  }
+  set owner(v) {
+
   }
 
 
@@ -1265,6 +1202,21 @@ export class DocObj extends DataObj {
   }
 
   /**
+   * Представление объекта
+   * @property presentation
+   * @for DocObj
+   * @type String
+   */
+  get presentation() {
+    const meta = this._metadata();
+    const {numberDoc, date, posted, _modified} = this;
+    return numberDoc ?
+      `${meta.obj_presentation || meta.synonym}  №${numberDoc} от ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`
+      :
+      `${meta.obj_presentation || meta.synonym} ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`;
+  }
+
+  /**
    * Номер документа
    * @property numberDoc
    * @type {String|Number}
@@ -1288,21 +1240,6 @@ export class DocObj extends DataObj {
   set date(v) {
     this[notify]('date');
     this[set]('date', v);
-  }
-
-  /**
-   * Представление объекта
-   * @property presentation
-   * @for DocObj
-   * @type String
-   */
-  get presentation() {
-    const meta = this._metadata();
-    const {numberDoc, date, posted, _modified} = this;
-    return numberDoc ?
-      `${meta.obj_presentation || meta.synonym}  №${numberDoc} от ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`
-      :
-      `${meta.obj_presentation || meta.synonym} ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`;
   }
 
   /**
@@ -1562,7 +1499,6 @@ export class TabularSectionRow extends BaseDataObj {
     });
   }
 
-
   /**
    * @summary Метаданые строки табличной части
    * @param {String} name - имя поля, данные которого интересуют
@@ -1599,15 +1535,6 @@ export class TabularSectionRow extends BaseDataObj {
   _clone() {
     const {_manager} = th
     return this[own]._manager.utils._mixin(_owner._owner._manager.objConstructor(_owner._name, _owner), _obj)
-  }
-
-  /**
-   * ### При изменении реквизита шапки или табличной части
-   *
-   * @event VALUE_CHANGE
-   */
-  value_change(f, mf, v) {
-    return this;
   }
 
 };
