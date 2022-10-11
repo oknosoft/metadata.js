@@ -107,7 +107,14 @@ export default class WindowPortal extends React.PureComponent {
 
     // Append props.children to the container <div> in the new window
     return ReactDOM.createPortal(Component ?
-      <Component print={this.print} obj={obj} attr={attr} skipCss={this.skipCss} copyStyles={this.copyStyles}/> : children, containerEl);
+      <Component 
+        print={this.print}
+        obj={obj} 
+        attr={attr}
+        skipCss={this.skipCss}
+        copyStyles={this.copyStyles}
+        externalWindow={this.externalWindow}
+      /> : children, containerEl);
   }
 }
 

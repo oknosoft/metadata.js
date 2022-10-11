@@ -1100,7 +1100,7 @@ export class DataObj extends BaseDataObj {
   }
 
   /**
-   * ### Значение допреквизита по имени или свойству
+   * @summary Значение допреквизита по имени или свойству
    * @param name {String|CchProperties} - имя параметра
    * @param [value] {Any} - если задано, устанавливает
    * @param [list] {Number} - если задано, переопределяет list свойства
