@@ -9,7 +9,7 @@ const cleanup = require('rollup-plugin-cleanup');
 const path = require('path');
 const package_data = require(path.resolve(__dirname, './package.json'));
 
-const external = ['clipboard', 'dataframe', 'cron'];
+const external = ['clipboard', 'dataframe', 'cron', 'xlsx'];
 const plugins = [
 	resolve(),
 	replace({PACKAGE_VERSION: `"${package_data.version}"`}),

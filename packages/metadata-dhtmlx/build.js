@@ -9,7 +9,7 @@ const cleanup = require('rollup-plugin-cleanup');
 const path = require('path');
 const package_data = require(path.resolve(__dirname, './package.json'));
 
-const external = ['moment', 'alasql', 'pouchdb*'];
+const external = ['moment', 'alasql', 'pouchdb*', 'xlsx'];
 const plugins = [
   resolve({preferBuiltins: true}),
   builtins(),

@@ -6,8 +6,9 @@
  */
 
 import docxtemplater from './docxtemplater';
-
+import GeneratorXLS from './generatorXLS';
 const Clipboard = require('clipboard/lib/clipboard-action');
+
 
 function tabulars(constructor) {
 
@@ -15,7 +16,7 @@ function tabulars(constructor) {
 
   Object.defineProperty(TabularSection.prototype, 'export', {
     configurable: true,
-    value: function (format = 'csv', columns = [], container) {
+    value: function (format = 'csv', columns = [], container, attr = {}) {
 
       if(!columns.length) {
         columns = Object.keys(this._owner._metadata(this._name).fields);
@@ -26,46 +27,51 @@ function tabulars(constructor) {
       const {utils, wsql} = this._owner._manager._owner.$p;
       const len = columns.length - 1;
 
-      let text;
-
-      this.forEach((row) => {
-        const rdata = {};
-        columns.forEach(({key, name, formatter}) => {
-          const val = formatter ? formatter({value: row[key], row, raw: true}) : row[key];
-          const col = format === 'xls' ? name : key;
-          if(utils.is_data_obj(val)) {
-            if(format == 'json') {
-              rdata[key] = {
-                ref: val.ref,
-                type: val._manager.class_name,
-                presentation: val.presentation,
-              };
-            }
-            else {
-              rdata[col] = val.presentation;
-            }
-          }
-          else if(typeof(val) == 'number' && format == 'csv') {
-            rdata[col] = val.toLocaleString('ru-RU', {
-              useGrouping: false,
-              maximumFractionDigits: 3,
-            });
-          }
-          else if(val instanceof Date && format != 'xls') {
-            rdata[col] = utils.moment(val).format(utils.moment._masks.date_time);
-          }
-          else {
-            rdata[col] = val;
-          }
-        });
-        data.push(rdata);
-      });
-
       if(format == 'xls') {
-        return utils.xlsx().then(() =>
-          wsql.alasql.promise(`SELECT * INTO XLSX('${this._name + '_' + utils.moment().format('YYYYMMDDHHmm')}.xlsx',{headers:true}) FROM ? `, [data]));
+
+        // const fileName = `${this._owner.calc_order.number_doc}__${this._owner.scheme.name}`;
+        const xls = new GeneratorXLS(this._rows || this._obj.map(r => r._row), columns);
+        return xls.generate(attr);
+        
+        // return utils.xlsx().then(() =>
+        //   wsql.alasql.promise(`SELECT * INTO XLSX('${this._name + '_' + utils.moment().format('YYYYMMDDHHmm')}.xlsx',{headers:true}) FROM ? `, [data]));
       }
       else {
+
+        let text;
+        this.forEach((row) => {
+          const rdata = {};
+          columns.forEach(({key, name, formatter}) => {
+            const val = formatter ? formatter({value: row[key], row, raw: true}) : row[key];
+            const col = format === 'xls' ? name : key;
+            if(utils.is_data_obj(val)) {
+              if(format == 'json') {
+                rdata[key] = {
+                  ref: val.ref,
+                  type: val._manager.class_name,
+                  presentation: val.presentation,
+                };
+              }
+              else {
+                rdata[col] = val.presentation;
+              }
+            }
+            else if(typeof(val) == 'number' && format == 'csv') {
+              rdata[col] = val.toLocaleString('ru-RU', {
+                useGrouping: false,
+                maximumFractionDigits: 3,
+              });
+            }
+            else if(val instanceof Date && format != 'xls') {
+              rdata[col] = utils.moment(val).format(utils.moment._masks.date_time);
+            }
+            else {
+              rdata[col] = val;
+            }
+          });
+          data.push(rdata);
+        });
+        
         return new Promise((resolve, reject) => {
 
           if(format == 'json') {
