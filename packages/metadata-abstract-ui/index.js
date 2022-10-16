@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.30-beta.11, built:2022-09-18
+ metadata-abstract-ui v2.0.30-beta.11, built:2022-10-16
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -136,11 +136,15 @@ function log_manager() {
       return res;
     }
     unviewed_count() {
-      if(!this._unviewed_count){
-        this._unviewed_count = this._owner.$p.wsql.alasql.compile(
-          'select value count(*) from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key) where v.key is null');
+      let count = 0;
+      const vtable = this._owner.log_view.alatable;
+      for(const {class: cl, ref} of this.alatable) {
+        if(cl === 'stat' || vtable.some(({key}) => key === ref)) {
+          continue;
+        }
+        count++;
       }
-      return this._unviewed_count();
+      return count;
     }
     backup(dfrom, dtill) {
       const {wsql, adapters: {pouch}, utils: {moment}} = this._owner.$p;

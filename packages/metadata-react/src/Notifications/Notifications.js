@@ -61,7 +61,7 @@ export class Notifications extends Component {
         value.splice(any, 1);
       }
     }
-    this.props.handleIfaceState({component, name: 'filter', value});
+    this.props.handleIfaceState({component: Notifications.rname, name: 'filter', value});
   };
 
   handleMenu = (event) => {
@@ -88,7 +88,7 @@ export class Notifications extends Component {
 
   filterLog(filter) {
     return $p.ireg.log.viewed().filter((row) => {
-      if(filter.indexOf('new') !== -1 && row.key) {
+      if(row.class === 'stat' || (filter.indexOf('new') !== -1 && row.key)) {
         return false;
       }
       if(filter.indexOf('any') !== -1) {

@@ -162,12 +162,15 @@ export default function log_manager() {
     }
 
     unviewed_count() {
-      if(!this._unviewed_count){
-        // select l.* from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key) where v.key is null
-        this._unviewed_count = this._owner.$p.wsql.alasql.compile(
-          'select value count(*) from `ireg_log` l left outer join `ireg_log_view` v on (l.ref = v.key) where v.key is null');
+      let count = 0;
+      const vtable = this._owner.log_view.alatable;
+      for(const {class: cl, ref} of this.alatable) {
+        if(cl === 'stat' || vtable.some(({key}) => key === ref)) {
+          continue;
+        }
+        count++;
       }
-      return this._unviewed_count();
+      return count;
     }
 
     /**
