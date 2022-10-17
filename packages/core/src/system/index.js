@@ -40,7 +40,7 @@ export const enmFields = {
   },
 };
 
-export const sysFields = ['zone','id','numberDoc','date','parent'];
+export const sysFields = ['zone','id','numberDoc','date','parent','owner'];
 
 export const sysObjs = [];
 export const sysClasses = [

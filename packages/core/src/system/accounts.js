@@ -114,7 +114,7 @@ export const meta = {
             abonent: {
               synonym: "Абонент",
               tooltip: "",
-              choice: "elm",
+              choiceGrp: "elm",
               mandatory: true,
               type: {
                 types: [
@@ -137,7 +137,7 @@ export const meta = {
                   ]
                 }
               ],
-              choice: "elm",
+              choiceGrp: "elm",
               type: {
                 types: [
                   "cat.branches"
@@ -176,7 +176,7 @@ export const meta = {
             server: {
               synonym: "Сервер",
               tooltip: "",
-              choice: "elm",
+              choiceGrp: "elm",
               mandatory: true,
               type: {
                 types: [

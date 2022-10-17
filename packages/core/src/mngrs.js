@@ -279,6 +279,19 @@ export class DataManager extends MetaEventEmitter{
 		return new constructor(mode);
 	}
 
+  /**
+   * Имя функции - конструктора объектов или строк табличных частей
+   *
+   * @method objConstructor
+   * @param {String} className
+   * @param {String} [tsName]
+   * @return {String}
+   */
+  static objConstructor(className, tsName = '') {
+    const fnName = camelcase(className, pascal);
+    return tsName ? `${fnName}${camelcase(tsName, pascal)}Row` : fnName;
+  }
+
 	/**
 	 * Возвращает массив доступных значений для комбобокса
 	 * @param [selection] {Object} - отбор, который будет наложен на список
@@ -482,7 +495,7 @@ export class RefDataManager extends DataManager {
 					continue;
 				}
 				obj = this.objConstructor('', [attr, this, true]);
-				obj.isNew() && obj._set_loaded();
+				obj.isNew() && obj._loaded();
 			}
 			else if(obj.isNew() || forse){
 			  if(obj.isNew() || forse !== 'update_only') {
@@ -943,7 +956,7 @@ export class RegisterManager extends DataManager{
 
       if (!obj && !row._deleted) {
         obj = this.objConstructor('', [row, this, true]);
-        obj.isNew() && obj._set_loaded();
+        obj.isNew() && obj._loaded();
       }
       else if (obj && row._deleted) {
         obj.unload();

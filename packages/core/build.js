@@ -23,7 +23,7 @@ const banner = `/*!
  */\n\n`;
 
 return rollup({
-  input: path.resolve(__dirname, './src/index.js'),
+  input: path.resolve(__dirname, './src/meta.js'),
 	external,
 	plugins,
 })

@@ -5,5 +5,5 @@ import Meta from './meta';
 import MetaEventEmitter from './meta/emitter';
 import AbstracrAdapter from './adapter';
 
-const classes = Object.assign({Meta: Meta, MetaEventEmitter, AbstracrAdapter}, mngrs, objs, tabulars);
+const classes = Object.assign({Meta, MetaEventEmitter, AbstracrAdapter}, mngrs, objs, tabulars);
 export default classes;

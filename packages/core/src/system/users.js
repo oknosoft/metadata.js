@@ -41,7 +41,7 @@ export const meta = {
             property: {
               synonym: "Свойство",
               tooltip: "Дополнительный реквизит",
-              choice: "elm",
+              choiceGrp: "elm",
               type: {types: ["cch.properties"]}
             },
             value: {
@@ -52,7 +52,7 @@ export const meta = {
                   name: ["selection", "owner"],
                   path: ["extraFields", "property"]
               }],
-              choice: "elm",
+              choiceGrp: "elm",
               choiceType: {
                 path: ["extraFields", "property"],
                 elm: 0

@@ -22,7 +22,7 @@ const header = `/*!
  */\n\n`;
 
 return rollup({
-  input: path.resolve(__dirname, './src/index.js'),
+  input: path.resolve(__dirname, './src/meta.js'),
 	external,
 	plugins,
 })
@@ -30,7 +30,7 @@ return rollup({
 		format: 'cjs', // output format - 'amd', 'cjs', 'es', 'iife', 'umd'
     name: package_data.name.replace(/-/g, '_'),
 		banner: header,
-    file: path.resolve(__dirname, './dist/index.js'),
+    file: path.resolve(__dirname, './dist/meta.js'),
     sourcemap: true,
 	}));
 

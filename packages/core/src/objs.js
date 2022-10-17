@@ -455,6 +455,19 @@ export class BaseDataObj extends OwnerObj {
   }
 
   /**
+   * Метод для ручной установки признака _прочитан_ (не новый)
+   */
+  _loaded() {
+    Object.assign(this._data, {
+      modified: false,
+      isNew: false,
+      loading: false,
+    });
+    return this;
+  }
+
+
+  /**
    * Проверяет, является ли ссылка объекта пустой
    * @method empty
    * @return {boolean} - true, если ссылка пустая

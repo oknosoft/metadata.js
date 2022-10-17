@@ -1,5 +1,5 @@
 
-import {own, alias} from './symbols';
+import {own, alias, get, set} from './symbols';
 import {enmFields} from '../system'
 
 /**
@@ -98,6 +98,10 @@ export class MetaObj extends OwnerObj {
     return `${this[own][alias]}.${this[alias]}`;
   }
 
+  get mgr() {
+    return this[own][own].mgr(this.className);
+  }
+
   toString() {
     const {root} = this;
     return `${root.msg.meta[this[own][alias]]}.${this.name}`;
@@ -165,6 +169,9 @@ export class MetaObj extends OwnerObj {
             res.synonym = 'Наименование';
             res.mandatory = this.main_presentation_name;
             return res;
+          case 'predefinedName':
+            res.synonym = 'Имя предопределенных данных';
+            return res;
         }
     }
     throw new Error(`Unknown field ${field} in ${this}`);
@@ -181,6 +188,29 @@ export class MetaObj extends OwnerObj {
     //     this.#m.doc[i].printing_plates = pp.doc[i];
     //   }
     // }
+  }
+
+  constructorBase() {
+    const {[own]: {[alias]: category}, root, className} = this;
+    const {Obj, Manager} = root[category];
+    const {classes} = root;
+    const fnName = Manager.objConstructor(className);
+    const managerName = `${fnName}Manager`;
+    let text = `class ${fnName} extends Obj {\n`;
+
+    // реквизиты по метаданным
+    for (const fld in this.fields) {
+      const mfld = this.fields[fld];
+      text += `get ${fld}(){return this[get]('${fld}')}\n`;
+      if(!mfld.readOnly) {
+        text += `set ${fld}(v){this[set]('${fld}',v)}\n`;
+      }
+    }
+    // табличные части по метаданным - устанавливаем геттер табличной части
+    for (const ts in this.tabulars) {
+      text += `get ${ts}(){return this[get]('${ts}')}\n`;
+    }
+    text +=`};\nclasses.${fnName} = ${fnName};`;
   }
 }
 

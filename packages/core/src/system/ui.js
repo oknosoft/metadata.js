@@ -1,7 +1,7 @@
 
 export default {
   enm: {
-    label_positions: [
+    labelPositions: [
       {
         order: 0,
         name: 'inherit',
@@ -38,7 +38,7 @@ export default {
         description: 'Системное перечисление',
       },
     ],
-    data_field_kinds: [
+    dataFieldKinds: [
       {
         order: 0,
         name: 'field',
@@ -110,7 +110,7 @@ export default {
         description: 'Системное перечисление',
       },
     ],
-    quick_access: [
+    quickAccess: [
       {
         order: 0,
         name: 'none',
@@ -132,7 +132,7 @@ export default {
         description: 'Для компоновки',
       },
     ],
-    report_output: [
+    reportOutput: [
       {
         order: 0,
         name: 'grid',
@@ -161,16 +161,16 @@ export default {
     ],
   },
   cat: {
-    meta_objs: {
+    metaObjs: {
       fields: {}
     },
-    meta_fields: {
+    metaFields: {
       fields: {}
     },
   },
   dp: {
-    scheme_settings: {
-      name: 'scheme_settings',
+    schemeSettings: {
+      name: 'schemeSettings',
       synonym: 'Варианты настроек компоновки',
       fields: {
         scheme: {
@@ -178,7 +178,7 @@ export default {
           tooltip: 'Текущий вариант настроек',
           mandatory: true,
           type: {
-            types: ['cat.scheme_settings'],
+            types: ['cat.schemeSettings'],
           }
         }
       }

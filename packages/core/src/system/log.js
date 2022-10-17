@@ -67,6 +67,6 @@ export const meta = {
   },
 };
 
-export default function ({classes}) {
+export default function ({ireg, classes, symbols}, exclude) {
 
 };
