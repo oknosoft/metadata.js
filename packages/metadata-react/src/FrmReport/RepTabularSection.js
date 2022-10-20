@@ -130,7 +130,7 @@ export default class RepTabularSection extends Component {
   RowRenderer = ({renderBaseRow, ...props}) => {
     let formatted;
     const {scheme} = this.props;
-    scheme.conditional_appearance.find_rows({use: true}, (crow) => {
+    scheme.conditional_appearance.find_rows({use: true, columns: {in: ['','*']}}, (crow) => {
       if(crow.check(props.row)) {
         try{
           formatted = <div style={JSON.parse(crow.css)}>{renderBaseRow(props)}</div>;
