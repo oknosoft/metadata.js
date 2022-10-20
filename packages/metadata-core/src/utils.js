@@ -848,7 +848,7 @@ const utils = {
    * @return {*}
    */
   check_compare(left, right, comparison_type, comparison_types) {
-      const {ne, gt, gte, lt, lte, nin, inh, ninh, lke, nlk} = comparison_types;
+      const {ne, gt, gte, lt, lte, nin, inh, ninh, lke, nlk, filled, nfilled} = comparison_types;
       switch (comparison_type) {
       case ne:
         return left != right;
@@ -896,6 +896,10 @@ const utils = {
         return left.indexOf && right && left.indexOf(right) !== -1;
       case nlk:
         return left.indexOf && left.indexOf(right) === -1;
+      case filled:
+        return left && left != utils.blank.guid;
+      case nfilled:
+        return !left || left == utils.blank.guid;
       default:
         return left == right;
       }

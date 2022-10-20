@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.30-beta.11, built:2022-10-04
+ metadata-core v2.0.30-beta.11, built:2022-10-20
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3627,7 +3627,7 @@ const utils = {
 		}
 	},
   check_compare(left, right, comparison_type, comparison_types) {
-      const {ne, gt, gte, lt, lte, nin, inh, ninh, lke, nlk} = comparison_types;
+      const {ne, gt, gte, lt, lte, nin, inh, ninh, lke, nlk, filled, nfilled} = comparison_types;
       switch (comparison_type) {
       case ne:
         return left != right;
@@ -3675,6 +3675,10 @@ const utils = {
         return left.indexOf && right && left.indexOf(right) !== -1;
       case nlk:
         return left.indexOf && left.indexOf(right) === -1;
+      case filled:
+        return left && left != utils.blank.guid;
+      case nfilled:
+        return !left || left == utils.blank.guid;
       default:
         return left == right;
       }
