@@ -160,6 +160,36 @@ function rx_columns({utils: {moment}, enm, md}) {
     return raw ? value.presentation : <div title={value.toString()}>{value.presentation}</div>;
   };
 
+  const appearance_formatter = (appearance, formatter) => {
+    return (props) => {
+      //const {row, raw, value, isScrolling, dependentValues} = props;
+      for(const crow of appearance) {
+        if(crow.check(props.row)) {
+          try {
+            const {withRaw, text, fraction, ...css} = JSON.parse(crow.css);
+            let value;
+            if(typeof text === 'string' && (withRaw || !props.raw)) {
+              value = text;
+            }
+            else if(typeof fraction === 'number') {
+              value = number_formatter(fraction)({
+                value: formatter(Object.assign({}, props, {raw: true})),
+                raw: props.raw,
+              });
+            }
+            else {
+              value = formatter(props);
+            }
+            return props.raw ? value : <div style={css}>{value}</div>;
+            
+          }
+          catch (e) {}
+        }
+      }
+      return formatter(props);
+    }
+  };
+
   return function columns({mode, fields, _obj, _mgr, read_only}) {
 
     const res = this.columns(mode);
@@ -170,6 +200,16 @@ function rx_columns({utils: {moment}, enm, md}) {
     const is_doc = _mgr.class_name.startsWith('doc.');
     const is_rep = _mgr.class_name.startsWith('rep.');
     const editable = (_obj && !read_only) ? !is_rep || this.obj.indexOf(`.${_mgr._tabular || 'data'}`) === -1 : false;
+
+    const appearance = {};
+    this.conditional_appearance.find_rows({use: true, columns: {nin: ['','*']}}, (crow) => {
+      for(const fld of crow.columns.split(',')) {
+        if(!appearance[fld]) {
+          appearance[fld] = [];
+        }
+        appearance[fld].push(crow);
+      }
+    });
 
     if(fields) {
       res.forEach((column, index) => {
@@ -185,6 +225,7 @@ function rx_columns({utils: {moment}, enm, md}) {
         if(!_fld && _mgr) {
           _fld = column._meta = _mgr.metadata(keys[0]);
         }
+        
 
         if(!column.formatter && _fld && _fld.type) {
 
@@ -268,6 +309,10 @@ function rx_columns({utils: {moment}, enm, md}) {
           else if(!column.formatter && !index && !is_rep) {
             column.formatter = indicator_formatter(is_doc);
           }
+        }
+
+        if(appearance[column.key] && column.formatter) {
+          column.formatter = appearance_formatter(appearance[column.key], column.formatter);
         }
 
       });
