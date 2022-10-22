@@ -77,11 +77,17 @@ export class DynList extends MDNRComponent {
       parent: parent || _mgr.get(),
     };
 
-    if(!newState.flat && _owner && _owner.props) {
-      const ov = (_owner._obj || _owner.props && _owner.props._obj)[_owner.props._fld];
+    if(!newState.flat && _owner?.props) {
+      const _obj = _owner._obj || _owner.props._obj;
+      const {_fld} = _owner.props; 
+      const ov = _obj[_fld];
       if(ov && !ov.empty()) {
         newState.parent = ov.parent;
         newState.ref = ov.ref;
+      }
+      const om = _obj._metadata(_fld);
+      if(om && (om.choice_params?.length || om.choice_links?.length)) {
+        newState.flat = true;
       }
     }
 

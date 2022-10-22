@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.30-beta.11, built:2022-09-18
+ metadata-pouchdb v2.0.30-beta.12, built:2022-10-22
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -322,7 +322,7 @@ var proto = ({classes}) => {
     }
     let part = '',
       code_length = this._metadata().code_length - prefix.length;
-    if (_manager.cachable == 'ram' || _manager.cachable == 'doc_ram') {
+    if (_manager.cachable == 'ram') {
       return Promise.resolve(this.new_cat_id(prefix));
     }
     return _manager.pouch_db.query('doc/number_doc',
