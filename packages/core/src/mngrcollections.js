@@ -15,7 +15,7 @@ class ManagersCollection extends OwnerObj {
   }
 
   toString() {
-    return this[owner].msg.meta_classes[this[alias]];
+    return this[own].msg.meta_classes[this[alias]];
   }
 
   /**
@@ -26,9 +26,11 @@ class ManagersCollection extends OwnerObj {
     return {type: this.constructor.name, name: this.toString()};
   }
 
-  create(name, Constructor, freeze) {
-    this[name] = new (Constructor || this.Manager)(this, this[alias] + '.' + name);
-    freeze && Object.freeze(this[name]);
+  create(name) {
+    const className = this[alias] + '.' + name;
+    const Manager = this[own].classes[this.Manager.objConstructor(className) + 'Manager'];
+    this[name] = new (Manager || this.Manager)(this, className);
+    return this[name];
   }
 
   forEach(cb) {

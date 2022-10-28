@@ -103,6 +103,7 @@ class Meta extends MetaEventEmitter {
    */
   createManagers(plugins = [], exclude = []) {
     const root = this[own];
+    const {classes} = this;
     // менеджеры перечислений
     for(const member in this.#m.enm) {
       if(exclude.includes(`enm.${member}`)) {
@@ -110,20 +111,28 @@ class Meta extends MetaEventEmitter {
       }
       root.enm.create(member);
     }
-    // менеджеры системных объектов
+    // системные менеджеры и объекты
     for(const method of sysClasses) {
       method(root, exclude);
     }
-    // все остальные менеджеры
+    // авто-менеджеры и объекты
+    for(const area in classes) {
+      if(area === 'enm' || area === 'ireg') {
+        continue;
+      }
+      for (const el of classes[area]) {
+        this.#m[area][el].constructorBase();
+      }
+    }
+    // модификаторы объектов и менеджеров
     for(const method of plugins) {
       method(root, exclude);
     }
     // строим индекс для доступа к менеджеру по id и className
-    const {classes} = this;
     const {mgrs} = this.#index;
     for(const area in classes) {
       for(const el of classes[area]) {
-        const mgr = root[area][el];
+        const mgr = root[area][el] || root[area].create(el);
         if(!mgr) {
           continue;
         }

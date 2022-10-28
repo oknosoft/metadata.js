@@ -194,6 +194,7 @@ export class MetaObj extends OwnerObj {
     const {[own]: {[alias]: category}, root, className} = this;
     const {Obj, Manager} = root[category];
     const {classes} = root;
+    const {TabularSectionRow} = classes;
     const fnName = Manager.objConstructor(className);
     const managerName = `${fnName}Manager`;
     let text = `class ${fnName} extends Obj {\n`;
@@ -210,7 +211,25 @@ export class MetaObj extends OwnerObj {
     for (const ts in this.tabulars) {
       text += `get ${ts}(){return this[get]('${ts}')}\n`;
     }
-    text +=`};\nclasses.${fnName} = ${fnName};`;
+    text +=`};\nclasses.${fnName} = ${fnName};\n`;
+
+    // реквизиты табчастей
+    for (const ts in this.tabulars) {
+      const fnName = Manager.objConstructor(className, ts);
+      text += `class ${fnName} extends TabularSectionRow{\n`;
+      for (const rf in this.tabulars[ts].fields) {
+        text += `get ${rf}(){return this[get]('${rf}')}\n`;
+        text += `set ${rf}(v){this[set]('${rf}',v)}\n`;
+      }
+      text += `}\n`;
+      text += `classes.${fnName} = ${fnName};\n`;
+    }
+
+    text += `class ${managerName} extends Manager {};\n`;
+    text +=`classes.${managerName} = ${managerName};\n`;
+
+    const exec = new Function('get', 'set', 'classes', 'Obj', 'Manager', 'TabularSectionRow', text);
+    exec(get, set, classes, Obj, Manager, TabularSectionRow);
   }
 }
 
