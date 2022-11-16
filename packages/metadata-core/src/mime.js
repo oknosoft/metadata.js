@@ -105,6 +105,9 @@ function constructor() {
         'application/hyperstudio': {
           'extensions': ['stk'],
         },
+        'application/internet-shortcut': {
+          'extensions': ['url'],
+        },
         'application/inkml+xml': {
           'extensions': ['ink', 'inkml'],
         },

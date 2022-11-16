@@ -67,6 +67,43 @@ class Attachments extends MDNRComponent {
     this.input && this.input.click();
   };
 
+  handleAddLink = () => {
+    const {_obj} = this.state;
+    const {ui: {dialogs}, msg}  = $p;
+    
+    dialogs.input_value({
+      title: 'Расположение объекта',
+      text: 'Укажите url ресурса',
+      type: 'string',
+      initialValue: '',
+    })
+      .then((url) => {
+        return dialogs.input_value({
+          title: 'Название объекта',
+          text: 'Наименование ссылки',
+          type: 'string',
+          initialValue: 'Новый ярлык',
+        })
+          .then((name) => {
+            const type = 'application/internet-shortcut';
+            const data = new Blob([`[InternetShortcut]\nURL=${url}`], {type});
+            if(!name.endsWith('.url')) {
+              name += '.url';
+            }            
+            return _obj.save_attachment(name, data, type);
+          });
+      })    
+      .then(() => _obj.load())
+      .then(() => this.forceUpdate())
+      .catch((err) => {
+        // показываем диалог
+        this.setState({dialog: {
+            title: msg.file_download,
+            message: err.message,
+          }});
+      });
+  };
+
   handleDelete = () => {
     const {name} = this.state;
     if(name) {
@@ -124,6 +161,7 @@ class Attachments extends MDNRComponent {
     const tbProps = {
       closeButton: !context.dnr,
       handleAdd: this.handleAdd,
+      handleAddLink: this.handleAddLink,
       handleDelete: this.handleDelete,
       handleDownload: this.handleDownload,
       handleClose: props.handleClose,

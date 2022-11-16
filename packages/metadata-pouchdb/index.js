@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.30-beta.12, built:2022-10-22
+ metadata-pouchdb v2.0.30-beta.12, built:2022-11-16
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1773,11 +1773,8 @@ function adapter({AbstracrAdapter}) {
       });
     }
     save_attachment(_mgr, ref, att_id, attachment, type) {
-      if(!type) {
-        type = {type: 'text/plain'};
-      }
-      if(!(attachment instanceof Blob) && type.indexOf('text') == -1) {
-        attachment = new Blob([attachment], {type: type});
+      if(!(attachment instanceof Blob)) {
+        attachment = new Blob([attachment], {type});
       }
       let _rev,
         db = this.db(_mgr);

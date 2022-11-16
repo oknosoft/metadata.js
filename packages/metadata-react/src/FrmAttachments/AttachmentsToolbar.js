@@ -7,23 +7,25 @@ import IconButton from '@material-ui/core/IconButton';
 
 import DownloadIcon from '@material-ui/icons/CloudDownload';
 import UploadIcon from '@material-ui/icons/CloudUpload';
+import LinkIcon from '@material-ui/icons/Link';
 import RemoveIcon from '@material-ui/icons/Delete';
 import CloseIcon from '@material-ui/icons/Close';
 
 import withStyles from '../Header/toolbar';
 import classnames from 'classnames';
 
-function AttachmentsToolbar (props) {
-
+function AttachmentsToolbar ({classes, short, handleAdd, handleAddLink, handleDownload, handleDelete, handleClose, closeButton}) {
+  
   return (
-    <Toolbar disableGutters className={props.classes.toolbar}>
-      {!props.short && <IconButton title="Добавить" onClick={props.handleAdd}><UploadIcon/></IconButton>}
-      <IconButton title="Получить" onClick={props.handleDownload}><DownloadIcon/></IconButton>
-      {!props.short && <IconButton title="Удалить" onClick={props.handleDelete}><RemoveIcon/></IconButton>}
+    <Toolbar disableGutters className={classes.toolbar}>
+      {!short && <IconButton title="Добавить" onClick={handleAdd}><UploadIcon/></IconButton>}
+      <IconButton title="Получить" onClick={handleDownload}><DownloadIcon/></IconButton>
+      {!short && <IconButton title="Добавить ссылку" onClick={handleAddLink}><LinkIcon/></IconButton>}
+      {!short && <IconButton title="Удалить" onClick={handleDelete}><RemoveIcon/></IconButton>}
 
-      <Typography variant="h6" color="inherit" className={props.classes.flex}> </Typography>
+      <Typography variant="h6" color="inherit" className={classes.flex}> </Typography>
 
-      {props.closeButton && props.handleClose && <IconButton title="Закрыть форму" onClick={props.handleClose}><CloseIcon/></IconButton>}
+      {closeButton && handleClose && <IconButton title="Закрыть форму" onClick={handleClose}><CloseIcon/></IconButton>}
 
     </Toolbar>
   );

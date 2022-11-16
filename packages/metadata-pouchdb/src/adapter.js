@@ -1809,11 +1809,11 @@ function adapter({AbstracrAdapter}) {
     save_attachment(_mgr, ref, att_id, attachment, type) {
 
       if(!type) {
-        type = {type: 'text/plain'};
+        type: 'text/plain'
       }
 
-      if(!(attachment instanceof Blob) && type.indexOf('text') == -1) {
-        attachment = new Blob([attachment], {type: type});
+      if(!(attachment instanceof Blob)) {
+        attachment = new Blob([attachment], {type});
       }
 
       // получаем ревизию документа
