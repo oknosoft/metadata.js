@@ -294,18 +294,31 @@ export default {
 
   /**
    * Рендерит компонент в отдельное окно
-   * @param Component
-   * @param obj
-   * @param title
-   * @param attr
-   * @param print
+   * @param {React.Component} Component
+   * @param {DataObj} obj - объект данных, для которого создаётся окно
+   * @param {String} [title] - заголовок
+   * @param {Object} [attr] - произвольные дополнительные реквизиты
+   * @param {Boolean} [print] - если взведён, печатать сразу после рендера 
    */
   window({Component, obj, title, attr, print}) {
     if(this.handleIfaceState) {
-      this.handleIfaceState({
-        component: '',
-        name: 'wnd_portal',
-        value: {open: true, Component, obj, title, attr, print, handleClose: this.close_confirm.bind(this, 'wnd_portal')}
+      // если у компонента определён метод класса beforeOpen, вызываем его перед открытием окна
+      const pre = typeof Component.beforeOpen === 'function' ?
+        Component.beforeOpen({obj, title, attr, print}) : Promise.resolve(); 
+      pre.then((props) => {
+        this.handleIfaceState({
+          component: '',
+          name: 'wnd_portal',
+          value: {
+            open: true,
+            Component,
+            obj,
+            title,
+            attr: Object.assign({}, attr, props), // если метод beforeOpen(), вернёт некий объект, подмешиваем его свойства в props вызываемого компонента 
+            print,
+            handleClose: this.close_confirm.bind(this, 'wnd_portal'),
+          }
+        });
       });
     }
   },
