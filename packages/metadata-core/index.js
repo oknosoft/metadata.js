@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.30-beta.12, built:2022-11-16
+ metadata-core v2.0.30-beta.12, built:2022-11-18
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1219,9 +1219,16 @@ class DataObj extends BaseDataObj {
     }
     return Promise.all(res).then(() => this);
   }
-  get_attachment(att_id) {
+  get_attachment(att_id, dhtmlx) {
     const {_manager, ref} = this;
-    return _manager.adapter.get_attachment(_manager, ref, att_id);
+    return _manager.adapter
+      .get_attachment(_manager, ref, att_id)
+      .then((blob) => {
+        if(blob?.type === 'application/internet-shortcut' && dhtmlx === 1 && typeof 'window' !== 'undefined') {
+          return utils$1.blob_url_open(blob);
+        }
+        return blob;
+      });
   }
   save_attachment(att_id, attachment, type) {
     const {_manager, ref, _obj, _attachments} = this;
@@ -3510,6 +3517,18 @@ const utils = {
       }
     });
 	},
+  blob_url_open(blob) {
+    return this.blob_as_text(blob)
+      .then((text) => {
+        for(const row of text.split('\n')) {
+          if(row.toLowerCase().startsWith('url=')) {
+            window.open(row.substr(4), '_blank');
+            break;
+          }
+        }
+        return null;
+      });
+  },
 	get_and_show_blob(url, post_data, method) {
 		function show_blob(req) {
 			url = window.URL.createObjectURL(req.response);

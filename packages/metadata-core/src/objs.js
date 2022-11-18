@@ -992,9 +992,16 @@ export class DataObj extends BaseDataObj {
    * @for DataObj
    * @param att_id {String} - идентификатор (имя) вложения
    */
-  get_attachment(att_id) {
+  get_attachment(att_id, dhtmlx) {
     const {_manager, ref} = this;
-    return _manager.adapter.get_attachment(_manager, ref, att_id);
+    return _manager.adapter
+      .get_attachment(_manager, ref, att_id)
+      .then((blob) => {
+        if(blob?.type === 'application/internet-shortcut' && dhtmlx === 1 && typeof 'window' !== 'undefined') {
+          return utils.blob_url_open(blob);
+        }
+        return blob;
+      });
   }
 
   /**

@@ -647,8 +647,20 @@ const utils = {
           reader.readAsText(blob);
       }
     });
-
 	},
+  
+  blob_url_open(blob) {
+    return this.blob_as_text(blob)
+      .then((text) => {
+        for(const row of text.split('\n')) {
+          if(row.toLowerCase().startsWith('url=')) {
+            window.open(row.substr(4), '_blank');
+            break;
+          }
+        }        
+        return null;
+      });
+  },
 
 	/**
 	 * Получает с сервера двоичные данные (pdf отчета или картинку или произвольный файл) и показывает его в новом окне, используя data-url
