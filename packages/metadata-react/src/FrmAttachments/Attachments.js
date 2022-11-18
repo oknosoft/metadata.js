@@ -145,6 +145,10 @@ class Attachments extends MDNRComponent {
   handleDownload = () => {
     const {name, _obj} = this.state;
     if(name) {
+      if(_obj?._attachments[name]?.content_type === 'application/internet-shortcut') {
+        this.props.handleClose();
+        return _obj.get_attachment(name, 1);
+      }
       const url = `${_obj._manager.pouch_db.name}/${_obj.class_name}|${_obj.ref}/${name}`;
       window.open(url, '_blank');
     }
@@ -203,11 +207,7 @@ class Attachments extends MDNRComponent {
 Attachments.propTypes = {
   _obj: PropTypes.object,             // если объект не указан, получаем его по ссылке
   _mgr: PropTypes.object,             // DataManager, с которым будет связан компонент
-  _acl: PropTypes.string,             // права на чтение-изменение
-  match: PropTypes.object,            // match роутера, из него добываем ref, можно передать fake-объект со ссылкой
-  read_only: PropTypes.object,        // элемент только для чтения
   handleClose: PropTypes.func,
-  handleIfaceState: PropTypes.func,
 };
 
 export default Attachments;
