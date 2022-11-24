@@ -82,7 +82,7 @@ class Attachments extends MDNRComponent {
           title: 'Название объекта',
           text: 'Наименование ссылки',
           type: 'string',
-          initialValue: 'Новый ярлык',
+          initialValue: 'Новая ссылка',
         })
           .then((name) => {
             const type = 'application/internet-shortcut';

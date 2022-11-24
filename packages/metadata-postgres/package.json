@@ -9,7 +9,7 @@
     "yarn": "^1.22"
   },
   "dependencies": {
-    "pg": "^8.7"
+    "pg": "^8.8"
   },
   "repository": {
     "type": "git",

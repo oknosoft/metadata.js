@@ -9,7 +9,7 @@
     "yarn": "^1.22"
   },
   "dependencies": {
-    "alasql": "^1.7.3",
+    "alasql": "^2.1",
     "debug": "^4.3",
     "moment": "^2.29",
     "uuid": "^8.3"
