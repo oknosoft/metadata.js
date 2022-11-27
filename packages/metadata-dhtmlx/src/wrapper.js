@@ -85,11 +85,9 @@ export default ($p) => {
         }
 			},
 
-			by_type = function (fv) {
-
+			by_type = function (fv, param) {
 				ft = _md.control_by_type(mf.type, fv);
 				txt_by_type(fv, mf);
-
 			},
 
 			add_xml_row = function (f, tabular) {
@@ -114,6 +112,9 @@ export default ($p) => {
             }
             else if(ft == 'edn') {
               ft = 'calck';
+            }
+            if(f?.param?.dhtmlxro) {
+              ft = 'ro';
             }
 
             if(pref.mandatory) {

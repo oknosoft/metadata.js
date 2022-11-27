@@ -115,6 +115,9 @@ export default ($p) => {
             else if(ft == 'edn') {
               ft = 'calck';
             }
+            if(f?.param?.dhtmlxro) {
+              ft = 'ro';
+            }
 
             if(pref.mandatory) {
               ft += '" class="cell_mandatory';
