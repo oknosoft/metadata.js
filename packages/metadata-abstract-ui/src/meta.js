@@ -706,12 +706,7 @@ export default {
                     types: ['cat.formulas'],
                     is_ref: true
                   },
-                  choice_params: [
-                    {
-                      name: 'parent',
-                      path: []
-                    }
-                  ]
+                  choice_params: []
                 },
                 editor: {
                   synonym: 'Редактор',
@@ -720,12 +715,7 @@ export default {
                     types: ['cat.formulas'],
                     is_ref: true
                   },
-                  choice_params: [
-                    {
-                      name: 'parent',
-                      path: []
-                    }
-                  ]
+                  choice_params: []
                 }
 
               }

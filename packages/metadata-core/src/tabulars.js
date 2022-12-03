@@ -28,16 +28,12 @@ class Iterator {
 }
 
 /**
- * ### Абстрактный объект табличной части
- * - Физически, данные хранятся в {{#crossLink "DataObj"}}{{/crossLink}}, а точнее - в поле типа массив и именем табчасти объекта `_obj`
- * - Класс предоставляет методы для доступа и манипуляции данными табчасти
+ * @summary Абстрактный объект табличной части
+ * @desc Класс предоставляет методы для доступа и манипуляции данными табчасти
+ * Физически, данные хранятся в {{#crossLink "DataObj"}}{{/crossLink}}, а точнее - в поле типа массив и именем табчасти объекта `_obj` 
  *
- * @class TabularSection
- * @constructor
  * @param name {String} - имя табчасти
  * @param owner {DataObj} - владелец табличной части
- * @menuorder 21
- * @tooltip Табличная часть
  */
 export class TabularSection {
 
@@ -531,13 +527,9 @@ export class TabularSection {
 
 
 /**
- * ### Aбстрактная строка табличной части
+ * @summary Aбстрактная строка табличной части
  *
- * @class TabularSectionRow
- * @constructor
  * @param owner {TabularSection} - табличная часть, которой принадлежит строка
- * @menuorder 22
- * @tooltip Строка табчасти
  */
 export class TabularSectionRow {
 
@@ -549,7 +541,6 @@ export class TabularSectionRow {
 
 			/**
 			 * Указатель на владельца данной строки табличной части
-			 * @property _owner
 			 * @type TabularSection
 			 */
 			_owner: {
@@ -557,9 +548,8 @@ export class TabularSectionRow {
 			},
 
 			/**
-			 * ### Фактическое хранилище данных объекта
-			 * Отображается в поле типа json записи в таблице объекта локальной базы данных
-			 * @property _obj
+			 * @summary Фактическое хранилище данных объекта
+			 * @desc Отображается в поле типа json записи в таблице объекта локальной базы данных
 			 * @type Object
 			 */
 			_obj: {
@@ -570,9 +560,7 @@ export class TabularSectionRow {
 
 
 	/**
-	 * ### Метаданые строки табличной части
-	 * @property _metadata
-	 * @for TabularSectionRow
+	 * @summary Метаданые строки табличной части
 	 * @type Number
 	 */
   _metadata(field_name) {
@@ -589,25 +577,30 @@ export class TabularSectionRow {
   }
 
 	/**
-	 * ### Номер строки табличной части
-	 * @property row
-	 * @for TabularSectionRow
+	 * @summary Номер строки табличной части
 	 * @type Number
 	 * @final
 	 */
 	get row() {
-		return this._obj.row || 0
+		return this._obj.row || 0;
 	}
 
+  /**
+   * @summary Идентификатор строки табличной части
+   * @type String
+   * @final
+   */
+  get uid() {
+    return this._obj.uid || utils.blank.guid;
+  }
+
 	/**
-	 * ### Копирует строку табличной части
-	 * @method _clone
-	 * @for TabularSectionRow
-	 * @type Number
+	 * @summary Копирует строку табличной части
+	 * @return {TabularSectionRow}
 	 */
 	_clone() {
 		const {_owner, _obj} = this
-		return utils._mixin(_owner._owner._manager.obj_constructor(_owner._name, _owner), _obj)
+		return utils._mixin(_owner._owner._manager.obj_constructor(_owner._name, _owner), _obj);
 	}
 
 	_setter(f, v) {
@@ -645,7 +638,7 @@ export class TabularSectionRow {
 	}
 
   /**
-   * ### При изменении реквизита шапки или табличной части
+   * @summary При изменении реквизита шапки или табличной части
    *
    * @event VALUE_CHANGE
    */

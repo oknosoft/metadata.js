@@ -85,7 +85,7 @@ export default ($p) => {
         }
 			},
 
-			by_type = function (fv, param) {
+			by_type = function (fv) {
 				ft = _md.control_by_type(mf.type, fv);
 				txt_by_type(fv, mf);
 			},

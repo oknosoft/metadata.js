@@ -49,11 +49,12 @@ export default function scheme_settings() {
      * Корректирует метаданные
      */
     tune_meta() {
-      const root = this._owner.formulas.predefined('components');
-      if(root && !root.empty()) {
+      const path = this._owner.formulas.predefined('components');
+      if(path && !path.empty()) {
         const {fields} = this.metadata('fields');
-        fields.formatter.choice_params[0].path.push(root);
-        fields.editor.choice_params[0].path.push(root);
+        const choice = {name: 'parent', path}
+        fields.formatter.choice_params = [choice];
+        fields.editor.choice_params = [choice];
       }
     }
 

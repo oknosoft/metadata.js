@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.30-beta.13, built:2022-11-24
+ metadata-core v2.0.30-beta.13, built:2022-12-03
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -546,11 +546,14 @@ class TabularSectionRow {
     return this._owner._owner._data;
   }
 	get row() {
-		return this._obj.row || 0
+		return this._obj.row || 0;
 	}
+  get uid() {
+    return this._obj.uid || utils$1.blank.guid;
+  }
 	_clone() {
 		const {_owner, _obj} = this;
-		return utils$1._mixin(_owner._owner._manager.obj_constructor(_owner._name, _owner), _obj)
+		return utils$1._mixin(_owner._owner._manager.obj_constructor(_owner._name, _owner), _obj);
 	}
 	_setter(f, v) {
 		const {_owner, _obj} = this;
