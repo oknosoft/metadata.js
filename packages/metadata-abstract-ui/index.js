@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.30-beta.13, built:2022-11-24
+ metadata-abstract-ui v2.0.31-beta.1, built:2022-12-03
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -293,11 +293,12 @@ function scheme_settings() {
   const {CatManager, DataProcessorsManager, DataProcessorObj, CatObj, DocManager, TabularSectionRow} = constructor.classes || this;
   class SchemeSettingsManager extends CatManager {
     tune_meta() {
-      const root = this._owner.formulas.predefined('components');
-      if(root && !root.empty()) {
+      const path = this._owner.formulas.predefined('components');
+      if(path && !path.empty()) {
         const {fields} = this.metadata('fields');
-        fields.formatter.choice_params[0].path.push(root);
-        fields.editor.choice_params[0].path.push(root);
+        const choice = {name: 'parent', path};
+        fields.formatter.choice_params = [choice];
+        fields.editor.choice_params = [choice];
       }
     }
     find_schemas(class_name) {

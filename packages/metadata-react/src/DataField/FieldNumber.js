@@ -66,7 +66,7 @@ class FieldNumber extends AbstractField {
     const inputProps={readOnly: Boolean(read_only)};
     let endAdornment;
     if(navigator.userAgent.match(/android|ios|iphone/i)) {
-      inputProps.type = 'number'
+      inputProps.type = 'number';
     }
     else {
       endAdornment = !read_only && (state.focused || state.isCalculatorVisible) ? <InputAdornment position="end">

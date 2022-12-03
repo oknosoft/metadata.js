@@ -146,8 +146,9 @@ function rx_columns({utils: {moment}, enm, md}) {
   const number_formatter = (fraction = 0) => {
     return ({value, raw}) => {
       if(!value && value !== 0) value = 0;
-      const text = typeof value === 'number' ? value.toFixed(fraction) : value.toString();
-      return raw ? Number(text) : <div title={text} style={{textAlign: 'right'}}>{text}</div>;
+      const tmp = typeof value === 'number' ? value : parseFloat(value);
+      const text = isNaN(tmp) ? value.toString() : tmp.toFixed(fraction);
+      return raw ? (tmp || 0) : <div title={text} style={{textAlign: 'right'}}>{text}</div>;
     };
   };
 

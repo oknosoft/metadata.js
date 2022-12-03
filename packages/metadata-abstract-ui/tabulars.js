@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.30-beta.13, built:2022-11-24
+ metadata-abstract-ui v2.0.31-beta.1, built:2022-12-03
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -59,7 +59,7 @@ function docxtemplater ({wsql, utils}) {
 class GeneratorXLS {
   constructor(data, columns) {
     this.data = data;
-    this.columns = columns;
+    this.columns = columns.filter(el => el.width !== -1);
   }
   generate({name = 'Спецификация', fileName = `specification`}) {
     return Promise.resolve().then(function () { return /*#__PURE__*/_interopNamespace(require('xlsx')); })

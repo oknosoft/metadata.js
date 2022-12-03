@@ -3,7 +3,7 @@
 export default class GeneratorXLS {
   constructor(data, columns) {
     this.data = data;
-    this.columns = columns;
+    this.columns = columns.filter(el => el.width !== -1);
   }
 
   generate({name = 'Спецификация', fileName = `specification`}) {

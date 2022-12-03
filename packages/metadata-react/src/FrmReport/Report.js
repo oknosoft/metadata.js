@@ -152,7 +152,7 @@ export class Report extends MDNRComponent {
         ref={(el) => this._result = el}
         _obj={_obj}
         _tabular={_tabular}
-        _columns={_columns}
+        _columns={_columns.filter(v => v.width !== -1)}
         scheme={scheme}
         minHeight={pheight - 52 - (settings_open ? 320 : 0)}
         hideHeader={props.hideHeader}
