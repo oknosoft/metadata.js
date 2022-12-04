@@ -243,20 +243,24 @@ export class TabularSection {
 	/**
 	 * ### Добавляет строку табчасти
 	 * @method add
-	 * @param attr {object} - объект со значениями полей. если некого поля нет в attr, для него используется пустое значение типа
-	 * @param silent {Boolean} - тихий режим, без генерации событий изменения объекта
-   * @param Constructor {function} - альтернативный конструктор строки
+	 * @param {Object} attr - объект со значениями полей. если некого поля нет в attr, для него используется пустое значение типа
+	 * @param {Boolean} [silent] - тихий режим, без генерации событий изменения объекта
+   * @param {Function} [Constructor] - альтернативный конструктор строки
+   * @param {Boolean} [raw] - использовать сырые данные из attr
 	 * @return {TabularSectionRow}
 	 *
 	 * @example
 	 *     // Добавляет строку в табчасть и заполняет её значениями, переданными в аргументе
 	 *     const row = ts.add({field1: value1});
 	 */
-	add(attr = {}, silent, Constructor) {
+	add(attr = {}, silent, Constructor, raw) {
 
+    if(raw && attr.hasOwnProperty('_row')) {
+      raw = false;
+    }
 		const {_owner, _name, _obj} = this;
     const {_manager, _data} = _owner;
-		const row = Constructor ? new Constructor(this) : _manager.obj_constructor(_name, this);
+		const row = Constructor ? new Constructor(this) : _manager.obj_constructor(_name, raw ? [this, attr] : this);
 
     // триггер
 		if(!_data._loading && _owner.add_row && _owner.add_row(row, attr) === false){
@@ -264,14 +268,15 @@ export class TabularSection {
     }
 
 		// присваиваем типизированные значения по умолчанию
+    const data = row._obj; 
 		for (const f in row._metadata().fields){
-		  if(!row._obj[f]) {
-        row[f] = attr[f] || "";
+		  if(!data.hasOwnProperty(f)) {
+        row[f] = attr[f] || '';
       }
 		}
 
-    row._obj.row = _obj.push(row._obj);
-    Object.defineProperty(row._obj, '_row', {
+    data.row = _obj.push(data);
+    Object.defineProperty(data, '_row', {
       value: row,
       enumerable: false
     });
@@ -453,12 +458,13 @@ export class TabularSection {
 	};
 
 	/**
-	 * ### Загружает табличнут часть из массива объектов
+	 * @summary Загружает табличнут часть из массива объектов
 	 *
 	 * @method load
-	 * @param aattr {Array} - массив объектов к загрузке
+	 * @param {Array.<Object>} aattr - массив объектов к загрузке
+	 * @param {Boolean} [raw] - признак не пересоздавать сырые данные строк, а использовать из aattr
 	 */
-	load(aattr) {
+	load(aattr, raw) {
 
     const {_owner, _name, _obj} = this;
     const {_manager, _data} = _owner;
@@ -471,7 +477,7 @@ export class TabularSection {
     this.clear();
 
 		for(let row of aattr instanceof TabularSection ? aattr._obj : (Array.isArray(aattr) ? aattr : [])){
-      this.add(row);
+      this.add(row, raw, null, raw);
     }
 
     // obj, {ts_name: null}
@@ -482,7 +488,7 @@ export class TabularSection {
 	}
 
 	/**
-	 * ### Выгружает колонку табчасти в массив
+	 * @summary Выгружает колонку табчасти в массив
 	 *
 	 * @method unload_column
 	 * @param column {String} - имя колонки
@@ -500,15 +506,18 @@ export class TabularSection {
 	}
 
 	/**
-	 * Обработчик сериализации
+	 * @summary Обработчик сериализации
 	 * @return {Object}
 	 */
 	toJSON() {
 	  const {_owner, _obj, _name} = this;
-	  const {fields} = _owner._metadata(_name);
+	  const {fields, uid} = _owner._metadata(_name);
 	  const _manager = {
       _owner: _owner._manager._owner,
       metadata(fld) {
+        if(fld === 'uid' && fld) {
+          return {type: {types: ['string'], str_len: 36}};
+        }
         return fields[fld];
       }
     };
@@ -535,8 +544,6 @@ export class TabularSectionRow {
 
 	constructor(owner, attr) {
 
-		//var _obj = {};
-
 		Object.defineProperties(this, {
 
 			/**
@@ -555,17 +562,20 @@ export class TabularSectionRow {
 			_obj: {
 				value: attr ? attr : {}
 			}
-		})
+		});
+    if(this._metadata().uid && !utils.is_guid(this._obj.uid)) {
+      this._obj.uid = utils.generate_guid();
+    }
 	}
-
-
-	/**
-	 * @summary Метаданые строки табличной части
-	 * @type Number
-	 */
-  _metadata(field_name) {
+  
+  /**
+   * @summary Метаданые строки табличной части 
+   * @param {String} [name]
+   * @return {*}
+   */
+  _metadata(name) {
     const {_owner} = this;
-    return field_name ? _owner._owner._metadata(_owner._name).fields[field_name] : _owner._owner._metadata(_owner._name);
+    return name ? _owner._owner._metadata(_owner._name).fields[name] : _owner._owner._metadata(_owner._name);
   }
 
 	get _manager() {

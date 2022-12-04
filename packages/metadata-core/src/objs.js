@@ -275,7 +275,7 @@ export class BaseDataObj {
 
   _setter_ts(f, v) {
     const ts = this._getter_ts(f);
-    ts instanceof TabularSection && Array.isArray(v) && ts.load(v);
+    ts instanceof TabularSection && Array.isArray(v) && ts.load(v, true);
   }
 
   /**

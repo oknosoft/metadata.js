@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.31-beta.1, built:2022-12-03
+ metadata-core v2.0.31-beta.1, built:2022-12-04
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -363,20 +363,24 @@ class TabularSection {
     !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
     _data._modified = true;
 	}
-	add(attr = {}, silent, Constructor) {
+	add(attr = {}, silent, Constructor, raw) {
+    if(raw && attr.hasOwnProperty('_row')) {
+      raw = false;
+    }
 		const {_owner, _name, _obj} = this;
     const {_manager, _data} = _owner;
-		const row = Constructor ? new Constructor(this) : _manager.obj_constructor(_name, this);
+		const row = Constructor ? new Constructor(this) : _manager.obj_constructor(_name, raw ? [this, attr] : this);
 		if(!_data._loading && _owner.add_row && _owner.add_row(row, attr) === false){
 		  return;
     }
+    const data = row._obj;
 		for (const f in row._metadata().fields){
-		  if(!row._obj[f]) {
-        row[f] = attr[f] || "";
+		  if(!data.hasOwnProperty(f)) {
+        row[f] = attr[f] || '';
       }
 		}
-    row._obj.row = _obj.push(row._obj);
-    Object.defineProperty(row._obj, '_row', {
+    data.row = _obj.push(data);
+    Object.defineProperty(data, '_row', {
       value: row,
       enumerable: false
     });
@@ -486,7 +490,7 @@ class TabularSection {
 			$p.record_log(err);
 		}
 	};
-	load(aattr) {
+	load(aattr, raw) {
     const {_owner, _name, _obj} = this;
     const {_manager, _data} = _owner;
     const {_loading} = _data;
@@ -495,7 +499,7 @@ class TabularSection {
     }
     this.clear();
 		for(let row of aattr instanceof TabularSection ? aattr._obj : (Array.isArray(aattr) ? aattr : [])){
-      this.add(row);
+      this.add(row, raw, null, raw);
     }
     _data._loading = _loading;
     !_loading && _manager.emit_async('rows', _owner, {[_name]: true});
@@ -510,10 +514,13 @@ class TabularSection {
 	}
 	toJSON() {
 	  const {_owner, _obj, _name} = this;
-	  const {fields} = _owner._metadata(_name);
+	  const {fields, uid} = _owner._metadata(_name);
 	  const _manager = {
       _owner: _owner._manager._owner,
       metadata(fld) {
+        if(fld === 'uid' && fld) {
+          return {type: {types: ['string'], str_len: 36}};
+        }
         return fields[fld];
       }
     };
@@ -534,10 +541,13 @@ class TabularSectionRow {
 				value: attr ? attr : {}
 			}
 		});
+    if(this._metadata().uid && !utils$1.is_guid(this._obj.uid)) {
+      this._obj.uid = utils$1.generate_guid();
+    }
 	}
-  _metadata(field_name) {
+  _metadata(name) {
     const {_owner} = this;
-    return field_name ? _owner._owner._metadata(_owner._name).fields[field_name] : _owner._owner._metadata(_owner._name);
+    return name ? _owner._owner._metadata(_owner._name).fields[name] : _owner._owner._metadata(_owner._name);
   }
 	get _manager() {
 		return this._owner._owner._manager;
@@ -779,7 +789,7 @@ class BaseDataObj {
   }
   _setter_ts(f, v) {
     const ts = this._getter_ts(f);
-    ts instanceof TabularSection && Array.isArray(v) && ts.load(v);
+    ts instanceof TabularSection && Array.isArray(v) && ts.load(v, true);
   }
   _hash() {
     let str = '';
