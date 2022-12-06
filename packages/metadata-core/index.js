@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.31-beta.1, built:2022-12-04
+ metadata-core v2.0.31-beta.1, built:2022-12-06
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -450,6 +450,13 @@ class TabularSection {
 				return sum + row[resources[0]];
 			}, 0);
 		}
+    if(!this.count()) {
+      const res = {};
+      resources.forEach((f) => {
+        res[f] = 0;
+      });
+      return res;
+    }
 		let sql, res = true;
 		resources.forEach((f) => {
 			if (!sql){
@@ -460,7 +467,7 @@ class TabularSection {
       }
       sql += aggr + "(`" + f + "`) `" + f + "`";
 		});
-		dimensions.forEach(function (f) {
+		dimensions.forEach((f) => {
 			if (!sql)
 				sql = "select `" + f + "`";
 			else
@@ -479,14 +486,24 @@ class TabularSection {
 		const {$p} = this._owner._manager._owner;
 		try {
 			res = $p.wsql.alasql(sql, [this._obj]);
+      for(const row of res) {
+        resources.forEach((f) => {
+          if(!row[f] || row[f] === 'NULL') {
+            row[f] = 0;
+          }
+        });
+      }
 			if (!ret_array) {
-				if (resources.length == 1)
-					res = res.length ? res[0][resources[0]] : 0;
-				else
-					res = res.length ? res[0] : {};
+        if (resources.length == 1) {
+          res = res.length ? res[0][resources[0]] : 0;
+        }
+        else {
+          res = res.length ? res[0] : {};
+        }
 			}
 			return res;
-		} catch (err) {
+		}
+    catch (err) {
 			$p.record_log(err);
 		}
 	};

@@ -412,6 +412,13 @@ export class TabularSection {
 				return sum + row[resources[0]];
 			}, 0);
 		}
+    if(!this.count()) {
+      const res = {};
+      resources.forEach((f) => {
+        res[f] = 0;
+      });
+      return res;
+    }
 
 		let sql, res = true;
 
@@ -424,7 +431,7 @@ export class TabularSection {
       }
       sql += aggr + "(`" + f + "`) `" + f + "`";
 		});
-		dimensions.forEach(function (f) {
+		dimensions.forEach((f) => {
 			if (!sql)
 				sql = "select `" + f + "`";
 			else
@@ -444,15 +451,25 @@ export class TabularSection {
 		const {$p} = this._owner._manager._owner;
 		try {
 			res = $p.wsql.alasql(sql, [this._obj]);
+      // alasql bug https://github.com/AlaSQL/alasql/pull/1537#issuecomment-1338647771
+      for(const row of res) {
+        resources.forEach((f) => {
+          if(!row[f] || row[f] === 'NULL') {
+            row[f] = 0;
+          }
+        });
+      }
 			if (!ret_array) {
-				if (resources.length == 1)
-					res = res.length ? res[0][resources[0]] : 0;
-				else
-					res = res.length ? res[0] : {};
+        if (resources.length == 1) {
+          res = res.length ? res[0][resources[0]] : 0;
+        }
+        else {
+          res = res.length ? res[0] : {};
+        }         
 			}
 			return res;
-
-		} catch (err) {
+		} 
+    catch (err) {
 			$p.record_log(err);
 		}
 	};
