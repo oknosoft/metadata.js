@@ -38,13 +38,15 @@ class FieldSelect extends AbstractField {
     return v;
   }
 
-  shouldComponentUpdate({_obj, _meta}) {
+  shouldComponentUpdate({_obj, _meta, dyn_meta}) {
     if(this.props._obj !== _obj) {
       this.loadOptions(_obj);
       return false;
     }
     if(_meta && this.props._meta !== _meta) {
-      this._meta = _meta;
+      if(!dyn_meta) {
+        this._meta = _meta;
+      }
       this.loadOptions(_obj);
       return false;
     }
