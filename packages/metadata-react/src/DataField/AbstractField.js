@@ -15,6 +15,25 @@ export function suggestionText(suggestion) {
   return text === '_' ? '' : text;
 }
 
+function patch(_meta, _obj) {
+  if(_meta.choice_type) {
+    const {path} = _meta.choice_type;
+    const prm = _obj[path[path.length - 1]] || (_obj._owner?.[path[path.length - 1]]);
+    if(prm && !prm.empty()) {
+      _meta = Object.assign({}, _meta, {type: prm.type});
+      if(prm.choice_params) {
+        if(!_meta.choice_params){
+          _meta.choice_params = [];
+        }
+        prm.choice_params && prm.choice_params.forEach(({name, path}) => {
+          _meta.choice_params.push({name, path});
+        });
+      }
+    }
+  }
+  return _meta;
+}
+
 export class FieldWithMeta extends MComponent {
 
   constructor(props, context) {
@@ -23,32 +42,22 @@ export class FieldWithMeta extends MComponent {
     if(dyn_meta && _meta) {
       Object.defineProperty(this, '_meta', {
         get() {
-          return this.props._meta;
+          const {_obj, _meta} = this.props;
+          return patch(_meta, _obj);
         }
-      })
+      });
     }
     else {
-      this._meta = _meta || (typeof _obj._metadata === 'function' ? _obj._metadata(_fld) : _obj._metadata?.fields[_fld]) || {type: {types: ['string']}};
+      this._meta = patch(
+        _meta || (typeof _obj._metadata === 'function' ?
+          _obj._metadata(_fld) :
+          _obj._metadata?.fields[_fld]) || {type: {types: ['string']}}, _obj);
       if(!this._meta.synonym) {
         if(_fld === 'parent') {
           this._meta.synonym = 'Группа';
         }
         else if(_fld === 'owner') {
           this._meta.synonym = 'Владелец';
-        }
-      }
-
-      if(this._meta.choice_type) {
-        const {path} = this._meta.choice_type;
-        const prm = _obj[path[path.length - 1]] || (_obj._owner && _obj._owner[path[path.length - 1]]);
-        if(prm && !prm.empty()) {
-          this._meta = Object.assign({}, this._meta, {type: prm.type});
-          prm.choice_params && prm.choice_params.forEach(({name, path}) => {
-            if(!this._meta.choice_params){
-              this._meta.choice_params = [];
-            }
-            this._meta.choice_params.push({name, path});
-          });
         }
       }
     }
