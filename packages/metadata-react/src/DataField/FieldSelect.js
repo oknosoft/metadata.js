@@ -107,7 +107,7 @@ class FieldSelect extends AbstractField {
   render() {
 
     const {props, _meta, onChange} = this;
-    const {classes, extClasses, fullWidth, read_only, disabled, isTabular, get_ref, empty_text, ...other} = props;
+    const {classes, extClasses, fullWidth, read_only, disabled, isTabular, get_ref, empty_text, dyn_meta, ...other} = props;
     const value = this.typedValue(props);
     const attr = {
       title: _meta.tooltip || _meta.synonym,

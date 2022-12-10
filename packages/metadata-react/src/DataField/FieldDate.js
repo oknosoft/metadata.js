@@ -32,7 +32,7 @@ class FieldDate extends AbstractField {
 
   render() {
     let {props, state: {value}, _meta, _type, onChange, read_only} = this;
-    const {_obj, _fld, classes, extClasses, className, fullWidth, InputProps, label_position, bar, isTabular, ...other} = props;
+    const {_obj, _fld, classes, extClasses, className, fullWidth, InputProps, label_position, bar, isTabular, dyn_meta, ...other} = props;
     const attr = {
       title: _meta.tooltip || _meta.synonym,
     }
