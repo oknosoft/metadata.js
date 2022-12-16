@@ -14,7 +14,6 @@ import Checkbox from '@material-ui/core/Checkbox';
 import AbstractField from './AbstractField';
 import withStyles from './styles';
 import cn from 'classnames';
-import Switch from '@material-ui/core/Switch';
 
 
 class FieldCheckbox extends AbstractField {

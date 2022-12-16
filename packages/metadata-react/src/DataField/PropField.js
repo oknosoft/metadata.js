@@ -11,8 +11,11 @@ import PropTypes from 'prop-types';
 import DataField from './DataField';
 import withStyles, {extClasses} from './stylesPropertyGrid';
 
-function PropField({classes, ...props}) {
-  return <DataField extClasses={extClasses(classes)} fullWidth dyn_meta isTabular={false} {...props}/>;
+function PropField({classes, Component, ...props}) {
+  if(!Component) {
+    Component = DataField;
+  }
+  return <Component extClasses={extClasses(classes)} fullWidth dyn_meta isTabular={false} {...props}/>;
 }
 
 PropField.propTypes = {

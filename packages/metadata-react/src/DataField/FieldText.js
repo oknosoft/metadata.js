@@ -37,7 +37,7 @@ class FieldText extends AbstractField {
       <input type="text" {...attr} {...other}/>
       :
       <FormControl
-        className={extClasses && extClasses.control ? '' : cn(classes.formControl, className, props.bar && classes.barInput)}
+        className={extClasses && extClasses.control ? '' : cn(classes.formControl, className, bar && classes.barInput)}
         classes={extClasses && extClasses.control ? extClasses.control : null}
         fullWidth={fullWidth}
         {...attr}
