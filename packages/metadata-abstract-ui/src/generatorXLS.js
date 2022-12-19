@@ -9,7 +9,7 @@ export default class GeneratorXLS {
   generate({name = 'Спецификация', fileName = `specification`}) {
     return import('xlsx')
       .then((module) => {
-        const XLSX = this.XLSX = module.default;
+        const XLSX = this.XLSX = (module.default || module);
         const workbook = XLSX.utils.book_new();
         const header = this.columns.map(el => el.name);
         let ws = XLSX.utils.aoa_to_sheet([header]);

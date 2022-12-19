@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.31-beta.1, built:2022-12-08
+ metadata-abstract-ui v2.0.31-beta.1, built:2022-12-19
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -64,7 +64,7 @@ class GeneratorXLS {
   generate({name = 'Спецификация', fileName = `specification`}) {
     return Promise.resolve().then(function () { return /*#__PURE__*/_interopNamespace(require('xlsx')); })
       .then((module) => {
-        const XLSX = this.XLSX = module.default;
+        const XLSX = this.XLSX = (module.default || module);
         const workbook = XLSX.utils.book_new();
         const header = this.columns.map(el => el.name);
         let ws = XLSX.utils.aoa_to_sheet([header]);
