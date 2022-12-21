@@ -24,7 +24,7 @@ const styles = (theme) => ({
     '&:hover': {
       whiteSpace: 'normal',
       background: 'white',
-      transform: 'translate(0, 8px)',
+      transform: 'translate(0, 10px)',
     },
   },
   iroot: {
@@ -36,7 +36,7 @@ const styles = (theme) => ({
   control: {
     minWidth: 180,
     paddingRight: theme.spacing(),
-    paddingTop: 2,
+    //paddingTop: 2,
     borderBottom: '1px solid #e8e8e8',
   },
   checkbox: {
