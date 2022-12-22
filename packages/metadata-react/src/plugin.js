@@ -9,12 +9,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import DataCell from 'metadata-react/DataField/DataCell';
-import DataCellTyped from "./DataField/DataCellTyped";
-import TypeFieldCell from 'metadata-react/DataField/FieldTypeCell';
-import PathFieldCell from 'metadata-react/DataField/FieldPathCell';
-import PropsFieldCell from 'metadata-react/DataField/FieldPropsCell';
-import dialogs from 'metadata-react/App/dialogs';
+import DataCell from './DataField/DataCell';
+import DataCellTyped from './DataField/DataCellTyped';
+import TypeFieldCell from './DataField/FieldTypeCell';
+import PathFieldCell from './DataField/FieldPathCell';
+import PropsFieldCell from './DataField/FieldPropsCell';
+import dialogs from './App/dialogs';
 import {Editors, Formatters} from 'react-data-grid-addons';
 import DataGrid from 'react-data-grid';
 import {withStyles, makeStyles} from '@material-ui/styles';

@@ -6,7 +6,7 @@ import ResizableCSS from 'react-resizable/css/styles.css';
 import RGL, { WidthProvider } from "react-grid-layout";
 import Draggable from './Draggable';
 import MetaTree from './MetaTree';
-import LoadingMessage from 'metadata-react/DumbLoader/LoadingMessage';
+import LoadingMessage from '../DumbLoader/LoadingMessage';
 import meta from './meta';
 import './MetaDesigner.css';
 
