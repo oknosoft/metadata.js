@@ -9,14 +9,14 @@
     "yarn": "^1.22"
   },
   "dependencies": {
-    "pouchdb-adapter-http": "7.3",
-    "pouchdb-adapter-idb": "7.3",
-    "pouchdb-adapter-indexeddb": "7.3",
-    "pouchdb-adapter-memory": "7.3",
-    "pouchdb-core": "7.3",
-    "pouchdb-find": "7.3",
-    "pouchdb-mapreduce": "7.3",
-    "pouchdb-replication": "7.3"
+    "pouchdb-adapter-http": "8.0",
+    "pouchdb-adapter-idb": "8.0",
+    "pouchdb-adapter-indexeddb": "8.0",
+    "pouchdb-adapter-memory": "8.0",
+    "pouchdb-core": "8.0",
+    "pouchdb-find": "8.0",
+    "pouchdb-mapreduce": "8.0",
+    "pouchdb-replication": "8.0"
   },
   "repository": {
     "type": "git",
