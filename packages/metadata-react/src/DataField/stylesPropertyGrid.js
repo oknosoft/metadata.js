@@ -41,6 +41,7 @@ const styles = (theme) => ({
   },
   checkbox: {
     borderRadius: 'unset',
+    padding: '6px 16% 5px 0',
   },
   listbox: {
     boxSizing: 'border-box',
