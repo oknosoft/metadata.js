@@ -23,8 +23,6 @@ import withStyles from '../Header/toolbar';
 import SearchBox from '../SchemeSettings/SearchBox';
 import {export_handlers} from '../plugin';
 
-const cmpType = PropTypes.oneOfType([PropTypes.object, PropTypes.array]);
-
 class TabularSectionToolbar extends Component {
 
   static propTypes = {
@@ -38,8 +36,8 @@ class TabularSectionToolbar extends Component {
     denyAddDel: PropTypes.bool,               // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
     denyReorder: PropTypes.bool,              // Запрет изменения порядка строк
 
-    btns: cmpType,                            // дополнительные кнопки
-    menu_items: cmpType,                      // дополнительные пункты меню
+    btns: PropTypes.node,                     // дополнительные кнопки
+    menu_items: PropTypes.node,               // дополнительные пункты меню
 
   }
 

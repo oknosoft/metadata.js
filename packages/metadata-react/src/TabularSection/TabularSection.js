@@ -258,11 +258,24 @@ class TabularSection extends MComponent {
       this.setState({selected: null});
     }
   };
+  
+  handleRef = (el) => {
+    if(this._grid !== el) {
+      this._grid = el;
+      if(el && this.props.selectedRow) {
+        const rows = this.getRows();
+        const rowIdx = rows.indexOf(this.props.selectedRow);
+        if(rowIdx >= 0) {
+          el.selectCell({rowIdx, idx: 0});
+        }
+      }
+    }
+  }
 
   render() {
     const {props, state, rowGetter, onRowsSelected, onRowsDeselected} = this;
     const {_tabular, _columns, scheme, selectedIds, settings_open} = state;
-    const {_obj, rowSelection, minHeight, hideToolbar, denyAddDel, denyReorder, btns, end_btns, menu_items} = props;
+    const {_obj, rowSelection, minHeight, hideToolbar, denyAddDel, denyReorder, rowRenderer, btns, end_btns, menu_items} = props;
     const Toolbar = props.Toolbar || TabularSectionToolbar;
 
     if(!_columns || !_columns.length) {
@@ -294,6 +307,7 @@ class TabularSection extends MComponent {
                 _columns={_columns}
                 scheme={scheme}
                 settings_open={settings_open}
+                owner={this}
 
                 denyAddDel={denyAddDel}
                 denyReorder={denyReorder}
@@ -325,12 +339,13 @@ class TabularSection extends MComponent {
                 minWidth={width}
                 minHeight={Math.max(minHeight, height) - (hideToolbar ? 2 : 52) - (settings_open ? 320 : 0)}
                 rowHeight={33}
-                ref={(el) => this._grid = el}
+                ref={this.handleRef}
                 columns={_columns}
                 enableCellSelect={true}
                 rowGetter={rowGetter}
                 rowsCount={this.rowsCount()}
                 rowSelection={rowSelection}
+                rowRenderer={rowRenderer}
                 onCellDeSelected={this.onCellDeSelected}
                 onCellSelected={this.onCellSelected}
                 onGridRowsUpdated={this.handleRowsUpdated}
@@ -369,6 +384,7 @@ TabularSection.propTypes = {
 
   rowSelection: PropTypes.object,       // Настройка пометок строк
   selectedIds: PropTypes.array,
+  selectedRow: PropTypes.object,
 
   onCellSelected: PropTypes.func,
   onRowDoubleClick: PropTypes.func,
