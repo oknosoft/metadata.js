@@ -124,8 +124,7 @@ export class TabularSection {
   }
 
 	/**
-	 * ### Удаляет строку табличной части
-	 * @method del
+	 * @summary Удаляет строку табличной части
 	 * @param val {Number|TabularSectionRow} - индекс или строка табчасти
 	 */
 	del(val) {

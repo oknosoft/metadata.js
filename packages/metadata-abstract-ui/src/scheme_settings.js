@@ -64,31 +64,30 @@ export default function scheme_settings() {
      * @async
      * @return {Array.<CatScheme_settings>}
      */
-    find_schemas(class_name) {
-      return Promise.resolve(
-        this.find_rows({obj: class_name})
-          .sort((a, b) => {
-            if(a.user > b.user) {
-              return 1;
-            }
-            if (a.user < b.user) {
-              return -1;
-            }
-            if (a.name.endsWith('main') && !b.name.endsWith('main')) {
-              return -1;
-            }
-            if (b.name.endsWith('main') && !a.name.endsWith('main')) {
-              return 1;
-            }
-            if(a.name > b.name) {
-              return 1;
-            }
-            if (a.name < b.name) {
-              return -1;
-            }
-            return 0;
-          })
-      );
+    find_schemas(class_name, sync) {
+      const res = this.find_rows({obj: class_name})
+        .sort((a, b) => {
+          if(a.user > b.user) {
+            return 1;
+          }
+          if (a.user < b.user) {
+            return -1;
+          }
+          if (a.name.endsWith('main') && !b.name.endsWith('main')) {
+            return -1;
+          }
+          if (b.name.endsWith('main') && !a.name.endsWith('main')) {
+            return 1;
+          }
+          if(a.name > b.name) {
+            return 1;
+          }
+          if (a.name < b.name) {
+            return -1;
+          }
+          return 0;
+        });
+      return sync ? res : Promise.resolve(res);
     }
 
     /**
@@ -98,37 +97,42 @@ export default function scheme_settings() {
      *
      * @param class_name
      */
-    get_scheme(class_name) {
+    get_scheme(class_name, sync) {
       // получаем сохраненную настройку
       const scheme_name = this.scheme_name(class_name);
 
+      const fin_scheme = (data) => {
+        // если существует с текущим пользователем, берём его, иначе - первый попавшийся
+        if(data.length == 1) {
+          return data[0].set_default();
+        }
+        else if(data.length) {
+          const {current_user} = $p;
+          if(!current_user || !current_user.name) {
+            return data[0].set_default();
+          }
+          else {
+            const {name} = current_user;
+            for(const scheme of data) {
+              if(scheme.user == name) {
+                return scheme.set_default();
+              }
+            }
+            return data[0].set_default();
+          }
+        }
+        else {
+          return create_scheme();
+        }
+      };
       const find_scheme = () => {
+        
+        if(sync) {
+          return fin_scheme(this.find_schemas(class_name, sync));
+        }
 
         return this.find_schemas(class_name)
-          .then((data) => {
-            // если существует с текущим пользователем, берём его, иначе - первый попавшийся
-            if(data.length == 1) {
-              return data[0].set_default();
-            }
-            else if(data.length) {
-              const {current_user} = $p;
-              if(!current_user || !current_user.name) {
-                return data[0].set_default();
-              }
-              else {
-                const {name} = current_user;
-                for(const scheme of data) {
-                  if(scheme.user == name) {
-                    return scheme.set_default();
-                  }
-                }
-                return data[0].set_default();
-              }
-            }
-            else {
-              return create_scheme();
-            }
-          })
+          .then(fin_scheme)
           .catch((err) => {
             return create_scheme();
           });
@@ -147,6 +151,15 @@ export default function scheme_settings() {
 
       if(ref) {
         // получаем по гвиду
+        if(sync) {
+          const scheme = cat.scheme_settings.get(ref);
+          if(scheme && !scheme.is_new()) {
+            return scheme;
+          }
+          else {
+            return find_scheme();
+          }
+        }
         return cat.scheme_settings.get(ref, 'promise')
           .then((scheme) => {
             if(scheme && !scheme.is_new()) {

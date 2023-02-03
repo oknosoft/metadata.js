@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.31-beta.1, built:2023-01-06
+ metadata-abstract-ui v2.0.31-beta.1, built:2023-02-03
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -301,59 +301,62 @@ function scheme_settings() {
         fields.editor.choice_params = [choice];
       }
     }
-    find_schemas(class_name) {
-      return Promise.resolve(
-        this.find_rows({obj: class_name})
-          .sort((a, b) => {
-            if(a.user > b.user) {
-              return 1;
-            }
-            if (a.user < b.user) {
-              return -1;
-            }
-            if (a.name.endsWith('main') && !b.name.endsWith('main')) {
-              return -1;
-            }
-            if (b.name.endsWith('main') && !a.name.endsWith('main')) {
-              return 1;
-            }
-            if(a.name > b.name) {
-              return 1;
-            }
-            if (a.name < b.name) {
-              return -1;
-            }
-            return 0;
-          })
-      );
+    find_schemas(class_name, sync) {
+      const res = this.find_rows({obj: class_name})
+        .sort((a, b) => {
+          if(a.user > b.user) {
+            return 1;
+          }
+          if (a.user < b.user) {
+            return -1;
+          }
+          if (a.name.endsWith('main') && !b.name.endsWith('main')) {
+            return -1;
+          }
+          if (b.name.endsWith('main') && !a.name.endsWith('main')) {
+            return 1;
+          }
+          if(a.name > b.name) {
+            return 1;
+          }
+          if (a.name < b.name) {
+            return -1;
+          }
+          return 0;
+        });
+      return sync ? res : Promise.resolve(res);
     }
-    get_scheme(class_name) {
+    get_scheme(class_name, sync) {
       const scheme_name = this.scheme_name(class_name);
+      const fin_scheme = (data) => {
+        if(data.length == 1) {
+          return data[0].set_default();
+        }
+        else if(data.length) {
+          const {current_user} = $p;
+          if(!current_user || !current_user.name) {
+            return data[0].set_default();
+          }
+          else {
+            const {name} = current_user;
+            for(const scheme of data) {
+              if(scheme.user == name) {
+                return scheme.set_default();
+              }
+            }
+            return data[0].set_default();
+          }
+        }
+        else {
+          return create_scheme();
+        }
+      };
       const find_scheme = () => {
+        if(sync) {
+          return fin_scheme(this.find_schemas(class_name, sync));
+        }
         return this.find_schemas(class_name)
-          .then((data) => {
-            if(data.length == 1) {
-              return data[0].set_default();
-            }
-            else if(data.length) {
-              const {current_user} = $p;
-              if(!current_user || !current_user.name) {
-                return data[0].set_default();
-              }
-              else {
-                const {name} = current_user;
-                for(const scheme of data) {
-                  if(scheme.user == name) {
-                    return scheme.set_default();
-                  }
-                }
-                return data[0].set_default();
-              }
-            }
-            else {
-              return create_scheme();
-            }
-          })
+          .then(fin_scheme)
           .catch((err) => {
             return create_scheme();
           });
@@ -368,6 +371,15 @@ function scheme_settings() {
           .then((obj) => obj.set_default());
       }
       if(ref) {
+        if(sync) {
+          const scheme = cat.scheme_settings.get(ref);
+          if(scheme && !scheme.is_new()) {
+            return scheme;
+          }
+          else {
+            return find_scheme();
+          }
+        }
         return cat.scheme_settings.get(ref, 'promise')
           .then((scheme) => {
             if(scheme && !scheme.is_new()) {
