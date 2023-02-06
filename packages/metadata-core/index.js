@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.31-beta.1, built:2023-01-06
+ metadata-core v2.0.31-beta.1, built:2023-02-06
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1561,6 +1561,9 @@ class EnumObj extends DataObj {
   }
   empty() {
     return !this.ref || this.ref == '_';
+  }
+  toJSON() {
+    return this.empty() ? '' : this.ref;
   }
   is(name) {
     return this._manager[name] === this;

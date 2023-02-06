@@ -1564,6 +1564,10 @@ export class EnumObj extends DataObj {
   empty() {
     return !this.ref || this.ref == '_';
   }
+  
+  toJSON() {
+    return this.empty() ? '' : this.ref;
+  }
 
   /**
    * Проверяет на равенство по имени  
