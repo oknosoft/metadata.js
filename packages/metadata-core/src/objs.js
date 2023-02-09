@@ -328,7 +328,7 @@ export class BaseDataObj {
   toJSON() {
     const res = {};
     const {_obj, _manager} = this;
-    const {utils: {blank}, classes: {Meta}} = _manager._owner.$p;
+    const {utils, classes: {Meta}} = _manager._owner.$p;
 
     for(const fld in _obj) {
       const mfld = _manager.metadata(fld);
@@ -338,12 +338,26 @@ export class BaseDataObj {
         }
         else {
           if(!Meta._sys_fields.includes(fld) &&
-            (_obj[fld] === blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === 'string'))) {
+            (_obj[fld] === utils.blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === 'string'))) {
             continue;
           }
           res[fld] = _obj[fld];
           if(fld === 'type' && typeof res[fld] === 'object') {
             delete res[fld]._mgr;
+          }
+          else if(mfld.type?.types?.includes('json') && typeof res[fld] === 'object') {
+            for(const root in res[fld]) {
+              if(utils.is_data_obj(res[fld][root])) {
+                res[fld][root] = res[fld][root].valueOf();
+              }
+              else if (typeof res[fld][root] === 'object') {
+                for(const prop in res[fld][root]) {
+                  if(res[fld][root][prop].ref) {
+                    res[fld][root][prop] = res[fld][root][prop].ref;
+                  }
+                }
+              }
+            }
           }
         }
       }

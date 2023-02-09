@@ -497,11 +497,11 @@ const utils = {
 			return false;
 		}
     else if (v.length === 72) {
-      return rxref.test(v.substr(0, 36)) && rxref.test(v.substr(36));
+      return rxref.test(v.substring(0, 36)) && rxref.test(v.substring(36));
     }
 		else if (v.length > 36) {
 			const parts = v.split('|');
-			v = parts.length === 2 ? parts[1] : v.substr(0, 36);
+			v = parts.length === 2 ? parts[1] : v.substring(0, 36);
 		}
 		return rxref.test(v);
 	},

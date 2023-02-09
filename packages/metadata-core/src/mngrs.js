@@ -1471,9 +1471,11 @@ export class EnumManager extends RefDataManager{
 		if(ref instanceof EnumObj){
       return ref;
     }
-
 		else if(!ref || ref == utils.blank.guid){
       ref = "_";
+    }
+    else if(ref?.ref) {
+      ref = ref.ref;
     }
 
 		return this[ref] || new EnumObj({name: ref}, this);

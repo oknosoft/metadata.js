@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.31-beta.1, built:2023-02-06
+ metadata-core v2.0.31-beta.1, built:2023-02-09
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -840,7 +840,7 @@ class BaseDataObj {
   toJSON() {
     const res = {};
     const {_obj, _manager} = this;
-    const {utils: {blank}, classes: {Meta}} = _manager._owner.$p;
+    const {utils, classes: {Meta}} = _manager._owner.$p;
     for(const fld in _obj) {
       const mfld = _manager.metadata(fld);
       if(mfld || fld === '_attachments') {
@@ -849,12 +849,26 @@ class BaseDataObj {
         }
         else {
           if(!Meta._sys_fields.includes(fld) &&
-            (_obj[fld] === blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === 'string'))) {
+            (_obj[fld] === utils.blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === 'string'))) {
             continue;
           }
           res[fld] = _obj[fld];
           if(fld === 'type' && typeof res[fld] === 'object') {
             delete res[fld]._mgr;
+          }
+          else if(mfld.type?.types?.includes('json') && typeof res[fld] === 'object') {
+            for(const root in res[fld]) {
+              if(utils.is_data_obj(res[fld][root])) {
+                res[fld][root] = res[fld][root].valueOf();
+              }
+              else if (typeof res[fld][root] === 'object') {
+                for(const prop in res[fld][root]) {
+                  if(res[fld][root][prop].ref) {
+                    res[fld][root][prop] = res[fld][root][prop].ref;
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -2695,6 +2709,9 @@ class EnumManager extends RefDataManager{
 		else if(!ref || ref == utils$1.blank.guid){
       ref = "_";
     }
+    else if(ref?.ref) {
+      ref = ref.ref;
+    }
 		return this[ref] || new EnumObj({name: ref}, this);
 	}
 	push(value, new_ref){
@@ -3479,11 +3496,11 @@ const utils = {
 			return false;
 		}
     else if (v.length === 72) {
-      return rxref.test(v.substr(0, 36)) && rxref.test(v.substr(36));
+      return rxref.test(v.substring(0, 36)) && rxref.test(v.substring(36));
     }
 		else if (v.length > 36) {
 			const parts = v.split('|');
-			v = parts.length === 2 ? parts[1] : v.substr(0, 36);
+			v = parts.length === 2 ? parts[1] : v.substring(0, 36);
 		}
 		return rxref.test(v);
 	},
