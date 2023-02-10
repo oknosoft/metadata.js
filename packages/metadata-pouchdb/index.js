@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.31-beta.1, built:2023-01-06
+ metadata-pouchdb v2.0.32-beta.1, built:2023-02-10
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1032,7 +1032,7 @@ function adapter({AbstracrAdapter}) {
     }
     rebuild_indexes(id, silent) {
       const {local, remote} = this;
-      const msg = {db: id, ok: true, docs_read: 0, pending: 0, start_time: new Date().toISOString()};
+      const msg = {db: id, ok: true, docs_read: 0, pending: 0, start_time: new Date().toJSON()};
       let promises = Promise.resolve();
       return local[id] === remote[id] ?
         Promise.resolve() :
@@ -1089,7 +1089,7 @@ function adapter({AbstracrAdapter}) {
             }
             return promises.then(() => {
               msg.index = '';
-              msg.end_time = new Date().toISOString();
+              msg.end_time = new Date().toJSON();
               this.emit('repl_state', msg);
               this.emit('rebuild_indexes', {id, start: false, finish: true});
             });

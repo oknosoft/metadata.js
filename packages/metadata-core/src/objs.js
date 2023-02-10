@@ -338,14 +338,14 @@ export class BaseDataObj {
         }
         else {
           if(!Meta._sys_fields.includes(fld) &&
-            (_obj[fld] === utils.blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === 'string'))) {
+            (_obj[fld] === utils.blank.guid || (_obj[fld] === '' && mfld?.type?.types?.length === 1 && mfld?.type?.types[0] === 'string'))) {
             continue;
           }
           res[fld] = _obj[fld];
           if(fld === 'type' && typeof res[fld] === 'object') {
             delete res[fld]._mgr;
           }
-          else if(mfld.type?.types?.includes('json') && typeof res[fld] === 'object') {
+          else if(mfld?.type?.types?.includes('json') && typeof res[fld] === 'object') {
             for(const root in res[fld]) {
               if(utils.is_data_obj(res[fld][root])) {
                 res[fld][root] = res[fld][root].valueOf();

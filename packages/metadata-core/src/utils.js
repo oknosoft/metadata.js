@@ -1,16 +1,12 @@
-/**
- * ### Moment для операций с интервалами и датами
- *
- * @property moment
- * @type Function
- * @final
- */
 
 import {DataManager, EnumManager} from './mngrs';
 import {DataObj, DocObj} from './objs';
 import {TabularSection, TabularSectionRow} from './tabulars';
 
+// UUID
 const {v1: uuidv1} = require('uuid');
+
+// Moment для операций с интервалами и датами
 const moment = require('moment');
 require('moment/locale/ru');
 moment.locale('ru');
@@ -31,10 +27,7 @@ const ctnames = '$eq,between,$between,$gte,gte,$gt,gt,$lte,lte,$lt,lt,ninh,inh,n
  * @method toJSON
  * @for Date
  */
-Date.prototype.toJSON = Date.prototype.toISOString = function () {
-	return moment(this).format(moment._masks.iso);
-};
-
+Date.prototype.toJSON = () => moment(this).format(moment._masks.iso);
 
 /**
  * Метод округления в прототип числа

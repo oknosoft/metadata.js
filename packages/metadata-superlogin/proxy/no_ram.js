@@ -82,7 +82,7 @@ function stream_load(md, pouch) {
         descr = await res.json();
       }
       catch (e) {}
-      throw new Error(`${status}: ${descr.message || statusText}`);
+      throw new Error(`${status}: ${descr?.message || statusText}`);
     }
 
     page.add(JSON.parse(headers.get('manifest')));

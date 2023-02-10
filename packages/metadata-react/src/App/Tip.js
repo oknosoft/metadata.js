@@ -8,7 +8,7 @@ const styles = ({typography}) => ({
     backgroundColor: '#f5f5f9',
     color: 'rgba(0, 0, 0, 0.87)',
     maxWidth: 220,
-    fontSize: typography.pxToRem(12),
+    fontSize: typography.pxToRem(14),
     fontWeight: 400,
     border: '1px solid #dadde9',
   },

@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.31-beta.1, built:2023-02-09
+ metadata-core v2.0.32-beta.1, built:2023-02-10
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -849,14 +849,14 @@ class BaseDataObj {
         }
         else {
           if(!Meta._sys_fields.includes(fld) &&
-            (_obj[fld] === utils.blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === 'string'))) {
+            (_obj[fld] === utils.blank.guid || (_obj[fld] === '' && mfld?.type?.types?.length === 1 && mfld?.type?.types[0] === 'string'))) {
             continue;
           }
           res[fld] = _obj[fld];
           if(fld === 'type' && typeof res[fld] === 'object') {
             delete res[fld]._mgr;
           }
-          else if(mfld.type?.types?.includes('json') && typeof res[fld] === 'object') {
+          else if(mfld?.type?.types?.includes('json') && typeof res[fld] === 'object') {
             for(const root in res[fld]) {
               if(utils.is_data_obj(res[fld][root])) {
                 res[fld][root] = res[fld][root].valueOf();
@@ -3216,9 +3216,7 @@ if(typeof global != 'undefined'){
   global.moment = moment$1;
 }
 const ctnames = '$eq,between,$between,$gte,gte,$gt,gt,$lte,lte,$lt,lt,ninh,inh,nin,$nin,in,$in,not,ne,$ne,nlk,lke,like,or,$or,$and'.split(',');
-Date.prototype.toJSON = Date.prototype.toISOString = function () {
-	return moment$1(this).format(moment$1._masks.iso);
-};
+Date.prototype.toJSON = () => moment$1(undefined).format(moment$1._masks.iso);
 if (!Number.prototype.round) {
 	Number.prototype.round = function (places) {
 		const multiplier = Math.pow(10, places || 0);
@@ -5097,7 +5095,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.31-beta.1";
+    return "2.0.32-beta.1";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

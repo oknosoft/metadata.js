@@ -129,7 +129,7 @@ class SimpleDialog extends React.Component {
   };
 
   render() {
-    const {open, fullScreen, top, disablePortal, disableFullScreen, noSpace, title, actions, toolbtns, children, classes, onClose, minheight, large} = this.props;
+    const {open, fullScreen, top, disablePortal, disableFullScreen, noSpace, title, actions, toolbtns, children, classes, onClose, minheight, large, TransitionComponent} = this.props;
     const stateFullScreen = fullScreen || this.state.fullScreen;
     return <Dialog
       disablePortal={disablePortal}
@@ -141,6 +141,7 @@ class SimpleDialog extends React.Component {
         scrollPaper: top ? classes.top : null,
       }}
       PaperComponent={this.PaperComponent}
+      TransitionComponent={TransitionComponent}
       aria-labelledby={this._id}
     >
       <Toolbar

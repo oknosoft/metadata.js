@@ -6,9 +6,15 @@ import Dialog from './Dialog';
 import MarkdownElement from '../Markdown/MarkdownElementLight';
 
 export default function Alert({text, title, html, markdown, Component, props, handleOk, open, initFullScreen, hide_btn, ...other}) {
-  if(typeof text === 'string' && text.includes('<') && text.includes('/>')) {
-    html = text;
-    text = '';
+  if(typeof text === 'string') {
+    if(text.includes('<') && text.includes('/>')) {
+      html = text;
+      text = '';
+    }
+    else if(text.includes('\n')) {
+      html = text.replace('\n', '<br/>');
+      text = '';
+    }
   }
   return <Dialog
     open={open}
