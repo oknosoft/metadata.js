@@ -27,7 +27,7 @@ const ctnames = '$eq,between,$between,$gte,gte,$gt,gt,$lte,lte,$lt,lt,ninh,inh,n
  * @method toJSON
  * @for Date
  */
-Date.prototype.toJSON = () => moment(this).format(moment._masks.iso);
+Date.prototype.toJSON = function () {return moment(this).format(moment._masks.iso)};
 
 /**
  * Метод округления в прототип числа
