@@ -56,8 +56,23 @@ class TabularSectionToolbar extends Component {
   render() {
 
     const {props, state} = this;
-    const {handleUp, handleDown, denyAddDel, denyReorder, classes, width, settings_open, btns, end_btns, menu_items, scheme} = props;
+    const {handleUp, handleDown, denyAddDel, denyReorder, classes, width, settings_open, scheme,
+      _obj, _tabular, _columns, btns, end_btns, menu_items, owner} = props;
     const widthUpSm = width > 600;
+    
+    const ext = {btns, end_btns, menu_items};
+    for(const elm in ext) {
+      if(typeof ext[elm] === "function") {
+        const Ext = ext[elm]; 
+        ext[elm] = <Ext
+          _obj={_obj}
+          _tabular={_tabular}
+          _columns={_columns}
+          scheme={scheme}
+          owner={owner}
+        />;
+      }
+    }
 
     return (
       <Toolbar disableGutters className={classes.toolbar} style={{width: width || '100%'}}>
@@ -70,12 +85,12 @@ class TabularSectionToolbar extends Component {
           !denyReorder && <IconButton key="btn_down"  title="Переместить вниз" onClick={handleDown}><ArrowDownIcon/></IconButton>,
 
           // дополнительные кнопки
-          btns,
+          ext.btns,
 
           <Typography key="space" variant="h6" color="inherit" className={classes.flex}> </Typography>,
 
           // дополнительные кнопки
-          end_btns,
+          ext.end_btns,
 
           !settings_open && <SearchBox
             key="search"
@@ -94,7 +109,7 @@ class TabularSectionToolbar extends Component {
             <MenuItem onClick={this.handleExportXLS}><FileDownloadIcon/> &nbsp;Экспорт в XLS</MenuItem>
             {
               // дополнительные пункты меню
-              menu_items
+              ext.menu_items
             }
             <MenuItem onClick={() => {
               this.handleMenuClose();

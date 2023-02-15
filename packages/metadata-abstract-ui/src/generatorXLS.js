@@ -1,7 +1,8 @@
 
 
 export default class GeneratorXLS {
-  constructor(data, columns) {
+  constructor(data, columns, utils) {
+    this.utils = utils;
     this.data = data;
     this.columns = columns.filter(el => el.width !== -1);
   }
@@ -24,7 +25,17 @@ export default class GeneratorXLS {
   }
 
   getRowData(row) {
-    return this.columns.map(({key, formatter}) => (formatter ? formatter({value: row[key], row, raw: true}) : row[key]));
+    const {columns, utils} = this;
+    return columns.map(({key, formatter}) => {
+      const value = row[key];
+      if(formatter) {
+        return formatter({value, row, raw: true});
+      }
+      else if(utils.is_data_obj(value)) {
+        return value.toString();
+      }
+      return value;
+    });
   }
 
   fillSheet(arr, ws, level = 0) {

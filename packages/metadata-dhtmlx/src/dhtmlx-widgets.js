@@ -2494,9 +2494,9 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
 	    return true;
     }
 
-    var res;
+    let res;
     _source.fields.some(function (fld) {
-      var v = row._row[fld];
+      let v = row._row[fld];
       if($p.utils.is_data_obj(v)){
         if(!v.is_new() && v.presentation.match(_input_filter)){
           return res = true;
@@ -2506,12 +2506,12 @@ dhtmlXCellObject.prototype.attachTabular = function(attr) {
         return res = v.toLocaleString().match(_input_filter);
       }
       else if(v instanceof Date){
-        return res = $p.moment(v).format($p.moment._masks.date_time).match(_input_filter);
+        return res = v.toJSON().match(_input_filter);
       }
-      else if(v.match){
+      else if(v?.match){
         return res = v.match(_input_filter);
       }
-    })
+    });
     return res;
   }
 

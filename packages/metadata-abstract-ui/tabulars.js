@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.33-beta.1, built:2023-02-11
+ metadata-abstract-ui v2.0.33-beta.1, built:2023-02-15
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -57,7 +57,8 @@ function docxtemplater ({wsql, utils}) {
 }
 
 class GeneratorXLS {
-  constructor(data, columns) {
+  constructor(data, columns, utils) {
+    this.utils = utils;
     this.data = data;
     this.columns = columns.filter(el => el.width !== -1);
   }
@@ -78,7 +79,17 @@ class GeneratorXLS {
       });
   }
   getRowData(row) {
-    return this.columns.map(({key, formatter}) => (formatter ? formatter({value: row[key], row, raw: true}) : row[key]));
+    const {columns, utils} = this;
+    return columns.map(({key, formatter}) => {
+      const value = row[key];
+      if(formatter) {
+        return formatter({value, row, raw: true});
+      }
+      else if(utils.is_data_obj(value)) {
+        return value.toString();
+      }
+      return value;
+    });
   }
   fillSheet(arr, ws, level = 0) {
     if (!arr.length) {
@@ -100,8 +111,8 @@ class GeneratorXLS {
 }
 
 const Clipboard = require('clipboard/lib/clipboard-action');
-function tabulars(constructor) {
-  const {TabularSection} = constructor.classes;
+function tabulars($p) {
+  const {classes: {TabularSection}, utils, wsql} = $p;
   Object.defineProperty(TabularSection.prototype, 'export', {
     configurable: true,
     value: function (format = 'csv', columns = [], container, attr = {}) {
@@ -110,10 +121,9 @@ function tabulars(constructor) {
       }
       columns = columns.map(col => col.key ? col : {key: col, name: col});
       const data = [];
-      const {utils, wsql} = this._owner._manager._owner.$p;
       const len = columns.length - 1;
       if(format == 'xls') {
-        const xls = new GeneratorXLS(this._rows || this._obj.map(r => r._row), columns);
+        const xls = new GeneratorXLS(this._rows || this._obj.map(r => r._row), columns, utils);
         return xls.generate(attr);
       }
       else {
@@ -181,10 +191,10 @@ function tabulars(constructor) {
 }
 var tabulars$1 = {
   proto(constructor) {
-    tabulars(constructor);
   },
   constructor() {
     docxtemplater(this);
+    tabulars(this);
   }
 };
 

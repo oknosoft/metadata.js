@@ -10,9 +10,9 @@ import GeneratorXLS from './generatorXLS';
 const Clipboard = require('clipboard/lib/clipboard-action');
 
 
-function tabulars(constructor) {
+function tabulars($p) {
 
-  const {TabularSection} = constructor.classes;
+  const {classes: {TabularSection}, utils, wsql} = $p;
 
   Object.defineProperty(TabularSection.prototype, 'export', {
     configurable: true,
@@ -24,13 +24,12 @@ function tabulars(constructor) {
       columns = columns.map(col => col.key ? col : {key: col, name: col});
 
       const data = [];
-      const {utils, wsql} = this._owner._manager._owner.$p;
       const len = columns.length - 1;
 
       if(format == 'xls') {
 
         // const fileName = `${this._owner.calc_order.number_doc}__${this._owner.scheme.name}`;
-        const xls = new GeneratorXLS(this._rows || this._obj.map(r => r._row), columns);
+        const xls = new GeneratorXLS(this._rows || this._obj.map(r => r._row), columns, utils);
         return xls.generate(attr);
         
         // return utils.xlsx().then(() =>
@@ -114,7 +113,7 @@ export default {
    * @param classes {Object}
    */
   proto(constructor) {
-    tabulars(constructor);
+    
   },
 
   /**
@@ -123,5 +122,6 @@ export default {
    */
   constructor() {
     docxtemplater(this);
+    tabulars(this);
   }
 };
