@@ -21,6 +21,8 @@ export default function InputEditable({iprops, ...props}) {
     other.error = true;
   }
 
+  inputProps.title = value?.toString();
+
   if(isTabular) {
     return <InputBase
       placeholder="Введите текст для поиска"

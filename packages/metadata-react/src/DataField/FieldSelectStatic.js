@@ -45,6 +45,7 @@ class FieldSelectStatic extends AbstractField {
               input: cn(classes.input, attr.required && !value && classes.required)
             }, extClasses && extClasses.input)
           }/>}
+          inputProps={{title: value?.toString()}}
         >
           {options.map((v, key) => <option key={key} value={v.valueOf()}>{v.toString()}</option>)}
         </Select>

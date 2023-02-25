@@ -142,6 +142,7 @@ class FieldSelect extends AbstractField {
           onChange={onChange}
           input={<Input classes={Object.assign({input: classes.input}, extClasses && extClasses.input)}/>}
           {...other}
+          inputProps={{title: value?.toString()}}
         >
           {this.renderOptions()}
         </Select>
