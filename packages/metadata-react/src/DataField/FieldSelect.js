@@ -54,10 +54,18 @@ class FieldSelect extends AbstractField {
   }
 
   setOptions(options, v) {
+    
+    const opts = Array.from(new Set(options.filter((v) => v)));
+    const {empty_text} = this.props;
+    
+    options = opts
+      .map((v) => ({v, text: empty_text && v?.empty?.() ? empty_text : suggestionText(v)}))
+      .sort($p.utils.sort('text'))
+      .map(({v}) => v);
     if(v && !options.includes(v)) {
       options.unshift(v);
     }
-    options = Array.from(new Set(options.filter((v) => v)));
+    
     if(this._mounted) {
       this.setState({options});
     }
