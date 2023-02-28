@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.33-beta.1, built:2023-02-15
+ metadata-pouchdb v2.0.33-beta.1, built:2023-02-28
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1169,8 +1169,8 @@ function adapter({AbstracrAdapter}) {
         });
       }
       _data._saving = 1;
-      const tmp = Object.assign({_id: `${class_name}|${ref}`, class_name}, _obj);
       const {utils, wsql} = this.$p;
+      const tmp = Object.assign({_id: `${class_name}|${ref}`, class_name}, utils._clone(_obj, true));
       if(utils.is_doc_obj(tObj) || _manager.build_search) {
         if(_manager.build_search) {
           _manager.build_search(tmp, tObj);

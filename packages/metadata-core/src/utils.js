@@ -780,21 +780,25 @@ const utils = {
 	 * ### Создаёт копию объекта и вложенных объектов
 	 * @method _clone
 	 * @for Object
-	 * @param obj {Object|Array} - исходный объект
+	 * @param {Object|Array} obj - исходный объект
+	 * @param {Boolean} [patch_date] - приводит даты к строкам
 	 * @returns {Object|Array} - копия объекта
 	 */
-	_clone(obj) {
+	_clone(obj, patch_date) {
 		if (!obj || 'object' !== typeof obj) return obj;
 		let p, v, c = 'function' === typeof obj.pop ? [] : {};
 		for (p in obj) {
 			if (obj.hasOwnProperty(p)) {
         v = obj[p];
         if(v) {
-          if('function' === typeof v || v instanceof DataObj || v instanceof DataManager || v instanceof Date) {
+          if(patch_date && v instanceof Date) {
+            c[p] = v.toJSON();
+          }
+          else if('function' === typeof v || v instanceof DataObj || v instanceof DataManager || v instanceof Date) {
             c[p] = v;
           }
           else if('object' === typeof v) {
-            c[p] = utils._clone(v);
+            c[p] = utils._clone(v, patch_date);
           }
           else {
             c[p] = v;

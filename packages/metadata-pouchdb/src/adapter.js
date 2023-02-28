@@ -1022,12 +1022,12 @@ function adapter({AbstracrAdapter}) {
       }
 
       _data._saving = 1;
-
+      
       // формируем _id и подмешиваем class_name
-      const tmp = Object.assign({_id: `${class_name}|${ref}`, class_name}, _obj);
+      const {utils, wsql} = this.$p;
+      const tmp = Object.assign({_id: `${class_name}|${ref}`, class_name}, utils._clone(_obj, true));
 
       // формируем строку поиска
-      const {utils, wsql} = this.$p;
       if(utils.is_doc_obj(tObj) || _manager.build_search) {
         if(_manager.build_search) {
           _manager.build_search(tmp, tObj);

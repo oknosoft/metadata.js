@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.33-beta.1, built:2023-02-15
+ metadata-core v2.0.33-beta.1, built:2023-02-28
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3643,18 +3643,21 @@ const utils = {
 		}
 		return obj;
 	},
-	_clone(obj) {
+	_clone(obj, patch_date) {
 		if (!obj || 'object' !== typeof obj) return obj;
 		let p, v, c = 'function' === typeof obj.pop ? [] : {};
 		for (p in obj) {
 			if (obj.hasOwnProperty(p)) {
         v = obj[p];
         if(v) {
-          if('function' === typeof v || v instanceof DataObj || v instanceof DataManager || v instanceof Date) {
+          if(patch_date && v instanceof Date) {
+            c[p] = v.toJSON();
+          }
+          else if('function' === typeof v || v instanceof DataObj || v instanceof DataManager || v instanceof Date) {
             c[p] = v;
           }
           else if('object' === typeof v) {
-            c[p] = utils._clone(v);
+            c[p] = utils._clone(v, patch_date);
           }
           else {
             c[p] = v;
