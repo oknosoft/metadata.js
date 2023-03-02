@@ -27,6 +27,7 @@ function NumberFormatCustom(props) {
         });
       }}
       decimalSeparator=","
+      thousandSeparator={'\u00A0'}
       valueIsNumericString
     />
   );

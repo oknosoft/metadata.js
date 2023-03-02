@@ -65,6 +65,7 @@ class TabularSectionToolbar extends Component {
       if(typeof ext[elm] === "function") {
         const Ext = ext[elm]; 
         ext[elm] = <Ext
+          key={`ebtn-${elm}`}
           _obj={_obj}
           _tabular={_tabular}
           _columns={_columns}

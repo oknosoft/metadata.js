@@ -5,6 +5,16 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Dialog from './Dialog';
 
 export default function Confirm({text, html, title, children, handleOk, handleCancel, open, initFullScreen, hide_actions, ...others}) {
+  if(typeof text === 'string') {
+    if(text.includes('<') && text.includes('/>')) {
+      html = text;
+      text = '';
+    }
+    else if(text.includes('\n')) {
+      html = text.replace('\n', '<br/>');
+      text = '';
+    }
+  }
   return <Dialog
     open={open}
     initFullScreen={initFullScreen}

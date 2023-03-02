@@ -375,7 +375,7 @@ TabularSection.propTypes = {
   denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
   denyReorder: PropTypes.bool,          // Запрет изменения порядка строк
   minHeight: PropTypes.number,
-  btns: PropTypes.node,                 // дополнительные кнопки
+  btns: PropTypes.oneOfType([PropTypes.node, PropTypes.elementType]), // дополнительные кнопки
   menu_items: PropTypes.node,           // дополнительные пункты меню
 
   handleValueChange: PropTypes.func,    // Обработчик изменения значения в ячейке

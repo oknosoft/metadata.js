@@ -18,7 +18,7 @@ class FieldText extends AbstractField {
   render() {
     const {props, _meta, onChange, read_only} = this;
     const {_obj, _fld, classes, extClasses, className, fullWidth, InputProps, label_position, bar, isTabular,
-      dyn_meta, handleValueChange, ...other} = props;
+      dyn_meta, handleValueChange, read_only: stub, ...other} = props;
     const attr = {
       title: _meta.tooltip || _meta.synonym,
     }
