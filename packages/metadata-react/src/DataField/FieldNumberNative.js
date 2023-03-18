@@ -34,8 +34,11 @@ function NumberFormatCustom(props) {
 }
 
 function FieldNumberNative(props) {
-  const {_obj, _fld, _meta, read_only, classes, extClasses, className, fullWidth, InputProps, label_position, bar, isTabular,
+  let {_obj, _fld, _meta, read_only, classes, extClasses, className, fullWidth, InputProps, label_position, bar, isTabular,
     dyn_meta, handleValueChange, debounce, ...other} = props;
+  if(!_meta) {
+    _meta = _obj._metadata(_fld); 
+  }
   const attr = {
     title: _meta.tooltip || _meta.synonym,
   };
