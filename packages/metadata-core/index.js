@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.33-beta.2, built:2023-03-18
+ metadata-core v2.0.33-beta.2, built:2023-03-22
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -9,10 +9,6 @@
 'use strict';
 
 var EventEmitter = require('events');
-
-function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
-
-var EventEmitter__default = /*#__PURE__*/_interopDefaultLegacy(EventEmitter);
 
 class I18Handler {
 	get(target, name, receiver) {
@@ -241,7 +237,7 @@ const msg = new I18n({
 	},
 });
 
-class Iterator$1 {
+let Iterator$1 = class Iterator {
   constructor(_obj) {
     this._obj = _obj;
     this._idx = 0;
@@ -257,7 +253,7 @@ class Iterator$1 {
     }
     return this.next();
   }
-}
+};
 class TabularSection {
 	constructor(name, owner) {
 		if (!owner._obj[name]){
@@ -1625,20 +1621,20 @@ class RegisterRow extends DataObj {
 
 var data_objs = /*#__PURE__*/Object.freeze({
 	__proto__: null,
-	InnerData: InnerData,
 	BaseDataObj: BaseDataObj,
-	DataObj: DataObj,
-	CatObj: CatObj,
-	NumberDocAndDate: NumberDocAndDate,
-	DocObj: DocObj,
-	DataProcessorObj: DataProcessorObj,
-	TaskObj: TaskObj,
 	BusinessProcessObj: BusinessProcessObj,
+	CatObj: CatObj,
+	DataObj: DataObj,
+	DataProcessorObj: DataProcessorObj,
+	DocObj: DocObj,
 	EnumObj: EnumObj,
-	RegisterRow: RegisterRow
+	InnerData: InnerData,
+	NumberDocAndDate: NumberDocAndDate,
+	RegisterRow: RegisterRow,
+	TaskObj: TaskObj
 });
 
-class MetaEventEmitter extends EventEmitter__default["default"]{
+class MetaEventEmitter extends EventEmitter{
   constructor() {
     super();
     this.setMaxListeners(20);
@@ -3187,19 +3183,19 @@ class BusinessProcessManager extends CatManager{
 
 var data_managers = /*#__PURE__*/Object.freeze({
 	__proto__: null,
-	DataManager: DataManager,
-	RefDataManager: RefDataManager,
-	DataProcessorsManager: DataProcessorsManager,
-	EnumManager: EnumManager,
-	RegisterManager: RegisterManager,
-	InfoRegManager: InfoRegManager,
 	AccumRegManager: AccumRegManager,
+	BusinessProcessManager: BusinessProcessManager,
 	CatManager: CatManager,
-	ChartOfCharacteristicManager: ChartOfCharacteristicManager,
 	ChartOfAccountManager: ChartOfAccountManager,
+	ChartOfCharacteristicManager: ChartOfCharacteristicManager,
+	DataManager: DataManager,
+	DataProcessorsManager: DataProcessorsManager,
 	DocManager: DocManager,
-	TaskManager: TaskManager,
-	BusinessProcessManager: BusinessProcessManager
+	EnumManager: EnumManager,
+	InfoRegManager: InfoRegManager,
+	RefDataManager: RefDataManager,
+	RegisterManager: RegisterManager,
+	TaskManager: TaskManager
 });
 
 const {v1: uuidv1} = require('uuid');

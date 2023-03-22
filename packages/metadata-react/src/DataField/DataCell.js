@@ -32,16 +32,18 @@ class DataCell extends Editors.SimpleTextEditor {
 
   render() {
 
-    const _obj = this.proxyData || this.props.rowData;
+    const {props, state: {_meta}} = this;
+    const _obj = this.proxyData || props.rowData;
     if(!_obj) {
       return <input ref={this.nodeRef} />;
     }
 
-    const _fld = this.props.column.key;
+    const _fld = props.column.key;
     const subProps = {
       _obj,
       _fld,
-      _meta: this.state._meta,
+      _meta,
+      read_only: props.read_only || _meta.read_only,
       cell: this,
       ref: this.nodeRef,
       label_position: $p.enm.label_positions.hide,
