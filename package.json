@@ -63,7 +63,6 @@
     "build:adapter-pouchdb": "node ./packages/metadata-pouchdb/build.js",
     "build:adapter-postgres": "node ./packages/metadata-postgres/build.js",
     "build:redux": "node ./packages/metadata-redux/build.js",
-    "build:superlogin": "node ./packages/metadata-superlogin/build.js",
     "build:docs": "yuidoc -c doc/yuidoc.json src"
   },
   "bin": {

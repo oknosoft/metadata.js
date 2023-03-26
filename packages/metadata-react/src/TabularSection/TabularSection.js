@@ -192,9 +192,9 @@ class TabularSection extends MComponent {
   // обработчик при изменении настроек компоновки
   handleSchemeChange = (scheme) => {
 
-    const {props: {_obj, read_only, columnsChange, denyReorder}, state} = this;
+    const {props: {_obj, read_only, columnsChange, denyReorder, denySort}, state} = this;
     const _columns = scheme.rx_columns({mode: 'tabular', fields: state._meta.fields, _obj, read_only});
-    if(denyReorder) {
+    if(denyReorder || denySort) {
       for(const column of _columns) {
         column.sortable = false;
       }
@@ -374,6 +374,7 @@ TabularSection.propTypes = {
   hideToolbar: PropTypes.bool,          // Указывает не выводить toolbar
   denyAddDel: PropTypes.bool,           // Запрет добавления и удаления строк (скрывает кнопки в панели, отключает обработчики)
   denyReorder: PropTypes.bool,          // Запрет изменения порядка строк
+  denySort: PropTypes.bool,             // Запрет сортировки в заголовках колонок
   minHeight: PropTypes.number,
   btns: PropTypes.oneOfType([PropTypes.node, PropTypes.elementType]), // дополнительные кнопки
   menu_items: PropTypes.node,           // дополнительные пункты меню
