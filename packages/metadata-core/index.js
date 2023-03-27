@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.33-beta.2, built:2023-03-26
+ metadata-core v2.0.33-beta.2, built:2023-03-27
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1082,6 +1082,13 @@ class DataObj extends BaseDataObj {
   }
   unload() {
     const {_obj, ref, _data, _manager} = this;
+    if(this.empty()) {
+      const {job_prm} = _manager._owner.$p;
+      if(job_prm.debug) {
+        throw new Error('Попытка выгрузить пустой объект данных');
+      }
+      return;
+    }
     _manager.unload_obj(ref);
     _data._loading = true;
     for (const ts in this._metadata().tabular_sections) {
