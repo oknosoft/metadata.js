@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.33-beta.2, built:2023-03-26
+ metadata-abstract-ui v2.0.33-beta.2, built:2023-03-31
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -7,6 +7,24 @@
 
 
 'use strict';
+
+function _interopNamespace(e) {
+  if (e && e.__esModule) return e;
+  var n = Object.create(null);
+  if (e) {
+    Object.keys(e).forEach(function (k) {
+      if (k !== 'default') {
+        var d = Object.getOwnPropertyDescriptor(e, k);
+        Object.defineProperty(n, k, d.get ? d : {
+          enumerable: true,
+          get: function () { return e[k]; }
+        });
+      }
+    });
+  }
+  n["default"] = e;
+  return Object.freeze(n);
+}
 
 function docxtemplater ({wsql, utils}) {
   utils.docxtemplater = function (blob) {
@@ -45,7 +63,7 @@ class GeneratorXLS {
     this.columns = columns.filter(el => el.width !== -1);
   }
   generate({name = 'Спецификация', fileName = `specification`}) {
-    return import('xlsx')
+    return Promise.resolve().then(function () { return /*#__PURE__*/_interopNamespace(require('xlsx')); })
       .then((module) => {
         const XLSX = this.XLSX = (module.default || module);
         const workbook = XLSX.utils.book_new();

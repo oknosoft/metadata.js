@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.33-beta.2, built:2023-03-27
+ metadata-core v2.0.33-beta.2, built:2023-03-31
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -9,6 +9,10 @@
 'use strict';
 
 var EventEmitter = require('events');
+
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+var EventEmitter__default = /*#__PURE__*/_interopDefaultLegacy(EventEmitter);
 
 class I18Handler {
 	get(target, name, receiver) {
@@ -237,7 +241,7 @@ const msg = new I18n({
 	},
 });
 
-let Iterator$1 = class Iterator {
+class Iterator$1 {
   constructor(_obj) {
     this._obj = _obj;
     this._idx = 0;
@@ -253,7 +257,7 @@ let Iterator$1 = class Iterator {
     }
     return this.next();
   }
-};
+}
 class TabularSection {
 	constructor(name, owner) {
 		if (!owner._obj[name]){
@@ -1628,20 +1632,20 @@ class RegisterRow extends DataObj {
 
 var data_objs = /*#__PURE__*/Object.freeze({
 	__proto__: null,
-	BaseDataObj: BaseDataObj,
-	BusinessProcessObj: BusinessProcessObj,
-	CatObj: CatObj,
-	DataObj: DataObj,
-	DataProcessorObj: DataProcessorObj,
-	DocObj: DocObj,
-	EnumObj: EnumObj,
 	InnerData: InnerData,
+	BaseDataObj: BaseDataObj,
+	DataObj: DataObj,
+	CatObj: CatObj,
 	NumberDocAndDate: NumberDocAndDate,
-	RegisterRow: RegisterRow,
-	TaskObj: TaskObj
+	DocObj: DocObj,
+	DataProcessorObj: DataProcessorObj,
+	TaskObj: TaskObj,
+	BusinessProcessObj: BusinessProcessObj,
+	EnumObj: EnumObj,
+	RegisterRow: RegisterRow
 });
 
-class MetaEventEmitter extends EventEmitter{
+class MetaEventEmitter extends EventEmitter__default["default"]{
   constructor() {
     super();
     this.setMaxListeners(20);
@@ -3190,19 +3194,19 @@ class BusinessProcessManager extends CatManager{
 
 var data_managers = /*#__PURE__*/Object.freeze({
 	__proto__: null,
-	AccumRegManager: AccumRegManager,
-	BusinessProcessManager: BusinessProcessManager,
-	CatManager: CatManager,
-	ChartOfAccountManager: ChartOfAccountManager,
-	ChartOfCharacteristicManager: ChartOfCharacteristicManager,
 	DataManager: DataManager,
-	DataProcessorsManager: DataProcessorsManager,
-	DocManager: DocManager,
-	EnumManager: EnumManager,
-	InfoRegManager: InfoRegManager,
 	RefDataManager: RefDataManager,
+	DataProcessorsManager: DataProcessorsManager,
+	EnumManager: EnumManager,
 	RegisterManager: RegisterManager,
-	TaskManager: TaskManager
+	InfoRegManager: InfoRegManager,
+	AccumRegManager: AccumRegManager,
+	CatManager: CatManager,
+	ChartOfCharacteristicManager: ChartOfCharacteristicManager,
+	ChartOfAccountManager: ChartOfAccountManager,
+	DocManager: DocManager,
+	TaskManager: TaskManager,
+	BusinessProcessManager: BusinessProcessManager
 });
 
 const {v1: uuidv1} = require('uuid');
