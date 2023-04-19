@@ -12,7 +12,7 @@ import { NumericFormat  } from 'react-number-format';
 import withStyles from './styles';
 
 function NumberFormatCustom(props) {
-  const { inputRef, onChange, ...other } = props;
+  const { inputRef, onChange, min, max, ...other } = props;
 
   return (
     <NumericFormat
@@ -26,6 +26,9 @@ function NumberFormatCustom(props) {
           },
         });
       }}
+      isAllowed={({ floatValue }) => {
+        return (min === undefined || floatValue >= min) && (max === undefined || floatValue <= max);
+      }}
       decimalSeparator=","
       thousandSeparator={'\u00A0'}
       valueIsNumericString
@@ -38,6 +41,12 @@ function FieldNumberNative(props) {
     dyn_meta, handleValueChange, debounce, ...other} = props;
   if(!_meta) {
     _meta = _obj._metadata(_fld); 
+  }
+  if('min' in _meta) {
+    other.min = _meta.min;
+  }
+  if('max' in _meta) {
+    other.max = _meta.max;
   }
   const attr = {
     title: _meta.tooltip || _meta.synonym,
@@ -58,6 +67,7 @@ function FieldNumberNative(props) {
       const v = parseFloat(value || 0);
       if(!isNaN(v) && _obj[_fld] != v) {
         _obj[_fld] = v;
+        handleValueChange?.(_obj[_fld]);
       }
       setValue(_obj[_fld]);
     }
