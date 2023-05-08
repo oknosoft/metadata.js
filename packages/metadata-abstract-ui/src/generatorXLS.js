@@ -29,7 +29,40 @@ export default class GeneratorXLS {
     return columns.map(({key, formatter}) => {
       const value = row[key];
       if(formatter) {
-        return formatter({value, row, raw: true});
+        let v = formatter({value, row, raw: true});
+        if(!v && value && typeof value === 'string') {
+          v = value;
+        }
+        let {fraction, appearance} = formatter;
+        if(Array.isArray(appearance)) {
+          for(const crow of appearance) {
+            if(crow.check(row)) {
+              try {
+                const {withRaw, text, fraction: cf, ...css} = JSON.parse(crow.css);
+                let value;
+                if(typeof text === 'string') {
+                  return text;
+                }
+                else if(typeof cf === 'number') {
+                  fraction = cf;
+                  break;
+                }
+              }
+              catch (e) {}
+            }
+          }
+        }
+        if(typeof fraction === 'number' && typeof v === 'number') {
+          let z = '#\u00A0##0';
+          if(fraction) {
+            z += '.';
+            for(let i = 0; i < fraction; i++) {
+              z += '0';
+            }
+          }
+          return {v, t: 'n', z};
+        }
+        return v;
       }
       else if(utils.is_data_obj(value)) {
         return value.toString();

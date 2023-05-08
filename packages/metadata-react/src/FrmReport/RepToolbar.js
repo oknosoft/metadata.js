@@ -86,7 +86,7 @@ class RepToolbar extends Component {
           settings_open={settings_open}
           classes={classes}
           scheme={scheme}
-          show_variants={true}
+          show_variants
         />
 
         <IconButton onClick={this.handleMenuOpen} title="Дополнительно">

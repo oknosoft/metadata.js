@@ -36,6 +36,9 @@ input.editor-main:focus, select.editor-main:focus {
 .rdg-editor-container, .react-grid-Container *, input {
   box-sizing: border-box;
 }
+.rdg-cell-expand {
+  padding-left: 8px;
+}
 
 
 /**

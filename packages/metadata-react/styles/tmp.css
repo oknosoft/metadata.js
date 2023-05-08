@@ -497,6 +497,10 @@
 	display: none
 }
 
+.rdg-cell-expand {
+  padding-left: 8px;
+}
+
 .rdg-row-index {
 	display: block;
 	text-align: center
