@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.33-beta.2, built:2023-03-31
+ metadata-abstract-ui v2.0.33-beta.2, built:2023-05-09
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -7,24 +7,6 @@
 
 
 'use strict';
-
-function _interopNamespace(e) {
-  if (e && e.__esModule) return e;
-  var n = Object.create(null);
-  if (e) {
-    Object.keys(e).forEach(function (k) {
-      if (k !== 'default') {
-        var d = Object.getOwnPropertyDescriptor(e, k);
-        Object.defineProperty(n, k, d.get ? d : {
-          enumerable: true,
-          get: function () { return e[k]; }
-        });
-      }
-    });
-  }
-  n["default"] = e;
-  return Object.freeze(n);
-}
 
 function docxtemplater ({wsql, utils}) {
   utils.docxtemplater = function (blob) {
@@ -63,7 +45,7 @@ class GeneratorXLS {
     this.columns = columns.filter(el => el.width !== -1);
   }
   generate({name = 'Спецификация', fileName = `specification`}) {
-    return Promise.resolve().then(function () { return /*#__PURE__*/_interopNamespace(require('xlsx')); })
+    return import('xlsx')
       .then((module) => {
         const XLSX = this.XLSX = (module.default || module);
         const workbook = XLSX.utils.book_new();
@@ -83,7 +65,40 @@ class GeneratorXLS {
     return columns.map(({key, formatter}) => {
       const value = row[key];
       if(formatter) {
-        return formatter({value, row, raw: true});
+        let v = formatter({value, row, raw: true});
+        if(!v && value && typeof value === 'string') {
+          v = value;
+        }
+        let {fraction, appearance} = formatter;
+        if(Array.isArray(appearance)) {
+          for(const crow of appearance) {
+            if(crow.check(row)) {
+              try {
+                const {withRaw, text, fraction: cf, ...css} = JSON.parse(crow.css);
+                let value;
+                if(typeof text === 'string') {
+                  return text;
+                }
+                else if(typeof cf === 'number') {
+                  fraction = cf;
+                  break;
+                }
+              }
+              catch (e) {}
+            }
+          }
+        }
+        if(typeof fraction === 'number' && typeof v === 'number') {
+          let z = '#\u00A0##0';
+          if(fraction) {
+            z += '.';
+            for(let i = 0; i < fraction; i++) {
+              z += '0';
+            }
+          }
+          return {v, t: 'n', z};
+        }
+        return v;
       }
       else if(utils.is_data_obj(value)) {
         return value.toString();
