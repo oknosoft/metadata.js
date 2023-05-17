@@ -156,11 +156,12 @@ export class TabularSection {
     }
 
 		// триггер
-    if(!_data._loading && _owner.del_row(_obj[index]._row) === false){
+    const row = _obj[index];
+    if(!_data._loading && _owner.del_row(row._row) === false){
       return;
     }
 
-		const drows = _obj.splice(index, 1);
+		const drows = _obj.splice(_obj.indexOf(row), 1);
 
 		_obj.forEach((row, index) => row.row = index + 1);
 
