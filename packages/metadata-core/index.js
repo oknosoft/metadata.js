@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.33-beta.3, built:2023-05-17
+ metadata-core v2.0.33-beta.3, built:2023-05-25
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -317,9 +317,12 @@ class TabularSection {
     if(!_data._loading && _owner.del_row(row._row) === false){
       return;
     }
-		const drows = _obj.splice(_obj.indexOf(row), 1);
+    index = _obj.indexOf(row);
+    if(index >= 0) {
+      _obj.splice(index, 1);
+    }
 		_obj.forEach((row, index) => row.row = index + 1);
-    !_data._loading && _owner.after_del_row(_name, drows);
+    !_data._loading && index >= 0 && _owner.after_del_row(_name, [row]);
     !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
 		_data._modified = true;
 	}

@@ -4,7 +4,7 @@
   "version": "0.12.232",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "engines": {
-    "node": "^16.13",
+    "node": ">=16.13",
     "yarn": "^1.22"
   },
   "directories": {
