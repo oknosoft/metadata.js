@@ -39,6 +39,6 @@ export default function ({wsql, utils}) {
     }
     // xlsx@0.18.5 - с другими версиями глючит
     return ('JSZip' in window ? Promise.resolve() : utils.load_script('https://cdn.jsdelivr.net/jszip/2/jszip.min.js', 'script'))
-      .then(() => utils.load_script('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.min.js', 'script'));
+      .then(() => utils.load_script('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', 'script'));
   };
 }
