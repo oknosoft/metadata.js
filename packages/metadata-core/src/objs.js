@@ -638,9 +638,13 @@ export class BaseDataObj {
     for (const fld in fields) {
       let {type, choice_type} = fields[fld];
       if(choice_type?.path) {
-        const prop = obj[choice_type.path[choice_type.path.length - 1]];
+        const tname = choice_type.path[choice_type.path.length - 1];
+        let prop = obj[tname];
         if(prop && prop.type) {
           type = prop.type;
+        }
+        else if(tname === 'ТипЗначения' && _obj?.type?.types) {
+          type = _obj?.type;
         }
       }
       if(_obj.hasOwnProperty(fld)) {

@@ -14,8 +14,8 @@ export default class GeneratorXLS {
         const workbook = XLSX.utils.book_new();
         const header = this.columns.map(el => el.name);
         let ws = XLSX.utils.aoa_to_sheet([header]);
-        ws[`!rows`] = [{hpx: 20}];
-        ws["!cols"] = header.map(el => ({wch: el.length}));
+        ws['!rows'] = [{hpx: 20}];
+        ws['!cols'] = header.map(el => ({wch: el.length}));
         if (this.data && this.data.length) {
           this.fillSheet([...this.data], ws);
         }
@@ -30,7 +30,7 @@ export default class GeneratorXLS {
       const value = row[key];
       if(formatter) {
         let v = formatter({value, row, raw: true});
-        if(!v && value && typeof value === 'string') {
+        if(!v && value && typeof value === 'string' && value !== '0') {
           v = value;
         }
         let {fraction, appearance} = formatter;
@@ -53,9 +53,9 @@ export default class GeneratorXLS {
           }
         }
         if(typeof fraction === 'number' && typeof v === 'number') {
-          let z = '#\u00A0##0';
+          let z = '0';
           if(fraction) {
-            z += '.';
+            z = '#\u00A0##0.';
             for(let i = 0; i < fraction; i++) {
               z += '0';
             }

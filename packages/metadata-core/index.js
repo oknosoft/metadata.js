@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.33-beta.3, built:2023-06-07
+ metadata-core v2.0.33-beta.4, built:2023-06-11
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1010,9 +1010,13 @@ class BaseDataObj {
     for (const fld in fields) {
       let {type, choice_type} = fields[fld];
       if(choice_type?.path) {
-        const prop = obj[choice_type.path[choice_type.path.length - 1]];
+        const tname = choice_type.path[choice_type.path.length - 1];
+        let prop = obj[tname];
         if(prop && prop.type) {
           type = prop.type;
+        }
+        else if(tname === 'ТипЗначения' && _obj?.type?.types) {
+          type = _obj?.type;
         }
       }
       if(_obj.hasOwnProperty(fld)) {
@@ -5105,7 +5109,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.33-beta.3";
+    return "2.0.33-beta.4";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
