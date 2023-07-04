@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.33-beta.4, built:2023-06-11
+ metadata-abstract-ui v2.0.33-beta.4, built:2023-07-04
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1302,7 +1302,7 @@ function scheme_settings() {
         const path = left_value.split('.');
         left_value = row[path[0]];
         for(let i = 1; i < path.length; i++){
-          left_value = left_value[path[i]];
+          left_value = left_value?.[path[i]];
         }
       }
       else if(left_value_type && left_value_type !== 'string'){
@@ -1313,7 +1313,7 @@ function scheme_settings() {
         const path = right_value.split('.');
         right_value = row[path[0]];
         for(let i = 1; i < path.length; i++){
-          right_value = right_value[path[i]];
+          right_value = right_value?.[path[i]];
         }
       }
       else if(right_value_type && right_value_type !== 'string'){

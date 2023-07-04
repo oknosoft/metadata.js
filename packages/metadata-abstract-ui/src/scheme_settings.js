@@ -1377,7 +1377,7 @@ export default function scheme_settings() {
         const path = left_value.split('.');
         left_value = row[path[0]];
         for(let i = 1; i < path.length; i++){
-          left_value = left_value[path[i]];
+          left_value = left_value?.[path[i]];
         }
       }
       else if(left_value_type && left_value_type !== 'string'){
@@ -1389,7 +1389,7 @@ export default function scheme_settings() {
         const path = right_value.split('.');
         right_value = row[path[0]];
         for(let i = 1; i < path.length; i++){
-          right_value = right_value[path[i]];
+          right_value = right_value?.[path[i]];
         }
       }
       else if(right_value_type && right_value_type !== 'string'){
