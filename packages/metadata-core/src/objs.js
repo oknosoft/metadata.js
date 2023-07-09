@@ -952,8 +952,8 @@ export class DataObj extends BaseDataObj {
           .then(() => _manager.adapter.save_obj(this, Object.assign({post, operational, attachments}, attr)))
           // и выполняем обработку после записи
           .then(() => this.after_save())
-          .then(() => _manager.emit_promise('after_save', this))
           .then(reset_modified)
+          .then(() => _manager.emit_promise('after_save', this))
           .catch((err) => {
             reset_modified();
             throw err;
