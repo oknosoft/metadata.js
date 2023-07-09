@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.33-beta.4, built:2023-07-04
+ metadata-abstract-ui v2.0.33-beta.4, built:2023-07-09
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1295,14 +1295,18 @@ function scheme_settings() {
     set right_value(v) {this._setter('right_value', v);}
     get right_value_type() {return this._getter('right_value_type');}
     set right_value_type(v) {this._setter('right_value_type', v);}
-    check(row) {
+    check(row, formatter, key) {
       const {comparison_types: ct} = enm;
       let {left_value, left_value_type, right_value, right_value_type, comparison_type} = this;
       if(left_value_type === 'path'){
+        const format = formatter && left_value === key;
         const path = left_value.split('.');
         left_value = row[path[0]];
         for(let i = 1; i < path.length; i++){
           left_value = left_value?.[path[i]];
+        }
+        if(format) {
+          left_value = formatter({value: left_value, row, raw: true});
         }
       }
       else if(left_value_type && left_value_type !== 'string'){

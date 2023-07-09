@@ -14,6 +14,7 @@ import withStyles from './styles';
 function NumberFormatCustom(props) {
   const { inputRef, onChange, min, max, ...other } = props;
 
+  
   return (
     <NumericFormat
       {...other}
@@ -47,6 +48,9 @@ function FieldNumberNative(props) {
   }
   if('max' in _meta) {
     other.max = _meta.max;
+  }
+  if('fraction' in _meta?.type) {
+    other.decimalScale = _meta.type.fraction;
   }
   const attr = {
     title: _meta.tooltip || _meta.synonym,

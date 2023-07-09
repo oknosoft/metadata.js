@@ -143,13 +143,15 @@ function rx_columns({utils: {moment}, enm, md}) {
     }
   }
 
-  const number_formatter = (fraction = 0) => {
-    return ({value, raw}) => {
-      if(!value && value !== 0) value = 0;
+  const number_formatter = (fraction = 0, composite = false) => {
+    const NumberFormatter = ({value, raw}) => {
+      if(!value && !composite && value !== 0) value = 0;
       const tmp = typeof value === 'number' ? value : parseFloat(value);
-      const text = isNaN(tmp) ? value.toString() : tmp.toFixed(fraction);
-      return raw ? (tmp || 0) : <div title={text} style={{textAlign: 'right'}}>{text}</div>;
+      const text = isNaN(tmp) ? (value?.toString() || '') : tmp.toFixed(fraction);
+      return raw ? (tmp || (composite ? '' : 0)) : <div title={text} style={{textAlign: 'right'}}>{text}</div>;
     };
+    NumberFormatter.fraction = fraction;
+    return NumberFormatter;
   };
 
   const bool_formatter = ({value, raw}) => {
@@ -161,11 +163,11 @@ function rx_columns({utils: {moment}, enm, md}) {
     return raw ? value.presentation : <div title={value.toString()}>{value.presentation}</div>;
   };
 
-  const appearance_formatter = (appearance, formatter) => {
-    return (props) => {
+  const appearance_formatter = (appearance, formatter, key) => {
+    const AppearanceFormatter = function (props){
       //const {row, raw, value, isScrolling, dependentValues} = props;
       for(const crow of appearance) {
-        if(crow.check(props.row)) {
+        if(crow.check(props.row, formatter, key)) {
           try {
             const {withRaw, text, fraction, ...css} = JSON.parse(crow.css);
             let value;
@@ -189,6 +191,9 @@ function rx_columns({utils: {moment}, enm, md}) {
       }
       return formatter(props);
     }
+    AppearanceFormatter.fraction = formatter.fraction;
+    AppearanceFormatter.appearance = appearance;
+    return AppearanceFormatter;
   };
 
   return function columns({mode, fields, _obj, _mgr, read_only}) {
@@ -236,8 +241,8 @@ function rx_columns({utils: {moment}, enm, md}) {
           else if(_fld.type.date_part) {
             column.formatter = date_formatter(_fld.type.date_part, !index && !editable, is_doc);
           }
-          else if(_fld.type.digits && _fld.type.types.length === 1){
-            column.formatter = number_formatter(_fld.type.fraction);
+          else if(_fld.type.digits && !_fld.type.types.includes('boolean')){
+            column.formatter = number_formatter(_fld.type.fraction, _fld.type.types.length > 1);
           }
           else if(_fld.type.types.includes('boolean')) {
             column.formatter = bool_formatter;
@@ -313,7 +318,7 @@ function rx_columns({utils: {moment}, enm, md}) {
         }
 
         if(appearance[column.key] && column.formatter) {
-          column.formatter = appearance_formatter(appearance[column.key], column.formatter);
+          column.formatter = appearance_formatter(appearance[column.key], column.formatter, column.key);
         }
 
       });
