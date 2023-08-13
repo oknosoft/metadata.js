@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.33-beta.4, built:2023-07-09
+ metadata-core v2.0.33-beta.4, built:2023-08-13
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1428,7 +1428,7 @@ class CatObj extends DataObj {
     }
   }
   get presentation() {
-    return this.name || this.id || this._presentation || '';
+    return this.empty() ? '<Пусто>' : (this.name || this.id || this._presentation || '');
   }
   set presentation(v) {
     if(v) {
@@ -1509,6 +1509,9 @@ class DocObj extends NumberDocAndDate(DataObj) {
     }
   }
   get presentation() {
+    if(this.empty()) {
+      return '<Пусто>';
+    }
     const meta = this._metadata();
     const {number_doc, date, posted, _modified} = this;
     return number_doc ?

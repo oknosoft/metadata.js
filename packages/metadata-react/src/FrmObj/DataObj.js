@@ -268,10 +268,10 @@ class DataObj extends MDNRComponent {
       [
         <Toolbar key="toolbar" {...toolbar_props} />,
 
-        _meta.form && _meta.form.obj && _meta.form.obj.items ?
+        _meta?.form?.obj?.items ?
           renderItems.call(this, _meta.form.obj.items, context.customComponents)
           :
-          <FormGroup key="data" className={classes.spaceLeft}>
+          <FormGroup key="data" className={classes.spaceLeft + ' ' + classes.paddingRight}>
             {this.renderFields()}
             {this.renderTabularSections()}
           </FormGroup>,

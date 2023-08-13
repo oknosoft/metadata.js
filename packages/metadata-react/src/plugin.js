@@ -195,11 +195,15 @@ function rx_columns({utils: {moment}, enm, md}) {
     AppearanceFormatter.appearance = appearance;
     return AppearanceFormatter;
   };
+  
+  const json_formatter = ({value, raw}) => {
+    return (raw || typeof value === 'string') ? value : JSON.stringify(value);
+  };
 
   return function columns({mode, fields, _obj, _mgr, read_only}) {
 
     const res = this.columns(mode);
-    const {input, text, label, link, cascader, toggle, image, type, path, props, typed_field} = enm.data_field_kinds;
+    const {input, text, label, json, link, cascader, toggle, image, type, path, props, typed_field} = enm.data_field_kinds;
     if(!_mgr && _obj) {
       _mgr = _obj._manager;
     }
@@ -252,6 +256,10 @@ function rx_columns({utils: {moment}, enm, md}) {
         switch (column.ctrl_type) {
 
         case label:
+          break;
+          
+        case json:
+          column.formatter = json_formatter;
           break;
 
         case input:

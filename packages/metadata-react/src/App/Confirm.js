@@ -4,7 +4,7 @@ import Button from '@material-ui/core/Button';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Dialog from './Dialog';
 
-export default function Confirm({text, html, title, children, handleOk, handleCancel, open, initFullScreen, hide_actions, ...others}) {
+export default function Confirm({text, html, title, children, handleOk, handleCancel, open, initFullScreen, actions, hide_actions, ...others}) {
   if(typeof text === 'string') {
     if(text.includes('<') && text.includes('/>')) {
       html = text;
@@ -15,15 +15,25 @@ export default function Confirm({text, html, title, children, handleOk, handleCa
       text = '';
     }
   }
+  const act = React.useMemo(() => {
+    if(!actions && !hide_actions) {
+      return <>
+        <Button key="cancel" onClick={handleCancel} color="primary">Отмена</Button>
+        <Button key="ok" onClick={handleOk} color="primary">Ок</Button>
+      </>;
+    }
+    else if (typeof actions === 'function') {
+      return actions({handleOk, handleCancel});
+    }
+    return actions || null;
+  }, []);
+  
   return <Dialog
     open={open}
     initFullScreen={initFullScreen}
     title={title}
     onClose={handleCancel}
-    actions={!hide_actions && [
-      <Button key="cancel" onClick={handleCancel} color="primary">Отмена</Button>,
-      <Button key="ok" onClick={handleOk} color="primary">Ок</Button>
-    ]}
+    actions={act}
     {...others}
   >
     {text && <DialogContentText>{text}</DialogContentText>}
