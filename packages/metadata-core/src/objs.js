@@ -1243,7 +1243,7 @@ export class CatObj extends DataObj {
    * @type String
    */
   get presentation() {
-    return this.empty() ? '<Пусто>' : (this.name || this.id || this._presentation || '');
+    return this.empty() ? '' : (this.name || this.id || this._presentation || '');
   }
   set presentation(v) {
     if(v) {
@@ -1401,7 +1401,7 @@ export class DocObj extends NumberDocAndDate(DataObj) {
    */
   get presentation() {
     if(this.empty()) {
-      return '<Пусто>';
+      return '';
     }
     const meta = this._metadata();
     const {number_doc, date, posted, _modified} = this;

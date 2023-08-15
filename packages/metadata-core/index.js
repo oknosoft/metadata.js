@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.33-beta.4, built:2023-08-13
+ metadata-core v2.0.33-beta.4, built:2023-08-15
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1428,7 +1428,7 @@ class CatObj extends DataObj {
     }
   }
   get presentation() {
-    return this.empty() ? '<Пусто>' : (this.name || this.id || this._presentation || '');
+    return this.empty() ? '' : (this.name || this.id || this._presentation || '');
   }
   set presentation(v) {
     if(v) {
@@ -1510,7 +1510,7 @@ class DocObj extends NumberDocAndDate(DataObj) {
   }
   get presentation() {
     if(this.empty()) {
-      return '<Пусто>';
+      return '';
     }
     const meta = this._metadata();
     const {number_doc, date, posted, _modified} = this;
@@ -1748,7 +1748,8 @@ class MetaEventEmitter extends EventEmitter{
     handler.timer = setTimeout(this._emit.bind(this, type), 4);
   }
   emit_promise(type, ...args) {
-    return this.listeners(type).reduce((acc, curr) => acc.then(curr.bind(this, ...args)), Promise.resolve());
+    return this.listeners(type)
+      .reduce((acc, curr) => acc.then(curr.bind(this, ...args)), Promise.resolve(args[0]));
   }
   emit_add_fields(obj, fields){
     const {_async} = this;

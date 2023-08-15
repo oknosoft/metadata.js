@@ -147,7 +147,8 @@ export default class MetaEventEmitter extends EventEmitter{
    * @param [fields]
    */
   emit_promise(type, ...args) {
-    return this.listeners(type).reduce((acc, curr) => acc.then(curr.bind(this, ...args)), Promise.resolve());
+    return this.listeners(type)
+      .reduce((acc, curr) => acc.then(curr.bind(this, ...args)), Promise.resolve(args[0]));
   }
 
   /**
