@@ -107,13 +107,16 @@ class TabularSection extends MComponent {
 
   handleRemove = () => {
     const {state: {_tabular, selected}, props: {handleRemove}} = this;
+    let row;
     if(selected && selected.hasOwnProperty('rowIdx')) {
       if(handleRemove) {
         handleRemove(_tabular);
       }
-      _tabular.del(this.rowGetter(selected.rowIdx));
+      row = this.rowGetter(selected.rowIdx);
+      _tabular.del(row);
       this.handleFilterChange();
     }
+    return row;
   };
 
   handleClear = () => {
