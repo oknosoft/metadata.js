@@ -1,19 +1,19 @@
 {
-  "name": "@mdta/ui",
+  "name": "@oknosoft/metadata-ui",
   "description": "React UI components for metadata.js",
   "version": "3.0.0",
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (https://oknosoft.ru)",
   "license": "MIT",
   "engines": {
-    "node": "^18.9",
+    "node": "^20.2",
     "yarn": "^1.22"
   },
   "dependencies": {
-    "@emotion/react": "^11.10.4",
-    "@emotion/styled": "^11.10.4",
-    "@mui/icons-material": "^5.10.3",
-    "@mui/material": "^5.10.4",
-    "marked": "^4.1"
+    "@emotion/react": "^11.11",
+    "@emotion/styled": "^11.11",
+    "@mui/icons-material": "^5.14",
+    "@mui/material": "^5.14",
+    "marked": "^8.0"
   },
   "peerDependencies": {
     "react": "^18.2",

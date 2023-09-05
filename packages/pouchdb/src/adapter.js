@@ -2,7 +2,7 @@
  * Содержит методы и подписки на события PouchDB
  * для хранения данных в idb браузера и синхронизации с CouchDB
  *
- * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2022
+ * &copy; Evgeniy Malyarov http://www.oknosoft.ru 2014-2023
  */
 
 

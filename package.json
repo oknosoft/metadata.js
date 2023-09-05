@@ -1,38 +1,41 @@
 {
-  "name": "@mdta/monorepo",
+  "name": "@oknosoft/metadata",
   "description": "Library for building offline-first browser-based business applications",
   "version": "3.0.0",
   "private": true,
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
-    "node": "^16.3",
+    "node": "^20.2",
     "yarn": "^1.22"
   },
   "dependencies": {
-    "camelcase": "^7.0",
+    "camelcase": "^8.0",
     "dayjs": "^1.11",
-    "uuid": "8.3.2"
+    "uuid": "^9.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.19",
-    "@babel/preset-env": "^7.19",
-    "@babel/preset-react": "^7.18",
-    "@rollup/plugin-node-resolve": "^14.1",
-    "@rollup/plugin-replace": "^4.0",
-    "babel-loader": "^8.2",
-    "lerna": "^5.5",
+    "@babel/core": "^7.22",
+    "@babel/preset-env": "^7.22",
+    "@babel/preset-react": "^7.22",
+    "@rollup/plugin-node-resolve": "^15.2",
+    "@rollup/plugin-replace": "^5.0",
+    "babel-loader": "^9.1",
+    "lerna": "^7.2",
     "react": "^18.2",
     "react-dom": "^18.2",
-    "rollup": "^2.79",
+    "rollup": "^3.28",
     "rollup-plugin-cleanup": "^3.2",
-    "typescript": "~4.8.2",
-    "webpack": "^5.74",
-    "webpack-cli": "^4.9",
-    "webpack-dev-server": "^4.7"
+    "typescript": "^5.2",
+    "webpack": "^5.88",
+    "webpack-cli": "^5.1",
+    "webpack-dev-server": "^4.15"
   },
   "peerDependecies": {
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "webpack serve -c example/webpack.config.js",
     "build:core": "node ./packages/core/build.js",

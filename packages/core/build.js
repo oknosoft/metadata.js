@@ -17,13 +17,13 @@ const plugins = [
 ];
 const banner = `/*!
  ${package_data.name} v${package_data.version}, built:${new Date().toISOString().split('T')[0]}
- © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
+ © 2014-2023 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
  */\n\n`;
 
 return rollup({
-  input: path.resolve(__dirname, './src/meta.js'),
+  input: path.resolve(__dirname, './src/index.js'),
 	external,
 	plugins,
 })
