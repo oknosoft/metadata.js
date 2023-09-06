@@ -328,7 +328,7 @@ export class BaseDataObj extends OwnerObj {
         catch (e) {}
       }
       if(typeof v === 'object') {
-        const tmp = utils._clone(v);
+        const tmp = utils.clone(v);
         if(tmp && typeof obj[f] === 'object') {
           Object.assign(obj[f], tmp);
         }
@@ -1069,7 +1069,7 @@ export class CatObj extends DataObj {
     super(attr, manager, loading, direct);
 
     if(!direct) {
-      this._mixin(attr);
+      this.mixin(attr);
     }
 
   }
@@ -1209,7 +1209,7 @@ export class DocObj extends DataObj {
     super(attr, manager, loading, direct);
 
     if(!direct) {
-      this._mixin(attr);
+      this.mixin(attr);
     }
 
   }
@@ -1300,7 +1300,7 @@ export class DataProcessorObj extends DataObj {
       }
     }
 
-    manager.utils._mixin(this, attr);
+    manager.utils.mixin(this, attr);
   }
 }
 
@@ -1438,7 +1438,7 @@ export class RegisterRow extends DataObj {
       if(tref) {
         delete attr.ref;
       }
-      manager.utils._mixin(this, attr);
+      manager.utils.mixin(this, attr);
       if(tref) {
         attr.ref = tref;
       }
@@ -1545,9 +1545,9 @@ export class TabularSectionRow extends BaseDataObj {
   /**
    * Копирует строку табличной части
    */
-  _clone() {
+  clone() {
     const {_manager} = th
-    return this[own]._manager.utils._mixin(_owner._owner._manager.objConstructor(_owner._name, _owner), _obj)
+    return this[own]._manager.utils.mixin(_owner._owner._manager.objConstructor(_owner._name, _owner), _obj)
   }
 
 };

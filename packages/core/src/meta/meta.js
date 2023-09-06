@@ -68,7 +68,7 @@ class Meta extends MetaEventEmitter {
   init(raw) {
     const root = this[own];
     for(const patch of Meta._sys) {
-      root.utils._patch(raw, patch);
+      root.utils.patch(raw, patch);
     }
     for(const area of Object.keys(raw)) {
       if(root[area]) {

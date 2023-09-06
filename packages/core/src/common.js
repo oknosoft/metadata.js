@@ -65,9 +65,6 @@ class MetaEngine {
      */
     this.md = new Meta(this);
 
-    // дублируем метод record_log в utils
-    this.record_log = this.record_log.bind(this);
-
     // начинаем следить за ошибками
     let emitter;
     if(typeof process !== 'undefined' && process.addEventListener) {
@@ -77,7 +74,7 @@ class MetaEngine {
       emitter = window;
     }
     if(emitter) {
-      emitter.addEventListener('error', this.record_log, false);
+      emitter.addEventListener('error', this.utils.record_log, false);
       //emitter.addEventListener('unhandledRejection', this.record_log, false);
     }
 
@@ -102,18 +99,6 @@ class MetaEngine {
 
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
-  }
-
-
-  /**
-   * Запись журнала регистрации
-   *
-   * @method record_log
-   * @param err
-   */
-  record_log(err, promise) {
-    this && this.ireg && this.ireg.log && this.ireg.log.record(err);
-    console && console.log(err);
   }
 
 

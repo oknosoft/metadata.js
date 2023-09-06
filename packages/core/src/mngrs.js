@@ -231,7 +231,7 @@ export class DataManager extends MetaEventEmitter{
 	 * @return {Array}
 	 */
   find_rows(selection, callback) {
-    return this.utils._find_rows.call(this, this, selection, callback);
+    return this.utils.find_rows.call(this, this, selection, callback);
   }
 
   /**
@@ -242,7 +242,7 @@ export class DataManager extends MetaEventEmitter{
    * @return {DataObj}
    */
   find(val, columns) {
-    return this.utils._find(this.#byRef, val, columns);
+    return this.utils.find(this.#byRef, val, columns);
   }
 
 	/**
@@ -509,7 +509,7 @@ export class RefDataManager extends DataManager {
             }
           }
         }
-				obj._mixin(attr);
+				obj.mixin(attr);
         attr._rev && (obj._obj._rev = attr._rev);
 			}
       for(const ts in tabular_sections) {
@@ -964,7 +964,7 @@ export class RegisterManager extends DataManager{
       }
       else if (forse) {
         obj._data._loading = true;
-        obj._mixin(row);
+        obj.mixin(row);
       }
 
       res.push(obj);

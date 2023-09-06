@@ -955,7 +955,7 @@ function adapter({AbstracrAdapter}) {
         .then((res) => {
           purge(res);
           tObj._data._loading = true;
-          tObj._mixin(res);
+          tObj.mixin(res);
           tObj._obj._rev = res._rev;
         })
         .catch((err) => {
@@ -1658,7 +1658,7 @@ function adapter({AbstracrAdapter}) {
               }
 
               // фильтруем
-              if(!utils._selection.call(_mgr, doc, selection)) {
+              if(!utils.selection.call(_mgr, doc, selection)) {
                 return;
               }
 

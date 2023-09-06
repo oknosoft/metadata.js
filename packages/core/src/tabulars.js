@@ -120,7 +120,7 @@ export class TabularSection extends Array {
 	 * @return {TabularSectionRow}
 	 */
 	find(val, columns) {
-		const res = this[own]._manager.utils._find(this._obj, val, columns);
+		const res = this[own]._manager.utils.find(this._obj, val, columns);
 		return res && res._row;
 	}
 
@@ -152,7 +152,7 @@ export class TabularSection extends Array {
 		  delete selection[index];
     }
 
-		return this[own]._manager.utils._find_rows.call(this, _obj, selection, cb);
+		return this[own]._manager.utils.find_rows.call(this, _obj, selection, cb);
 	}
 
 	/**

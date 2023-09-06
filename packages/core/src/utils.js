@@ -104,10 +104,10 @@ const crcTable = Object.freeze(function () {
 /**
  * Коллекция вспомогательных методов
  */
-export default class MetaUtils extends OwnerObj {
+class MetaUtils extends OwnerObj {
 
   constructor(owner) {
-    super(owner);
+    super(owner, 'utils');
 
     this.blob = {
       /**
@@ -541,16 +541,16 @@ export default class MetaUtils extends OwnerObj {
           if(type.types && type.types.some((type) => type.startsWith('enm') || type.startsWith(string))){
             return str;
           }
-          return this.fix_guid(str);
+          return this.fix.guid(str);
         }
         if (type.date_part) {
-          return this.fix_date(str, true);
+          return this.fix.date(str, true);
         }
         if (type['digits']) {
-          return this.fix_number(str, true);
+          return this.fix.number(str, true);
         }
         if (type.types && type.types[0] === 'boolean') {
-          return this.fix_boolean(str);
+          return this.fix.boolean(str);
         }
         return str;
       },
@@ -617,6 +617,172 @@ export default class MetaUtils extends OwnerObj {
       },
     });
 
+    /**
+     * Абстрактный поиск значения в коллекции
+     * @param src {Array|Object}
+     * @param val {DataObj|String}
+     * @param columns {Array|String} - имена полей, в которых искать
+     * @return {*}
+     * @private
+     */
+    this.find = (src, val, columns) => {
+      const {is} = this;
+      if (typeof val != object) {
+        for (let i in src) { // ищем по всем полям объекта
+          const o = src[i];
+          for (let j in o) {
+            if (typeof o[j] !== 'function' && is.equal(o[j], val)) {
+              return o;
+            }
+          }
+        }
+      }
+      else {
+        for (let i in src) { // ищем по ключам из val
+          const o = src[i];
+          let finded = true;
+          for (let j in val) {
+            if (typeof o[j] !== 'function' && !is.equal(o[j], val[j])) {
+              finded = false;
+              break;
+            }
+          }
+          if (finded) {
+            return o;
+          }
+        }
+      }
+    };
+
+    /**
+     * @summary Поиск массива значений в коллекции
+     * @desc Кроме стандартного поиска по равенству значений,
+     * поддержаны операторы `in`, `not` и `like` и фильтрация через внешнюю функцию
+     * @method find_rows
+     * @param src {Object|Array}
+     * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
+     * @param callback {Function}
+     * @return {Array}
+     * @private
+     */
+    this.find.rows = (src, selection, callback) => {
+
+        const res = [];
+        let top, skip, count = 0, skipped = 0;
+
+        if(selection) {
+          if(selection.hasOwnProperty('_top')) {
+            top = selection._top;
+            delete selection._top;
+          }
+          else {
+            top = 300;
+          }
+          if(selection.hasOwnProperty('_skip')) {
+            skip = selection._skip;
+            delete selection._skip;
+          }
+          else {
+            skip = 0;
+          }
+        }
+
+        if(!src[Symbol.iterator]) {
+          src = Object.values(o);
+        }
+        for (const o of src) {
+          // выполняем колбэк с элементом и пополняем итоговый массив
+          if (this.selection.call(this, o, selection)) {
+            if(skip){
+              skipped++;
+              if (skipped <= skip) {
+                continue;
+              }
+            }
+            if (callback) {
+              if (callback.call(this, o) === false) {
+                break;
+              }
+            } else {
+              res.push(o);
+            }
+            // ограничиваем кол-во возвращаемых элементов
+            if (top) {
+              count++;
+              if (count >= top) {
+                break;
+              }
+            }
+          }
+
+        }
+        return res;
+      };
+
+    /**
+     * ### Поиск массива значений в коллекции
+     * Кроме стандартного поиска по равенству значений,
+     * поддержаны операторы `in`, `not` и `like` и фильтрация через внешнюю функцию
+     * @method find_rows_with_sort
+     * @param src {Array}
+     * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
+     * @return {{docs: Array, count: number}}
+     * @private
+     */
+    this.find.with_sort = (src, selection) => {
+      let pre = [], docs = [], sort, top = 300, skip = 0, count = 0, skipped = 0;
+
+      if(selection) {
+        if(selection._sort) {
+          sort = selection._sort;
+          delete selection._sort;
+        }
+        if(selection.hasOwnProperty('_top')) {
+          top = selection._top;
+          delete selection._top;
+        }
+        if(selection.hasOwnProperty('_skip')) {
+          skip = selection._skip;
+          delete selection._skip;
+        }
+        if(selection.hasOwnProperty('_ref')) {
+          delete selection._ref;
+        }
+      }
+
+      // фильтруем
+      for (const o of src) {
+        // выполняем колбэк с элементом и пополняем итоговый массив
+        if (this.selection(o, selection)) {
+          pre.push(o);
+        }
+      }
+
+      // сортируем
+      // if(sort && sort.length && typeof alasql !== 'undefined') {
+      //   pre = alasql(`select * from ? order by ${sort.map(({field, direction}) => `${field} ${direction}`).join(',')}`, [pre]);
+      // }
+
+      // обрезаем кол-во возвращаемых элементов
+      for (const o of pre) {
+        if(skip){
+          skipped++;
+          if (skipped <= skip) {
+            continue;
+          }
+        }
+        docs.push(o);
+        if (top) {
+          count++;
+          if (count >= top) {
+            break;
+          }
+        }
+      }
+
+      return {docs, count: pre.length};
+    }
+
   }
 
   get classes() {
@@ -639,13 +805,13 @@ export default class MetaUtils extends OwnerObj {
    */
   rnd = {
     crypto: typeof crypto !== 'undefined' ? crypto : require('crypto'),
-    rnds16: new Uint16Array(32),
+    rnds32: new Uint32Array(32),
     counter: 0,
 
     // массив случайных чисел
     rngs() {
-      const {rnds16, crypto} = this;
-      return crypto.getRandomValues ? crypto.getRandomValues(rnds16) : crypto.randomFillSync(rnds16);
+      const {rnds32, crypto} = this;
+      return crypto.getRandomValues ? crypto.getRandomValues(rnds32) : crypto.randomFillSync(rnds32);
     },
 
     // случайное число с помощью Crypto
@@ -657,7 +823,7 @@ export default class MetaUtils extends OwnerObj {
       if (this.counter > 31) {
         this.counter = 0;
       }
-      return this.rnds16[this.counter];
+      return this.rnds32[this.counter];
     },
 
   };
@@ -884,14 +1050,14 @@ export default class MetaUtils extends OwnerObj {
    * @param {Boolean} [clone] - клонировать, а не устанавливать объектные свойства
    * @return {Object}
    */
-  _mixin = (obj, src, include, exclude, clone) => {
+  mixin = (obj, src, include, exclude, clone) => {
     const tobj = {}; // tobj - вспомогательный объект для фильтрации свойств, которые есть у объекта Object и его прототипа
 
     function excludeCpy(f) {
       if (!(exclude && exclude.includes(f))) {
         // копируем в dst свойства src, кроме тех, которые унаследованы от Object
         if ((typeof tobj[f] == 'undefined') || (tobj[f] != src[f])) {
-          obj[f] = clone ? this._clone(src[f]) : src[f];
+          obj[f] = clone ? this.clone(src[f]) : src[f];
         }
       }
     }
@@ -911,17 +1077,17 @@ export default class MetaUtils extends OwnerObj {
 
   /**
    * Подмешивает в объект свойства с иерархией объекта patch
-   * В отличии от `_mixin`, не замещает, а дополняет одноименные свойства
+   * В отличии от `mixin`, не замещает, а дополняет одноименные свойства
    *
    * @param {Object} obj
    * @param {Object} patch
    * @return {Object} - исходный объект с подмешанными свойствами
    */
-  _patch = (obj, patch) => {
+  patch = (obj, patch) => {
     for (let area in patch) {
       if (typeof patch[area] == object) {
         if (obj[area] && typeof obj[area] == object) {
-          this._patch(obj[area], patch[area]);
+          this.patch(obj[area], patch[area]);
         }
         else {
           obj[area] = patch[area];
@@ -938,7 +1104,7 @@ export default class MetaUtils extends OwnerObj {
    * @param {Object|Array} obj - исходный объект
    * @return {Object|Array} - копия объекта
    */
-  _clone = (obj) => {
+  clone = (obj) => {
     const {DataObj, DataManager} = this.classes;
     if (!obj || object !== typeof obj) return obj;
     let p, v, c = 'function' === typeof obj.pop ? [] : {};
@@ -950,7 +1116,7 @@ export default class MetaUtils extends OwnerObj {
             c[p] = v;
           }
           else if(object === typeof v) {
-            c[p] = this._clone(v);
+            c[p] = this.clone(v);
           }
           else {
             c[p] = v;
@@ -965,49 +1131,13 @@ export default class MetaUtils extends OwnerObj {
   };
 
   /**
-   * Абстрактный поиск значения в коллекции
-   * @param src {Array|Object}
-   * @param val {DataObj|String}
-   * @param columns {Array|String} - имена полей, в которых искать
-   * @return {*}
-   * @private
-   */
-  _find = (src, val, columns) => {
-    if (typeof val != object) {
-      for (let i in src) { // ищем по всем полям объекта
-        const o = src[i];
-        for (let j in o) {
-          if (typeof o[j] !== 'function' && this.is.equal(o[j], val)) {
-            return o;
-          }
-        }
-      }
-    }
-    else {
-      for (let i in src) { // ищем по ключам из val
-        const o = src[i];
-        let finded = true;
-        for (let j in val) {
-          if (typeof o[j] !== 'function' && !this.is.equal(o[j], val[j])) {
-            finded = false;
-            break;
-          }
-        }
-        if (finded) {
-          return o;
-        }
-      }
-    }
-  };
-
-  /**
    * Выясняет, удовлетворяет ли объект `o` условию `selection`
-   * @method _selection
+   * @method selection
    * @param o {Object}
    * @param [selection]
    * @private
    */
-  _selection = (o, selection) => {
+  selection = (o, selection) => {
 
     let ok = true;
 
@@ -1024,7 +1154,7 @@ export default class MetaUtils extends OwnerObj {
           const is_obj = sel && typeof(sel) === object;
 
           // пропускаем служебные свойства
-          if (j.substr(0, 1) == '_') {
+          if (j.substring(0, 1) == '_') {
             if(j === '_search' && sel.fields && sel.value) {
               ok = sel.value.every((str) => sel.fields.some((fld) => this.is._like(o[fld], str)));
               if(!ok) {
@@ -1058,7 +1188,7 @@ export default class MetaUtils extends OwnerObj {
             }
             // выполняем все отборы текущего sel
             else {
-              ok = sel.every((el) => this._selection(o, {[j]: el}));
+              ok = sel.every((el) => this.selection(o, {[j]: el}));
             }
             if(!ok) {
               break;
@@ -1189,133 +1319,17 @@ export default class MetaUtils extends OwnerObj {
   };
 
   /**
-   * ### Поиск массива значений в коллекции
-   * Кроме стандартного поиска по равенству значений,
-   * поддержаны операторы `in`, `not` и `like` и фильтрация через внешнюю функцию
-   * @method _find_rows_with_sort
-   * @param src {Array}
-   * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
-   * @return {{docs: Array, count: number}}
-   * @private
+   * Запись журнала регистрации
+   *
+   * @param {Error} err
+   * @param {Promise} promise
    */
-  _find_rows_with_sort = (src, selection) => {
-    let pre = [], docs = [], sort, top = 300, skip = 0, count = 0, skipped = 0;
-
-    if(selection) {
-      if(selection._sort) {
-        sort = selection._sort;
-        delete selection._sort;
-      }
-      if(selection.hasOwnProperty('_top')) {
-        top = selection._top;
-        delete selection._top;
-      }
-      if(selection.hasOwnProperty('_skip')) {
-        skip = selection._skip;
-        delete selection._skip;
-      }
-      if(selection.hasOwnProperty('_ref')) {
-        delete selection._ref;
-      }
-    }
-
-    // фильтруем
-    for (const o of src) {
-      // выполняем колбэк с элементом и пополняем итоговый массив
-      if (this._selection.call(this, o, selection)) {
-        pre.push(o);
-      }
-    }
-
-    // сортируем
-    // if(sort && sort.length && typeof alasql !== 'undefined') {
-    //   pre = alasql(`select * from ? order by ${sort.map(({field, direction}) => `${field} ${direction}`).join(',')}`, [pre]);
-    // }
-
-    // обрезаем кол-во возвращаемых элементов
-    for (const o of pre) {
-      if(skip){
-        skipped++;
-        if (skipped <= skip) {
-          continue;
-        }
-      }
-      docs.push(o);
-      if (top) {
-        count++;
-        if (count >= top) {
-          break;
-        }
-      }
-    }
-
-    return {docs, count: pre.length};
-  }
-
-  /**
-   * ### Поиск массива значений в коллекции
-   * Кроме стандартного поиска по равенству значений,
-   * поддержаны операторы `in`, `not` и `like` и фильтрация через внешнюю функцию
-   * @method _find_rows
-   * @param src {Object|Array}
-   * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
-   * @param callback {Function}
-   * @return {Array}
-   * @private
-   */
-  _find_rows = (src, selection, callback) => {
-
-    const res = [];
-    let top, skip, count = 0, skipped = 0;
-
-    if(selection) {
-      if(selection.hasOwnProperty('_top')) {
-        top = selection._top;
-        delete selection._top;
-      }
-      else {
-        top = 300;
-      }
-      if(selection.hasOwnProperty('_skip')) {
-        skip = selection._skip;
-        delete selection._skip;
-      }
-      else {
-        skip = 0;
-      }
-    }
-
-    if(!src[Symbol.iterator]) {
-      src = Object.values(o);
-    }
-    for (const o of src) {
-      // выполняем колбэк с элементом и пополняем итоговый массив
-      if (this._selection.call(this, o, selection)) {
-        if(skip){
-          skipped++;
-          if (skipped <= skip) {
-            continue;
-          }
-        }
-        if (callback) {
-          if (callback.call(this, o) === false) {
-            break;
-          }
-        } else {
-          res.push(o);
-        }
-        // ограничиваем кол-во возвращаемых элементов
-        if (top) {
-          count++;
-          if (count >= top) {
-            break;
-          }
-        }
-      }
-
-    }
-    return res;
+  record_log = (err, promise) => {
+    this[own].ireg?.log?.record(err, promise);
+    console?.log(err, promise);
   };
 
 }
+
+export default MetaUtils;
 
