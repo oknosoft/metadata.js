@@ -36,6 +36,11 @@
   "workspaces": [
     "packages/*"
   ],
+  "files": [
+    "packages/**",
+    "LICENSE.md",
+    "LICENSE.en.md"
+  ],
   "scripts": {
     "dev": "webpack serve -c example/webpack.config.js",
     "build:core": "node ./packages/core/build.js",
