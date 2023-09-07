@@ -165,6 +165,10 @@ export class DataManager extends MetaEventEmitter{
     }
   }
 
+  byRef(ref) {
+    return this.#byRef[ref];
+  }
+
   /**
    * Возвращает объект по ссылке (читает из локального кеша)
    * Если нет в кеше и идентификатор не пуст, создаёт новый объект
@@ -421,14 +425,11 @@ export class RefDataManager extends DataManager {
 
 	/**
 	 * Создаёт новый объект типа объектов текущего менеджера
-	 * Для кешируемых объектов, все действия происходят на клиенте<br />
-	 * Для некешируемых, выполняется обращение к серверу для получения guid и значений реквизитов по умолчанию
 	 *
 	 * @param [attr] {Object} - значениями полей этого объекта будет заполнен создаваемый объект
-	 * @param [do_after_create] {Boolean} - признак, надо ли заполнять (инициализировать) создаваемый объект значениями полей по умолчанию
-	 * @return {Promise.<DataObj>}
+	 * @return {DataObj}
 	 */
-  create(attr, do_after_create, force_obj) {
+  create(attr) {
 
     const {utils} = this;
 
@@ -436,41 +437,17 @@ export class RefDataManager extends DataManager {
 			attr = {};
 		}
 		else if(utils.is.dataObj(attr)){
-			return Promise.resolve(attr);
+			return attr;
 		}
-
 		if(!attr.ref || !utils.is.guid(attr.ref) || utils.is.emptyGuid(attr.ref)){
-			attr.ref = utils.generate_guid();
+			attr.ref = utils.generateGuid();
 		}
 
-		let o = this.byRef[attr.ref];
-
-		if(!o){
-
-			o = this.objConstructor('', [attr, this]);
-
-      if(force_obj){
-        return o;
-      }
-
-      // Если новый код или номер не были назначены в триггере - устанавливаем стандартное значение
-      let callNumberDoc;
-      if((this instanceof DocManager || this instanceof TaskManager || this instanceof BusinessProcessManager)){
-        callNumberDoc = !o.numberDoc;
-      }
-      else{
-        callNumberDoc = !o.id;
-      }
-
-      return (callNumberDoc ? o.newNumberDoc() : Promise.resolve(o))
-        .then(() => {
-          // выполняем обработчик после создания объекта и стандартные действия, если их не запретил обработчик
-          return after_create_res instanceof Promise ? after_create_res : o;
-        });
-		}
-
-		return force_obj ? o : Promise.resolve(o);
-
+		let o = this.byRef(attr.ref);
+    if (!o) {
+      o = this.objConstructor('', [attr, this]);
+    }
+		return o;
 	}
 
 	/**
@@ -509,7 +486,7 @@ export class RefDataManager extends DataManager {
             }
           }
         }
-				obj.mixin(attr);
+        this.utils.mixin(obj, attr);
         attr._rev && (obj._obj._rev = attr._rev);
 			}
       for(const ts in tabular_sections) {
@@ -520,19 +497,6 @@ export class RefDataManager extends DataManager {
 		return res;
 	}
 
-	/**
-	 * Находит перую папку в пределах подчинения владельцу
-	 * TODO:
-	 * @param owner {DataObj|String}
-	 * @return {DataObj} - ссылка найденной папки или пустая ссылка
-	 */
-	firstFolder(owner){
-		for(let i in this.byRef){
-			const o = this.byRef[i];
-			if(o.isFolder && (!owner || utils.is_equal(owner, o.owner))) return o;
-		}
-		return this.get();
-	}
 
 	/**
 	 * Возаращает текст запроса для создания таблиц объекта и его табличных частей
@@ -642,10 +606,10 @@ export class RefDataManager extends DataManager {
   brokenLinks() {
     const res = [];
     const push = res.push.bind(res);
-    for(const ref in this.byRef) {
-      this.byRef[ref].brokenLinks().forEach(push);
+    for(const o of this) {
+      o.brokenLinks().forEach(push);
     }
-    return res;
+    return Array.from(new Set(res));
   }
 
 }
@@ -674,21 +638,6 @@ export class DataProcessorsManager extends DataManager{
 	 */
 	create(attr = {}, loading){
 		return this.objConstructor('', [attr, this, loading]);
-	}
-
-	/**
-	 * Создаёт экземпляр объекта обработки - псевдоним create()
-	 * @method get
-	 * @return {DataProcessorObj}
-	 */
-	get(ref){
-		if(ref){
-			if(!this.byRef[ref]){
-				this.byRef[ref] = this.create()
-			}
-			return this.byRef[ref];
-		}else
-			return this.create();
 	}
 
 	/**
@@ -896,8 +845,10 @@ export class RegisterManager extends DataManager{
 		if (new_ref && (new_ref != o.ref)) {
 			delete this.byRef[o.ref];
 			this.byRef[new_ref] = o;
-		} else
-			this.byRef[o.ref] = o;
+		}
+    else {
+      this.byRef[o.ref] = o;
+    }
 	}
 
 	/**
@@ -916,7 +867,7 @@ export class RegisterManager extends DataManager{
 			attr = {ref: attr};
 
 		if (attr.ref && return_row)
-			return this.byRef[attr.ref];
+			return this.byRef(attr.ref);
 
 		attr.action = "select";
 
@@ -930,11 +881,11 @@ export class RegisterManager extends DataManager{
 
 		if (arr.length) {
 			if (return_row)
-				res = this.byRef[this.getRef(arr[0])];
+				res = this.byRef(this.getRef(arr[0]));
 			else {
 				res = [];
 				for (var i in arr)
-					res.push(this.byRef[this.getRef(arr[i])]);
+					res.push(this.byRef(this.getRef(arr[i])));
 			}
 		}
 
@@ -952,7 +903,7 @@ export class RegisterManager extends DataManager{
 
     for (const row of aattr) {
       const ref = this.getRef(row);
-      let obj = this.byRef[ref];
+      let obj = this.byRef(ref);
 
       if (!obj && !row._deleted) {
         obj = this.objConstructor('', [row, this, true]);
@@ -964,7 +915,7 @@ export class RegisterManager extends DataManager{
       }
       else if (forse) {
         obj._data._loading = true;
-        obj.mixin(row);
+        this.utils.mixin(obj, row);
       }
 
       res.push(obj);
@@ -1309,7 +1260,7 @@ export class RegisterManager extends DataManager{
       attr = {};
     }
 
-    let o = this.byRef[attr.ref];
+    let o = this.byRef(attr.ref);
     if(!o) {
 
       o = this.objConstructor('', [attr, this]);
@@ -1327,19 +1278,6 @@ export class RegisterManager extends DataManager{
     }
 
     return Promise.resolve(o);
-  }
-
-  /**
-   * Выполняет перебор элементов локальной коллекции
-   * @method each
-   * @param fn {Function} - функция, вызываемая для каждого элемента локальной коллекции
-   */
-  each(fn) {
-    for (const i in this.byRef) {
-      if(fn.call(this, this.byRef[i]) === true) {
-        break;
-      }
-    }
   }
 
 }

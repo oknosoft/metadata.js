@@ -84,8 +84,13 @@ class Meta extends MetaEventEmitter {
           if(obj.id) {
             meta[obj.id] = obj;
           }
+          if(Array.isArray(obj.aliases)) {
+            for(const alias of obj.aliases) {
+              meta[alias] = obj;
+            }
+          }
           delete raw[area][el];
-        };
+        }
       }
       else {
         this.#m[area] = raw[area];
@@ -156,7 +161,7 @@ class Meta extends MetaEventEmitter {
     const key = type instanceof DataManager ? type.className : type;
     const meta = this.#index.meta[key];
     if(!meta) {
-      throw new Error(`Unknown meta ${type}`);
+      throw new Error(`Unknown meta ${key}`);
     }
     return meta.get(field);
   }

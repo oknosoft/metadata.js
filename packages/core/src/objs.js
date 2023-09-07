@@ -1069,7 +1069,7 @@ export class CatObj extends DataObj {
     super(attr, manager, loading, direct);
 
     if(!direct) {
-      this.mixin(attr);
+      manager.utils.mixin(this, attr, null, ['ref']);
     }
 
   }
@@ -1209,7 +1209,7 @@ export class DocObj extends DataObj {
     super(attr, manager, loading, direct);
 
     if(!direct) {
-      this.mixin(attr);
+      manager.utils.mixin(this, attr, null, ['ref']);
     }
 
   }

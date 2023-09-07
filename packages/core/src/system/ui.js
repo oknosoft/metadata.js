@@ -36,6 +36,8 @@ export default {
       {
         tag: 'Положение заголовка элемеента управления',
         description: 'Системное перечисление',
+        id: 'lp',
+        aliases: ['label_positions'],
       },
     ],
     dataFieldKinds: [

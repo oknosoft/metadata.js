@@ -145,6 +145,8 @@ export const meta = {
       {
         tag: 'Виды сравнений',
         description: 'Системное перечисление',
+        id: 'ct',
+        aliases: ['comparison_types']
       },
     ],
     sortDirections: [
@@ -162,6 +164,8 @@ export const meta = {
       {
         tag: 'Направление сортировки',
         description: 'Для компоновки',
+        id: 'sd',
+        aliases: ['sort_directions']
       },
     ],
     standardPeriod: [
@@ -364,6 +368,8 @@ export const meta = {
       {
         tag: 'Стандартный период',
         description: 'Для компоновки',
+        id: 'sp',
+        aliases: ['standard_period']
       },
     ],
   },

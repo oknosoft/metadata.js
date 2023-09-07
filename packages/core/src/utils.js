@@ -479,7 +479,7 @@ class MetaUtils extends OwnerObj {
           return ref;
         }
         else if (generate) {
-          return this.generate_guid();
+          return this.generateGuid();
         }
         return this.blank.guid;
       },
@@ -899,7 +899,6 @@ class MetaUtils extends OwnerObj {
   /**
    * Генерирует новый guid
    *
-   * @method generate_guid
    * @return {String}
    */
   generateGuid() {
@@ -1053,7 +1052,7 @@ class MetaUtils extends OwnerObj {
   mixin = (obj, src, include, exclude, clone) => {
     const tobj = {}; // tobj - вспомогательный объект для фильтрации свойств, которые есть у объекта Object и его прототипа
 
-    function excludeCpy(f) {
+    const excludeCpy = (f) => {
       if (!(exclude && exclude.includes(f))) {
         // копируем в dst свойства src, кроме тех, которые унаследованы от Object
         if ((typeof tobj[f] == 'undefined') || (tobj[f] != src[f])) {
