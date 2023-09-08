@@ -134,7 +134,6 @@ export class TabularSection extends Array {
 	 * @return {Array}
 	 */
 	find_rows(selection, callback) {
-		const cb = callback ? (row) => callback.call(this, row._row) : null;
 
 		// поддержка индекса
 		let {_obj, _owner, _name, _index} = this;
@@ -152,7 +151,7 @@ export class TabularSection extends Array {
 		  delete selection[index];
     }
 
-		return this[own]._manager.utils.find_rows.call(this, _obj, selection, cb);
+		return this[own]._manager.utils.find.rows(this, selection, callback);
 	}
 
 	/**

@@ -528,31 +528,25 @@ class MetaUtils extends OwnerObj {
        * @return {*}
        */
       type: (str, type) => {
-        if(type.type && type.type.types) {
-          if(!str) {
-            str = type.default || '';
-          }
-          type = type.type;
-        }
-        if(this.is.dataObj(str) && type?.types.includes(str.className)) {
+        if(this.is.dataObj(str) && type?.types.includes(str?.className)) {
           return str;
         }
-        if (type.isRef) {
+        if (type?.isRef) {
           if(type.types && type.types.some((type) => type.startsWith('enm') || type.startsWith(string))){
             return str;
           }
           return this.fix.guid(str);
         }
-        if (type.date_part) {
+        if (type?.datePart) {
           return this.fix.date(str, true);
         }
-        if (type['digits']) {
+        if (type?.['digits']) {
           return this.fix.number(str, true);
         }
-        if (type.types && type.types[0] === 'boolean') {
+        if (type?.types?.[0] === 'boolean') {
           return this.fix.boolean(str);
         }
-        return str;
+        return str ? str : (typeof str === 'number' ? str : '');
       },
 
       /**
@@ -576,7 +570,7 @@ class MetaUtils extends OwnerObj {
                 _obj[fld] = this.fix.guid(_obj[fld], false);
               }
             }
-            else if (type.date_part && typeof _obj[fld] === string) {
+            else if (type.datePart && typeof _obj[fld] === string) {
               _obj[fld] = this.fix.date(_obj[fld], type.types.length === 1);
             }
           }
@@ -605,7 +599,7 @@ class MetaUtils extends OwnerObj {
         let v;
         if (mtype.isRef)
           v = this.guid;
-        else if (mtype.date_part)
+        else if (mtype.datePart)
           v = this.date;
         else if (mtype['digits'])
           v = 0;
@@ -658,7 +652,6 @@ class MetaUtils extends OwnerObj {
      * @summary Поиск массива значений в коллекции
      * @desc Кроме стандартного поиска по равенству значений,
      * поддержаны операторы `in`, `not` и `like` и фильтрация через внешнюю функцию
-     * @method find_rows
      * @param src {Object|Array}
      * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
      * @param callback {Function}
@@ -723,7 +716,6 @@ class MetaUtils extends OwnerObj {
      * ### Поиск массива значений в коллекции
      * Кроме стандартного поиска по равенству значений,
      * поддержаны операторы `in`, `not` и `like` и фильтрация через внешнюю функцию
-     * @method find_rows_with_sort
      * @param src {Array}
      * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
      * @return {{docs: Array, count: number}}

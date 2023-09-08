@@ -206,7 +206,7 @@ export class BaseDataObj extends OwnerObj {
       }
 
     }
-    else if(type.date_part) {
+    else if(type.datePart) {
       return utils.fix.date(res, true);
     }
     else if(type.digits) {
@@ -269,7 +269,7 @@ export class BaseDataObj extends OwnerObj {
       else if(typeof v === 'boolean' && mf.types.indexOf('boolean') != -1) {
         obj[f] = v;
       }
-      else if(mf.date_part && v instanceof Date) {
+      else if(mf.datePart && v instanceof Date) {
         obj[f] = v;
       }
       else {
@@ -311,7 +311,7 @@ export class BaseDataObj extends OwnerObj {
         }
       }
     }
-    else if(mf.date_part) {
+    else if(mf.datePart) {
       obj[f] = utils.fix.date(v, !mf.hasOwnProperty('str_len'));
     }
     else if(mf.digits) {
@@ -1089,7 +1089,7 @@ export class CatObj extends DataObj {
    * @type String|Number
    */
   get id() {
-    return this[get]('id') || '';
+    return this[get]('id');
   }
   set id(v) {
     this[set]('id', v);
@@ -1100,7 +1100,7 @@ export class CatObj extends DataObj {
    * @type String
    */
   get name() {
-    return this[get]('name') || '';
+    return this[get]('name');
   }
   set name(v) {
     this[set]('name', v);

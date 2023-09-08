@@ -25,7 +25,7 @@ else {
     .plugin(require('pouchdb-replication').default)
     .plugin(require('pouchdb-mapreduce').default)
     .plugin(require('pouchdb-find').default)
-    .plugin(require('pouchdb-adapter-idb').default);
+    .plugin(require('pouchdb-adapter-indexeddb').default);
   if(typeof window !== 'undefined') {
     window.PouchDB = PouchDB;
   }

@@ -286,11 +286,11 @@ class Meta extends MetaEventEmitter {
     else if(mf.hasOwnProperty('str_len')) {
       sql = pg ? (mf.str_len ? ' character varying(' + mf.str_len + ')' : ' text') : ' CHAR';
     }
-    else if(mf.date_part) {
-      if(!pg || mf.date_part == 'date') {
+    else if(mf.datePart) {
+      if(!pg || mf.datePart == 'date') {
         sql = ' Date';
       }
-      else if(mf.date_part == 'date_time') {
+      else if(mf.datePart == 'date_time') {
         sql = ' timestamp with time zone';
       }
       else {

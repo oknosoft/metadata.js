@@ -8,9 +8,8 @@ import msg from './i18n.ru';
 import MetaEventEmitter from './meta/emitter';
 import camelcase from 'camelcase';
 
-import {own, alias} from './meta/symbols';
+import {own, alias, pascal} from './meta/symbols';
 const string = 'string';
-const pascal = {pascalCase: true, preserveConsecutiveUppercase: true};
 
 class Iterator {
 
@@ -180,7 +179,7 @@ export class DataManager extends MetaEventEmitter{
     ref = this.getRef(ref);
     let o = this.#byRef[ref];
     if (!o && create) {
-      o = this.objConstructor('', [ref, this]);
+      o = this.objConstructor('', [{ref}, this, true]);
     }
     return o;
   }
@@ -235,7 +234,7 @@ export class DataManager extends MetaEventEmitter{
 	 * @return {Array}
 	 */
   find_rows(selection, callback) {
-    return this.utils.find_rows.call(this, this, selection, callback);
+    return this.utils.find.rows(this, selection, callback);
   }
 
   /**
@@ -1242,7 +1241,7 @@ export class RegisterManager extends DataManager{
 			else if(!attr[j] && dimensions[j].type.digits)
 				key += "0";
 
-			else if(dimensions[j].date_part)
+			else if(dimensions[j].datePart)
 				key += moment(attr[j] || this.utils.blank.date).format(moment.defaultFormatUtc);
 
 			else if(attr[j]!=undefined)

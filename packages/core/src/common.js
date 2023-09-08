@@ -150,7 +150,7 @@ class MetaEngine {
    */
   get current_user() {
 
-    const {cat, superlogin, wsql, adapters: {pouch}} = this;
+    const {cat, superlogin, jobPrm, adapters: {pouch}} = this;
 
     // заглушка "всё разрешено", если методы acl не переопределены внешним приложением
     this.patchCatUsers();
@@ -168,7 +168,7 @@ class MetaEngine {
         }
 
         if (!user_name) {
-          user_name = wsql.get_user_param('user_name');
+          user_name = jobPrm.get('user_name');
         }
 
         user = cat.users.by_id(user_name);
@@ -177,7 +177,7 @@ class MetaEngine {
             // если superlogin, всю онформацию о пользователе получаем из sl_users
             user = superlogin.create_user();
           }
-          else if(this.jobPrm.use_ram !== false) {
+          else if(jobPrm.use_ram !== false) {
             cat.users.find_rows_remote({
               _top: 1,
               id: user_name,

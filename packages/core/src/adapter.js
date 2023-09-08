@@ -2,74 +2,63 @@
 import MetaEventEmitter from './meta/emitter'
 import {OwnerObj} from './meta/metaObjs';
 
+
 export class DataAdapters extends OwnerObj {
 
 }
 
 export default class AbstracrAdapter extends MetaEventEmitter {
 
-	constructor($p) {
-		super();
-		this.$p = $p;
+
+	constructor(owner) {
+		super(owner);
+    this.attachment = {
+      get() {},
+      save() {},
+      delete() {},
+    };
 	}
+
+  /**
+   * Читает сырые данные из базы данных по массиву ссылок
+   *
+   * @param {DataManager} mgr
+   * @param {Array.<String>} refs
+   * @return {Promise.<Array>}
+   */
+  load(mgr, refs) {
+    return Promise.resolve([]);
+  }
 
 	/**
 	 * Читает объект из внешней базы
 	 *
-	 * @method load_obj
-	 * @param tObj {DataObj} - объект данных, который необходимо прочитать - дозаполнить
+	 * @param {DataObj} obj - объект данных, который необходимо прочитать - дозаполнить
 	 * @return {Promise.<DataObj>} - промис с загруженным объектом
 	 */
-	load_obj(tObj) {
-		return Promise.resolve(tObj);
-	}
-
-	/**
-	 * Загружает объекты из базы данных по массиву ссылок
-	 *
-	 * @method loadArray
-	 * @param _mgr {DataManager}
-	 * @param refs {Array}
-	 * @param with_attachments {Boolean}
-	 * @return {*}
-	 */
-	load(_mgr, refs, with_attachments) {
-		return Promise.resolve([]);
+	loadObj(obj) {
+		return Promise.resolve(obj);
 	}
 
 	/**
 	 * Записывает объект в базу данных
 	 *
-	 * @method save_obj
-	 * @param tObj {DataObj} - записываемый объект
-	 * @param attr {Object} - ополнительные параметры записи
+	 * @param {DataObj} obj - записываемый объект
+	 * @param {Object} attr - дополнительные параметры записи
 	 * @return {Promise.<DataObj>} - промис с записанным объектом
 	 */
-	save_obj(tObj, attr) {
-		return Promise.resolve(tObj);
+	saveObj(obj, attr) {
+		return Promise.resolve(obj);
 	}
 
 	/**
 	 * Возвращает набор данных для дерева динсписка
 	 *
-	 * @method get_tree
-	 * @param _mgr {DataManager}
-	 * @param attr
+	 * @param {DataManager} mgr
+	 * @param {Object} [selection]
 	 * @return {Promise.<Array>}
 	 */
-	get_tree(_mgr, attr){
-		return Promise.resolve([]);
-	}
-
-	/**
-	 * Возвращает набор данных для динсписка
-	 *
-	 * @method get_selection
-	 * @param _mgr {DataManager}
-	 * @param attr
-	 * @return {Promise.<Array>}
-	 */
-	get_selection(_mgr, attr){
+	tree(mgr, selection){
 		return Promise.resolve([]);
 	}
 
@@ -78,16 +67,15 @@ export default class AbstracrAdapter extends MetaEventEmitter {
 	 * Возвращает массив дата-объектов, обрезанный отбором _selection_<br />
 	 * Eсли отбор пустой, возвращаются все строки из PouchDB.
 	 *
-	 * @method find_rows
-	 * @param _mgr {DataManager}
+	 * @param {DataManager} _mgr
 	 * @param selection {Object|function} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"} или {not: значение}
-	 * @param [selection._top] {Number}
-	 * @param [selection._skip] {Number}
-	 * @param [selection._raw] {Boolean} - если _истина_, возвращаются сырые данные, а не дата-объекты
-	 * @param [selection._total_count] {Boolean} - если _истина_, вычисляет общее число записей под фильтром, без учета _skip и _top
+	 * @param {Number} [selection._top]
+	 * @param {Number} [selection._skip]
+	 * @param {Boolean} [selection._raw] - если _истина_, возвращаются сырые данные, а не дата-объекты
+	 * @param {Boolean} [selection._total_count] - если _истина_, вычисляет общее число записей под фильтром, без учета _skip и _top
 	 * @return {Promise.<Array>}
 	 */
-	find_rows(_mgr, selection) {
+	rows(_mgr, selection) {
 		return Promise.resolve([]);
 	}
 }

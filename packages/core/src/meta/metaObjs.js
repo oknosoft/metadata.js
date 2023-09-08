@@ -1,6 +1,7 @@
 
-import {own, alias, get, set} from './symbols';
+import {own, alias, get, set, pascal} from './symbols';
 import {enmFields} from '../system'
+import camelcase from 'camelcase';
 
 /**
  * Абстрактный класс со ссылкой на владельца
@@ -250,8 +251,9 @@ export class MetaField extends OwnerObj {
     return `${this[own].toString()}.${this.synonym}`;
   }
 
-  fixSingle(v) {
-    return v;
+  fixSingle(v, type) {
+    const {utils} = this[own][own].root;
+    return utils.fix.type(v, type);
   }
 
 }
@@ -333,7 +335,16 @@ export class MetaTabular extends OwnerObj {
  * @summary Описание типа
  */
 export class TypeDef {
-  constructor(def) {
+  constructor({date_part, str_len, str_fix, ...def}) {
+    if(date_part) {
+      def.datePart = camelcase(date_part, pascal);
+    }
+    if(str_len) {
+      def.strLen = true;
+    }
+    if(str_fix) {
+      def.strFix = true;
+    }
     Object.assign(this, def);
   }
 

@@ -422,7 +422,7 @@ export const meta = {
           tooltip: '',
           type: {
             types: ['date'],
-            date_part: 'date'
+            datePart: 'date'
           }
         },
         date_till: {
@@ -430,7 +430,7 @@ export const meta = {
           tooltip: '',
           type: {
             types: ['date'],
-            date_part: 'date'
+            datePart: 'date'
           }
         },
         standard_period: {
@@ -695,7 +695,7 @@ export const meta = {
                 str_len: 0,
                 digits: 15,
                 fraction: 3,
-                date_part: 'date'
+                datePart: 'date'
               }
             },
             quick_access: {
