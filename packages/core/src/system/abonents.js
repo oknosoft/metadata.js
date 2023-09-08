@@ -437,6 +437,7 @@ export default function ({cat, classes, symbols}, exclude) {
       return Array.from(price_types);
     }
   }
+  classes.CatAbonentsManager = CatAbonentsManager;
 
   if(!exclude.includes('abonents')) {
     cat.create('abonents');

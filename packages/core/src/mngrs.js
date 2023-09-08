@@ -169,6 +169,23 @@ export class DataManager extends MetaEventEmitter{
   }
 
   /**
+   * Возвращает объект по коду
+   * @param id {String} - искомый код
+   * @return {DataObj}
+   */
+  byId(id) {
+    let o = this.#index.id[id];
+    if(!o) {
+      this.find_rows({id}, obj => {
+        o = obj;
+        this.#index.id[id] = o;
+        return false;
+      });
+    }
+    return o;
+  }
+
+  /**
    * Возвращает объект по ссылке (читает из локального кеша)
    * Если нет в кеше и идентификатор не пуст, создаёт новый объект
    * @param {String|Object} [ref] - ссылочный идентификатор
@@ -1344,27 +1361,8 @@ export class CatManager extends RefDataManager{
 	 * @return {DataObj}
 	 */
 	byName(name) {
-		return this.find({name}) || this.get();
+		return this.find({name});
 	}
-
-	/**
-	 * Возвращает объект по коду
-	 * @method by_id
-	 * @param id {String|Object} - искомый код
-	 * @return {DataObj}
-	 */
-	byId(id) {
-    let o = this._by_id[id];
-    if(!o) {
-      this.find_rows({id}, obj => {
-        o = obj;
-        this._by_id[id] = o;
-        return false;
-      });
-    }
-    return o || this.get();
-	}
-
 }
 
 /**

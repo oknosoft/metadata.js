@@ -760,7 +760,7 @@ export class DataObj extends BaseDataObj {
         const reset_mandatory = (msg) => {
           before_save_res = false;
           reset_modified();
-          _manager._owner.$p.md.emit('alert', msg);
+          _manager.root.md.emit('alert', msg);
           const err = new Error(msg.text);
           err.msg = msg;
           return Promise.reject(err);
@@ -1495,23 +1495,6 @@ export class RegisterRow extends DataObj {
  */
 export class TabularSectionRow extends BaseDataObj {
 
-  constructor(attr, owner, loading, direct) {
-
-    super(attr, owner, loading, direct);
-
-    Object.defineProperties(this, {
-
-      /**
-       * Указатель на владельца данной строки табличной части
-       * @property _owner
-       * @type TabularSection
-       */
-      _owner: {
-        value: owner
-      },
-    });
-  }
-
   /**
    * @summary Метаданые строки табличной части
    * @param {String} name - имя поля, данные которого интересуют
@@ -1546,11 +1529,32 @@ export class TabularSectionRow extends BaseDataObj {
    * Копирует строку табличной части
    */
   clone() {
-    const {_manager} = th
-    return this[own]._manager.utils.mixin(_owner._owner._manager.objConstructor(_owner._name, _owner), _obj)
+    const {_manager} = this;
+    return _manager.utils.mixin(_manager.objConstructor(this[own]._name, this[own]), this);
   }
 
-};
+}
+
+/**
+ * Строка табчасти допреквизитов
+ * @class
+ */
+export class ExtraFieldsRow extends TabularSectionRow {
+  get property(){return this[get]('property')}
+  set property(v){this[set]('property',v)}
+  get value(){
+    const {property: param} = this;
+    return (param?.fetch_type && !param.empty()) ? param.fetch_type(this._obj.value) : this[get]('value');
+  }
+  set value(v) {
+    if(typeof v === 'string' && v.length === 72 && this.property?.type?.types?.includes('cat.clrs')) {
+      v = $p.cat.clrs.getter(v);
+    }
+    this[set]('value', v);
+  }
+  get txt_row(){return this[get]('txt_row')}
+  set txt_row(v){this[set]('txt_row',v)}
+}
 
 
 

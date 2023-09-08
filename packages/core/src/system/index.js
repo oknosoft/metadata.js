@@ -4,6 +4,7 @@ import {meta as schemeSettings} from './schemeSettings';
 import accountsClasses, {meta as accounts} from './accounts';
 import usersClasses, {meta as users} from './users';
 import abonentsClasses, {meta as abonents} from './abonents';
+import branchesClasses, {meta as branches} from './branches';
 
 const meta = [
   log,
@@ -11,6 +12,7 @@ const meta = [
   accounts,
   users,
   abonents,
+  branches,
 ];
 
 /**
@@ -49,6 +51,7 @@ export const sysClasses = [
   accountsClasses,
   usersClasses,
   abonentsClasses,
+  branchesClasses,
 ];
 
 for(const curr of meta) {
