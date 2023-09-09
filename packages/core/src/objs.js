@@ -46,7 +46,7 @@ class InnerData {
 
 /**
  * @summary Предок DataObj
- * @desc Ключевое отличие: экземпляры BaseDataObj, болтаются в воздухе, в то сремя,
+ * @desc Ключевое отличие: экземпляры BaseDataObj, болтаются в воздухе, в то время,
  * как обычные DataObj, сразу попадают в коллекцию своего владельца
  */
 export class BaseDataObj extends OwnerObj {
@@ -87,7 +87,7 @@ export class BaseDataObj extends OwnerObj {
       this.#obj[name] = new TabularSection(this, name, this.#obj[name]);
     }
     // TODO: заменить на метод класса MetaObj
-    if(fields?.type) {
+    if(fields?.type && this.#obj.type) {
       this.#obj.type = new TypeDef(this.#obj.type);
     }
 
@@ -158,7 +158,7 @@ export class BaseDataObj extends OwnerObj {
     const rtype = typeof res;
     // если доступны ссылочные и на входе строка
     if(type.isRef && rtype === string) {
-      const parts = res.split(':');
+      const parts = res.split('|');
       if(parts.length === 2) {
         const mgr = fMeta[own].mgr(parts[0]);
         if(mgr) {
@@ -225,8 +225,8 @@ export class BaseDataObj extends OwnerObj {
 
   [notify](f) {
     const {_data, _manager} = this;
-    if(_data && !_data._loading) {
-      _data._modified = true;
+    if(_data && !_data.loading) {
+      _data.modified = true;
       _manager.emit_async('update', this, {[f]: this.#obj[f]});
     }
   }
@@ -243,10 +243,10 @@ export class BaseDataObj extends OwnerObj {
     const obj = this.#obj;
 
     // выполняем value_change с блокировкой эскалации
-    if(!_data._loading) {
-      _data._loading = true;
+    if(!_data.loading) {
+      _data.loading = true;
       const res = this.value_change(f, mf, v);
-      _data._loading = false;
+      _data.loading = false;
       if(res === false) {
         return;
       }
@@ -440,10 +440,10 @@ export class BaseDataObj extends OwnerObj {
    * Признак модифицированности
    */
   get _modified() {
-    return !!this._data._modified;
+    return !!this._data.modified;
   }
   set _modified(v) {
-    this._data._modified = !!v;
+    this._data.modified = !!v;
   }
 
   /**
@@ -474,6 +474,22 @@ export class BaseDataObj extends OwnerObj {
    */
   empty() {
     return this._manager.utils.is.emptyGuid(this.ref);
+  }
+
+  beforeAddRow() {
+
+  }
+
+  beforeDelRow() {
+
+  }
+
+  afterAddRow() {
+
+  }
+
+  afterDelRow() {
+
   }
 
   /**
@@ -592,24 +608,24 @@ export class DataObj extends BaseDataObj {
     const {_data, _manager: {utils}} = this;
     if(this.ref == utils.blank.guid) {
       if(_data) {
-        _data._loading = false;
-        _data._modified = false;
+        _data.loading = false;
+        _data.modified = false;
       }
       return Promise.resolve(this);
     }
-    else if(_data._loading) {
+    else if(_data.loading) {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          resolve(_data._loading ? this.load(attr) : this);
+          resolve(_data.loading ? this.load(attr) : this);
         }, 1000);
       });
     }
     else {
-      _data._loading = true;
+      _data.loading = true;
       return this._manager.adapter.load_obj(this, attr)
         .then(() => {
-          _data._loading = false;
-          _data._modified = false;
+          _data.loading = false;
+          _data.modified = false;
           return this.after_load();
         });
     }
@@ -623,7 +639,7 @@ export class DataObj extends BaseDataObj {
   unload() {
     const {_obj, ref, _data, _manager} = this;
     _manager.unload_obj(ref);
-    _data._loading = true;
+    _data.loading = true;
     //_manager.emit_async('unload', this);
     for (const ts in this._metadata().tabular_sections) {
       this[ts].clear();
@@ -736,7 +752,7 @@ export class DataObj extends BaseDataObj {
             }
           }
           else {
-            _data._modified = false;
+            _data.modified = false;
           }
           _data._saving = 0;
           _data.trans = false;
@@ -1107,17 +1123,22 @@ export class CatObj extends DataObj {
   }
 
   get parent() {
+    return this._metadata().hierarchical ? this[get]('parent') : null;
 
   }
   set parent(v) {
-
+    if(this._metadata().hierarchical) {
+      this[set]('parent', v);
+    }
   }
 
   get owner() {
-
+    return this._metadata().hasOwners ? this[get]('owner') : null;
   }
   set owner(v) {
-
+    if(this._metadata().hasOwners) {
+      this[set]('owner', v);
+    }
   }
 
 
@@ -1272,10 +1293,8 @@ export class DocObj extends DataObj {
 
 
 /**
- * ### Абстрактный класс ОбработкаОбъект
- * @class DataProcessorObj
+ * @summary Абстрактный класс ОбработкаОбъект
  * @extends DataObj
- * @constructor
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {DataManager}
  */
@@ -1305,12 +1324,10 @@ export class DataProcessorObj extends DataObj {
 }
 
 /**
- * ### Абстрактный класс значения перечисления
- * Имеет fake-ссылку и прочие атрибуты объекта данных, но фактически - это просто значение перечисления
+ * @summary Абстрактный класс значения перечисления
+ * @desc Имеет fake-ссылку и прочие атрибуты объекта данных, но фактически - это просто значение перечисления
  *
- * @class EnumObj
  * @extends DataObj
- * @constructor
  * @param attr {Object} - объект с реквизитами в свойствах или строка guid ссылки
  * @param manager {EnumManager}
  */
@@ -1417,8 +1434,8 @@ export class EnumObj extends DataObj {
 }
 
 /**
- * ### Запись (строка) регистра
- * Используется во всех типах регистров (сведений, накопления, бухгалтерии)
+ * @summary Запись (строка) регистра
+ * @desc Используется во всех типах регистров (сведений, накопления, бухгалтерии)
  *
  * @class RegisterRow
  * @extends DataObj

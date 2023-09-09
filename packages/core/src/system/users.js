@@ -9,7 +9,6 @@ export const meta = {
       objPresentation: "Пользователь",
       inputBy: ["name"],
       hierarchical: false,
-      hasOwners: false,
       groupHierarchy: true,
       mainPresentation: "name",
       codeLength: 0,
@@ -48,7 +47,7 @@ export const meta = {
               synonym: "Значение",
               multiline: false,
               tooltip: "Значение дополнительного реквизита",
-              "choiceLinks": [{
+              choiceLinks: [{
                   name: ["selection", "owner"],
                   path: ["extraFields", "property"]
               }],
@@ -115,5 +114,6 @@ export default function ({cat, classes, symbols}, exclude) {
   // если пользователь попросил не спешить с созданием менеджера - не спешим
   if(!exclude.includes('cat.users')) {
     cat.create('users');
+    exclude.push('cat.users');
   }
 };

@@ -256,5 +256,6 @@ export default function ({cat, classes, symbols}, exclude) {
   // если пользователь попросил не спешить с созданием менеджера - не спешим
   if(!exclude.includes('cat.accounts')) {
     cat.create('accounts');
+    exclude.push('cat.accounts');
   }
 };

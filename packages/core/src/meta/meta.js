@@ -86,7 +86,7 @@ class Meta extends MetaEventEmitter {
           }
           if(Array.isArray(obj.aliases)) {
             for(const alias of obj.aliases) {
-              meta[alias] = obj;
+              meta[alias.includes('.') ? alias : `${area}.${alias}`] = obj;
             }
           }
           delete raw[area][el];
@@ -126,7 +126,9 @@ class Meta extends MetaEventEmitter {
         continue;
       }
       for (const el of classes[area]) {
-        this.#m[area][el].constructorBase();
+        if(!exclude.includes(`${area}.${el}`)) {
+          this.#m[area][el].constructorBase();
+        }
       }
     }
     // модификаторы объектов и менеджеров
@@ -145,6 +147,11 @@ class Meta extends MetaEventEmitter {
         mgrs[`${area}.${el}`] = mgr;
         if(meta.id) {
           mgrs[meta.id] = mgr;
+        }
+        if(Array.isArray(meta.aliases)) {
+          for(const alias of meta.aliases) {
+            mgrs[alias.includes('.') ? alias : `${area}.${alias}`] = mgr;
+          }
         }
       }
     }

@@ -9,11 +9,9 @@ export const meta = {
       listPresentation: "",
       inputBy: ["name", "synonym"],
       hierarchical: true,
-      hasOwners: false,
       groupHierarchy: false,
       mainPresentation: "name",
-      codeLen: 0,
-      id: "pd",
+      codeLength: 0,
       fields: {
         value: {
           synonym: "Значение",
@@ -149,7 +147,9 @@ export const meta = {
           }
         }
       },
-      cachable: "ram"
+      cachable: "ram",
+      id: "pd",
+      aliases: ['predefined_elmnts'],
     }
   },
 };
@@ -163,7 +163,7 @@ export default function ({cch, classes, symbols}, exclude) {
 
   // но оставляем возможность дополнить-переопределить
   // если пользователь попросил не спешить с созданием менеджера - не спешим
-  if(!exclude.includes('cch.predefinedElmnts')) {
-    cch.create('predefinedElmnts');
-  }
+  // if(!exclude.includes('cch.predefinedElmnts')) {
+  //   cch.create('predefinedElmnts');
+  // }
 };

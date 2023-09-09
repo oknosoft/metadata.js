@@ -15,20 +15,20 @@ export const meta = {
         user: {
           synonym: 'Пользователь',
           tooltip: 'Пользователь, в сеансе которого произошло событие',
-          type: {types: ['string'], str_len: 100},
+          type: {types: ['string'], strLen: 100},
         },
       },
       resources: {
         'class': {
           synonym: 'Класс',
           tooltip: 'Класс события',
-          type: {types: ['string'], str_len: 100},
+          type: {types: ['string'], strLen: 100},
         },
         note: {
           synonym: 'Комментарий',
           multiline: true,
           tooltip: 'Текст события',
-          type: {types: ['string'], str_len: 0},
+          type: {types: ['string'], strLen: 0},
         },
         obj: {
           synonym: 'Объект',
@@ -53,12 +53,12 @@ export const meta = {
         user: {
           synonym: 'Пользователь',
           tooltip: 'Пользователь, в сеансе которого произошло событие',
-          type: {types: ['string'], str_len: 100},
+          type: {types: ['string'], strLen: 100},
         },
         current: {
           synonym: 'Текйщий пользователь',
           tooltip: 'Пользователь, отметивыший событие, как просмотренное',
-          type: {types: ['string'], str_len: 100},
+          type: {types: ['string'], strLen: 100},
         },
       },
       cachable: 'log',

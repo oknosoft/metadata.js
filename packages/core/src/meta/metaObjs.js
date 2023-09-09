@@ -39,7 +39,7 @@ export class OwnerObj {
 
 /**
  * @summary Описание метаданных объекта
- * Не путать с виртуальным справочником CatMetaObjs
+ * @desc Не путать с виртуальным справочником CatMetaObjs
  * @class MetaObj
  */
 export class MetaObj extends OwnerObj {
@@ -70,7 +70,10 @@ export class MetaObj extends OwnerObj {
       this.fields = new MetaFields(this, enmFields);
     }
     else {
-      const {fields, tabulars, ...other} = raw;
+      let {fields, tabulars, tabular_sections, ...other} = raw;
+      if(tabular_sections) {
+        tabulars = tabular_sections;
+      }
       this.fields = new MetaFields(this, fields);
       this.tabulars = new MetaTabulars(this, tabulars);
       Object.assign(this, other);

@@ -6,7 +6,7 @@ const selection_fields = {
     tooltip: '',
     type: {
       types: ['string'],
-      str_len: 100
+      strLen: 100
     }
   },
   use: {
@@ -30,7 +30,7 @@ const selection_fields = {
     tooltip: 'Путь к данным',
     type: {
       types: ['string'],
-      str_len: 1024
+      strLen: 1024
     }
   },
   left_value_type: {
@@ -39,7 +39,7 @@ const selection_fields = {
     default: 'path',
     type: {
       types: ['string'],
-      str_len: 100
+      strLen: 100
     }
   },
   comparison_type: {
@@ -54,7 +54,7 @@ const selection_fields = {
     tooltip: 'Значение или путь',
     type: {
       types: ['string'],
-      str_len: 1024
+      strLen: 1024
     }
   },
   right_value_type: {
@@ -63,7 +63,7 @@ const selection_fields = {
     default: 'path',
     type: {
       types: ['string'],
-      str_len: 100
+      strLen: 100
     }
   },
 };
@@ -379,7 +379,6 @@ export const meta = {
       synonym: 'Настройки отчетов и списков',
       inputBy: ['name'],
       hierarchical: false,
-      hasOwners: false,
       groupHierarchy: true,
       mainPresentation: "name",
       codeLength: 0,
@@ -389,7 +388,7 @@ export const meta = {
           tooltip: 'Имя класса метаданных',
           type: {
             types: ['string'],
-            str_len: 250
+            strLen: 250
           }
         },
         user: {
@@ -397,7 +396,7 @@ export const meta = {
           tooltip: 'Если пусто - публичная настройка',
           type: {
             types: ['string'],
-            str_len: 50
+            strLen: 50
           }
         },
         order: {
@@ -414,7 +413,7 @@ export const meta = {
           tooltip: 'Индекс CouchDB или текст SQL',
           type: {
             types: ['string'],
-            str_len: 0
+            strLen: 0
           }
         },
         date_from: {
@@ -458,7 +457,7 @@ export const meta = {
           synonym: 'Дополнительные свойства',
           type: {
             types: ['string'],
-            str_len: 0
+            strLen: 0
           }
         }
       },
@@ -473,7 +472,7 @@ export const meta = {
               tooltip: 'Для плоского списка, родитель пустой',
               type: {
                 types: ['string'],
-                str_len: 100
+                strLen: 100
               }
             },
             use: {
@@ -488,7 +487,7 @@ export const meta = {
               tooltip: '',
               type: {
                 types: ['string'],
-                str_len: 100
+                strLen: 100
               }
             },
             width: {
@@ -496,7 +495,7 @@ export const meta = {
               tooltip: '',
               type: {
                 types: ['string'],
-                str_len: 6
+                strLen: 6
               }
             },
             caption: {
@@ -504,7 +503,7 @@ export const meta = {
               tooltip: '',
               type: {
                 types: ['string'],
-                str_len: 100
+                strLen: 100
               }
             },
             tooltip: {
@@ -512,7 +511,7 @@ export const meta = {
               tooltip: '',
               type: {
                 types: ['string'],
-                str_len: 100
+                strLen: 100
               }
             },
             ctrl_type: {
@@ -528,7 +527,7 @@ export const meta = {
               type: {
                 types: ['cat.formulas'],
               },
-              choice_params: [
+              choiceParams: [
                 {
                   name: 'parent',
                   path: []
@@ -541,7 +540,7 @@ export const meta = {
               type: {
                 types: ['cat.formulas'],
               },
-              choice_params: [
+              choiceParams: [
                 {
                   name: 'parent',
                   path: []
@@ -561,7 +560,7 @@ export const meta = {
               tooltip: '',
               type: {
                 types: ['string'],
-                str_len: 100
+                strLen: 100
               }
             },
             use: {
@@ -576,7 +575,7 @@ export const meta = {
               tooltip: '',
               type: {
                 types: ['string'],
-                str_len: 100
+                strLen: 100
               }
             },
             direction: {
@@ -598,7 +597,7 @@ export const meta = {
               tooltip: '',
               type: {
                 types: ['string'],
-                str_len: 100
+                strLen: 100
               }
             },
             use: {
@@ -613,7 +612,7 @@ export const meta = {
               tooltip: '',
               type: {
                 types: ['string'],
-                str_len: 100
+                strLen: 100
               }
             }
           }
@@ -628,7 +627,7 @@ export const meta = {
               tooltip: '',
               type: {
                 types: ['string'],
-                str_len: 100
+                strLen: 100
               }
             },
             use: {
@@ -643,7 +642,7 @@ export const meta = {
               tooltip: '',
               type: {
                 types: ['string'],
-                str_len: 100
+                strLen: 100
               }
             },
             formula: {
@@ -671,7 +670,7 @@ export const meta = {
               tooltip: '',
               type: {
                 types: ['string'],
-                str_len: 100
+                strLen: 100
               }
             },
             value_type: {
@@ -679,7 +678,7 @@ export const meta = {
               tooltip: 'Тип значения',
               type: {
                 types: ['string'],
-                str_len: 100
+                strLen: 100
               }
             },
             value: {
@@ -692,7 +691,7 @@ export const meta = {
                   //'date',
                   // "array"
                 ],
-                str_len: 0,
+                strLen: 0,
                 digits: 15,
                 fraction: 3,
                 datePart: 'date'
@@ -718,7 +717,7 @@ export const meta = {
               'tooltip': '',
               'type': {
                 'types': ['string'],
-                'str_len': 10
+                strLen: 10
               }
             },
             use: {
@@ -733,7 +732,7 @@ export const meta = {
               'tooltip': 'Элемент структуры отчета',
               'type': {
                 'types': ['string'],
-                'str_len': 50
+                strLen: 50
               }
             },
             kind: {
@@ -741,7 +740,7 @@ export const meta = {
               'tooltip': 'список, таблица, группировка строк, группировка колонок',
               'type': {
                 'types': ['string'],
-                'str_len': 50
+                strLen: 50
               }
             },
             definition: {
@@ -749,7 +748,7 @@ export const meta = {
               'tooltip': 'Описание раздела структуры',
               'type': {
                 'types': ['string'],
-                'str_len': 50
+                strLen: 50
               }
             }
           }
@@ -764,7 +763,7 @@ export const meta = {
               tooltip: 'Список колонок через запятую, к которым будет применено оформление (по умолчанию - ко всей строке)',
               type: {
                 types: ['string'],
-                str_len: 0
+                strLen: 0
               }
             },
             css: {
@@ -772,7 +771,7 @@ export const meta = {
               tooltip: 'В синтаксисе css',
               type: {
                 types: ['string'],
-                str_len: 0
+                strLen: 0
               }
             },
           }),
@@ -780,6 +779,7 @@ export const meta = {
       },
       cachable: 'ram',
       id: 'ss',
+      aliases: ['scheme_settings'],
     },
   },
 };

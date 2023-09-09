@@ -492,7 +492,7 @@ export class RefDataManager extends DataManager {
 			}
 			else if(obj.isNew() || forse){
 			  if(obj.isNew() || forse !== 'update_only') {
-          obj._data._loading = true;
+          obj._data.loading = true;
         }
         else if(forse === 'update_only' && attr.timestamp) {
           if(attr.timestamp.user === (this.adapter.authorized || jobPrm.get('user_name'))) {
@@ -930,7 +930,7 @@ export class RegisterManager extends DataManager{
         continue;
       }
       else if (forse) {
-        obj._data._loading = true;
+        obj._data.loading = true;
         this.utils.mixin(obj, row);
       }
 

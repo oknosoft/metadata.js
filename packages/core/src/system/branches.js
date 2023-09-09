@@ -19,34 +19,34 @@ export const meta = {
         suffix: {
           synonym: "Суффикс CouchDB",
           multiline: false,
-          "tooltip": "Для разделения данных в CouchDB",
+          tooltip: "Для разделения данных в CouchDB",
           "mandatory": true,
-          "type": {
-            "types": [
+          type: {
+            types: [
               "string"
             ],
-            "str_len": 4
+            "strLen": 4
           }
         },
         lang: {
           synonym: "Язык",
           multiline: false,
-          "tooltip": "Язык интерфейса пользователя",
-          "type": {
-            "types": [
+          tooltip: "Язык интерфейса пользователя",
+          type: {
+            types: [
               "string"
             ],
-            "str_len": 2,
-            "str_fix": true
+            strLen: 2,
+            strFix: true
           }
         },
         server: {
           synonym: "Сервер",
           multiline: false,
-          "tooltip": "Если указано, используется этот сервер, а не основной сервер абонента",
+          tooltip: "Если указано, используется этот сервер, а не основной сервер абонента",
           choiceGrp: "elm",
-          "type": {
-            "types": [
+          type: {
+            types: [
               "cat.servers"
             ]
           }
@@ -54,10 +54,10 @@ export const meta = {
         back_server: {
           synonym: "Обратный сервер",
           multiline: false,
-          "tooltip": "Если указано, этот сервер, для настройки репликации от сервера отдела к родителю",
+          tooltip: "Если указано, этот сервер, для настройки репликации от сервера отдела к родителю",
           choiceGrp: "elm",
-          "type": {
-            "types": [
+          type: {
+            types: [
               "cat.servers"
             ]
           }
@@ -65,10 +65,10 @@ export const meta = {
         repl_server: {
           synonym: "Сервер репликатора",
           multiline: false,
-          "tooltip": "Если указано, задание репликации будет запущено на этом сервере",
+          tooltip: "Если указано, задание репликации будет запущено на этом сервере",
           choiceGrp: "elm",
-          "type": {
-            "types": [
+          type: {
+            types: [
               "cat.servers"
             ]
           }
@@ -76,9 +76,9 @@ export const meta = {
         direct: {
           synonym: "Direct",
           multiline: false,
-          "tooltip": "Для пользователя запрещен режим offline",
-          "type": {
-            "types": [
+          tooltip: "Для пользователя запрещен режим offline",
+          type: {
+            types: [
               "boolean"
             ]
           }
@@ -86,9 +86,9 @@ export const meta = {
         use: {
           synonym: "Используется",
           multiline: false,
-          "tooltip": "Использовать данный отдел при создании баз и пользователей",
-          "type": {
-            "types": [
+          tooltip: "Использовать данный отдел при создании баз и пользователей",
+          type: {
+            types: [
               "boolean"
             ]
           }
@@ -96,9 +96,9 @@ export const meta = {
         mode: {
           synonym: "Режим",
           multiline: false,
-          "tooltip": "Режим репликации текущего отдела",
-          "type": {
-            "types": [
+          tooltip: "Режим репликации текущего отдела",
+          type: {
+            types: [
               "number"
             ],
             "digits": 1,
@@ -108,9 +108,9 @@ export const meta = {
         no_mdm: {
           synonym: "NoMDM",
           multiline: false,
-          "tooltip": "Отключить MDM для данного отдела (напрмиер, если это dev-база)",
-          "type": {
-            "types": [
+          tooltip: "Отключить MDM для данного отдела (напрмиер, если это dev-база)",
+          type: {
+            types: [
               "boolean"
             ]
           }
@@ -118,9 +118,9 @@ export const meta = {
         no_partners: {
           synonym: "NoPartners",
           multiline: false,
-          "tooltip": "Не использовать фильтр по контрагенту в репликации (только по подразделению)",
-          "type": {
-            "types": [
+          tooltip: "Не использовать фильтр по контрагенту в репликации (только по подразделению)",
+          type: {
+            types: [
               "boolean"
             ]
           }
@@ -128,9 +128,9 @@ export const meta = {
         no_divisions: {
           synonym: "NoDivisions",
           multiline: false,
-          "tooltip": "Не использовать фильтр по подразделению в репликации (только по контрагенту)",
-          "type": {
-            "types": [
+          tooltip: "Не использовать фильтр по подразделению в репликации (только по контрагенту)",
+          type: {
+            types: [
               "boolean"
             ]
           }
@@ -138,16 +138,16 @@ export const meta = {
         filter: {
           synonym: "Фильтр технологии",
           multiline: false,
-          "tooltip": "Если указано, используется индивидуальный образ справочников",
-          "choice_params": [
+          tooltip: "Если указано, используется индивидуальный образ справочников",
+          choiceParams: [
             {
-              "name": "area",
-              "path": true
+              name: "area",
+              path: true
             }
           ],
           choiceGrp: "elm",
-          "type": {
-            "types": [
+          type: {
+            types: [
               "cat.abonents"
             ]
           }
@@ -155,16 +155,16 @@ export const meta = {
         owner: {
           synonym: "Владелец репликаций",
           multiline: false,
-          "tooltip": "Абонент, которому принадлежит отдел",
-          "choice_params": [
+          tooltip: "Абонент, которому принадлежит отдел",
+          choiceParams: [
             {
-              "name": "area",
-              "path": false
+              name: "area",
+              path: false
             }
           ],
           "mandatory": true,
-          "type": {
-            "types": [
+          type: {
+            types: [
               "cat.abonents"
             ]
           }
@@ -172,9 +172,9 @@ export const meta = {
         parent: {
           synonym: "Ведущий отдел",
           multiline: false,
-          "tooltip": "Заполняется в случае иерархической репликации",
-          "type": {
-            "types": [
+          tooltip: "Заполняется в случае иерархической репликации",
+          type: {
+            types: [
               "cat.branches"
             ]
           }
@@ -182,17 +182,17 @@ export const meta = {
       },
       tabular_sections: {
         organizations: {
-          "name": "Организации",
+          name: "Организации",
           synonym: "Организации",
-          "tooltip": "Организации, у которых дилер может заказывать продукцию и услуги",
+          tooltip: "Организации, у которых дилер может заказывать продукцию и услуги",
           "fields": {
             "acl_obj": {
               synonym: "Объект доступа",
               multiline: false,
-              "tooltip": "",
+              tooltip: "",
               "mandatory": true,
-              "type": {
-                "types": [
+              type: {
+                types: [
                   "cat.organizations"
                 ]
               }
@@ -200,9 +200,9 @@ export const meta = {
             "by_default": {
               synonym: "По умолчанию",
               multiline: false,
-              "tooltip": "",
-              "type": {
-                "types": [
+              tooltip: "",
+              type: {
+                types: [
                   "boolean"
                 ]
               }
@@ -210,17 +210,17 @@ export const meta = {
           }
         },
         partners: {
-          "name": "Контрагенты",
+          name: "Контрагенты",
           synonym: "Контрагенты",
-          "tooltip": "Юридические лица дилера, от имени которых он оформляет заказы",
+          tooltip: "Юридические лица дилера, от имени которых он оформляет заказы",
           "fields": {
             "acl_obj": {
               synonym: "Объект доступа",
               multiline: false,
-              "tooltip": "",
+              tooltip: "",
               "mandatory": true,
-              "type": {
-                "types": [
+              type: {
+                types: [
                   "cat.partners"
                 ]
               }
@@ -228,9 +228,9 @@ export const meta = {
             "by_default": {
               synonym: "По умолчанию",
               multiline: false,
-              "tooltip": "",
-              "type": {
-                "types": [
+              tooltip: "",
+              type: {
+                types: [
                   "boolean"
                 ]
               }
@@ -238,17 +238,17 @@ export const meta = {
           }
         },
         divisions: {
-          "name": "Подразделения",
+          name: "Подразделения",
           synonym: "Подразделения",
-          "tooltip": "Подразделения, к данным которых, дилеру предоставлен доступ",
+          tooltip: "Подразделения, к данным которых, дилеру предоставлен доступ",
           "fields": {
             "acl_obj": {
               synonym: "Объект доступа",
               multiline: false,
-              "tooltip": "",
+              tooltip: "",
               "mandatory": true,
-              "type": {
-                "types": [
+              type: {
+                types: [
                   "cat.divisions"
                 ]
               }
@@ -256,9 +256,9 @@ export const meta = {
             "by_default": {
               synonym: "По умолчанию",
               multiline: false,
-              "tooltip": "",
-              "type": {
-                "types": [
+              tooltip: "",
+              type: {
+                types: [
                   "boolean"
                 ]
               }
@@ -266,17 +266,17 @@ export const meta = {
           }
         },
         price_types: {
-          "name": "ТипыЦен",
+          name: "ТипыЦен",
           synonym: "Типы цен",
-          "tooltip": "Типы цен, привязанные к дилеру",
+          tooltip: "Типы цен, привязанные к дилеру",
           "fields": {
             "acl_obj": {
               synonym: "Объект доступа",
               multiline: false,
-              "tooltip": "",
+              tooltip: "",
               "mandatory": true,
-              "type": {
-                "types": [
+              type: {
+                types: [
                   "cat.nom_prices_types",
                   "cat.branches"
                 ]
@@ -285,17 +285,17 @@ export const meta = {
           }
         },
         keys: {
-          "name": "Ключи",
+          name: "Ключи",
           synonym: "Ключи",
-          "tooltip": "Ключи параметров, привязанные к дилеру",
+          tooltip: "Ключи параметров, привязанные к дилеру",
           "fields": {
             "acl_obj": {
               synonym: "Объект доступа",
               multiline: false,
-              "tooltip": "",
+              tooltip: "",
               "mandatory": true,
-              "type": {
-                "types": [
+              type: {
+                types: [
                   "cat.parameters_keys"
                 ]
               }
@@ -303,17 +303,17 @@ export const meta = {
           }
         },
         extra_fields: {
-          "name": "ДополнительныеРеквизиты",
+          name: "ДополнительныеРеквизиты",
           synonym: "Дополнительные реквизиты",
-          "tooltip": "Дополнительные реквизиты объекта",
+          tooltip: "Дополнительные реквизиты объекта",
           "fields": {
             "property": {
               synonym: "Свойство",
               multiline: false,
-              "tooltip": "Дополнительный реквизит",
+              tooltip: "Дополнительный реквизит",
               choiceGrp: "elm",
-              "type": {
-                "types": [
+              type: {
+                types: [
                   "cch.properties"
                 ]
               }
@@ -321,14 +321,14 @@ export const meta = {
             "value": {
               synonym: "Значение",
               multiline: false,
-              "tooltip": "Значение дополнительного реквизита",
-              "choice_links": [
+              tooltip: "Значение дополнительного реквизита",
+              choiceLinks: [
                 {
-                  "name": [
+                  name: [
                     "selection",
                     "owner"
                   ],
-                  "path": [
+                  path: [
                     "extra_fields",
                     "property"
                   ]
@@ -336,14 +336,14 @@ export const meta = {
               ],
               choiceGrp: "elm",
               "choice_type": {
-                "path": [
+                path: [
                   "extra_fields",
                   "property"
                 ],
                 "elm": 0
               },
-              "type": {
-                "types": [
+              type: {
+                types: [
                   "enm.sketch_view",
                   "cat.nom_groups",
                   "enm.coloring",
@@ -396,7 +396,7 @@ export const meta = {
                   "cch.properties",
                   "cat.clrs"
                 ],
-                "str_len": 1024,
+                strLen: 1024,
                 "date_part": "date_time",
                 "digits": 15,
                 "fraction": 3
@@ -405,28 +405,28 @@ export const meta = {
             "txt_row": {
               synonym: "Текстовая строка",
               multiline: false,
-              "tooltip": "Полный текст строкового дополнительного реквизита",
-              "type": {
-                "types": [
+              tooltip: "Полный текст строкового дополнительного реквизита",
+              type: {
+                types: [
                   "string"
                 ],
-                "str_len": 0
+                strLen: 0
               }
             }
           }
         },
         servers: {
-          "name": "ИнтеграцияСерверы",
+          name: "ИнтеграцияСерверы",
           synonym: "Серверы",
-          "tooltip": "",
+          tooltip: "",
           "fields": {
             "key": {
               synonym: "Год",
               multiline: false,
-              "tooltip": "",
+              tooltip: "",
               "mandatory": true,
-              "type": {
-                "types": [
+              type: {
+                types: [
                   "number"
                 ],
                 "digits": 4,
@@ -436,24 +436,24 @@ export const meta = {
             "server": {
               synonym: "Сервер",
               multiline: false,
-              "tooltip": "",
+              tooltip: "",
               choiceGrp: "elm",
               "mandatory": true,
-              "type": {
-                "types": [
+              type: {
+                types: [
                   "cat.servers"
                 ]
               }
             },
-            "name": {
+            name: {
               synonym: "Имя базы",
               multiline: false,
-              "tooltip": "Указывается, если имя архивной базы отличается от типового",
-              "type": {
-                "types": [
+              tooltip: "Указывается, если имя архивной базы отличается от типового",
+              type: {
+                types: [
                   "string"
                 ],
-                "str_len": 255
+                strLen: 255
               }
             }
           }
@@ -470,150 +470,81 @@ export default function ({cat, classes, symbols}, exclude) {
   const {get, set} = symbols;
 
   class CatBranches extends CatObj{
-    get suffix(){return this._getter('suffix')}
-    set suffix(v){this._setter('suffix',v)}
-    get lang(){return this._getter('lang')}
-    set lang(v){this._setter('lang',v)}
-    get direct(){return this._getter('direct')}
-    set direct(v){this._setter('direct',v)}
-    get use(){return this._getter('use')}
-    set use(v){this._setter('use',v)}
-    get no_mdm(){return this._getter('no_mdm')}
-    set no_mdm(v){this._setter('no_mdm',v)}
-    get no_partners(){return this._getter('no_partners')}
-    set no_partners(v){this._setter('no_partners',v)}
-    get no_divisions(){return this._getter('no_divisions')}
-    set no_divisions(v){this._setter('no_divisions',v)}
-    get filter(){return this._getter('filter')}
-    set filter(v){this._setter('filter',v)}
-    get parent(){return this._getter('parent')}
-    set parent(v){this._setter('parent',v)}
-    get organizations(){return this._getter_ts('organizations')}
-    set organizations(v){this._setter_ts('organizations',v)}
-    get partners(){return this._getter_ts('partners')}
-    set partners(v){this._setter_ts('partners',v)}
-    get divisions(){return this._getter_ts('divisions')}
-    set divisions(v){this._setter_ts('divisions',v)}
-    get price_types(){return this._getter_ts('price_types')}
-    set price_types(v){this._setter_ts('price_types',v)}
-    get keys(){return this._getter_ts('keys')}
-    set keys(v){this._setter_ts('keys',v)}
-    get extra_fields(){return this._getter_ts('extra_fields')}
-    set extra_fields(v){this._setter_ts('extra_fields',v)}
+    get suffix(){return this[get]('suffix')}
+    set suffix(v){this[set]('suffix',v)}
+    get lang(){return this[get]('lang')}
+    set lang(v){this[set]('lang',v)}
+    get direct(){return this[get]('direct')}
+    set direct(v){this[set]('direct',v)}
+    get use(){return this[get]('use')}
+    set use(v){this[set]('use',v)}
+    get no_mdm(){return this[get]('no_mdm')}
+    set no_mdm(v){this[set]('no_mdm',v)}
+    get no_partners(){return this[get]('no_partners')}
+    set no_partners(v){this[set]('no_partners',v)}
+    get no_divisions(){return this[get]('no_divisions')}
+    set no_divisions(v){this[set]('no_divisions',v)}
+    get filter(){return this[get]('filter')}
+    set filter(v){this[set]('filter',v)}
+    get organizations(){return this[get]('organizations')}
+    set organizations(v){this[set]('organizations',v)}
+    get partners(){return this[get]('partners')}
+    set partners(v){this[set]('partners',v)}
+    get divisions(){return this[get]('divisions')}
+    set divisions(v){this[set]('divisions',v)}
+    get price_types(){return this[get]('price_types')}
+    set price_types(v){this[set]('price_types',v)}
+    get keys(){return this[get]('keys')}
+    set keys(v){this[set]('keys',v)}
+    get extra_fields(){return this[get]('extra_fields')}
+    set extra_fields(v){this[set]('extra_fields',v)}
   }
   classes.CatBranches = CatBranches;
 
   class CatBranchesOrganizationsRow extends TabularSectionRow{
-    get acl_obj(){return this._getter('acl_obj')}
-    set acl_obj(v){this._setter('acl_obj',v)}
-    get by_default(){return this._getter('by_default')}
-    set by_default(v){this._setter('by_default',v)}
+    get acl_obj(){return this[get]('acl_obj')}
+    set acl_obj(v){this[set]('acl_obj',v)}
+    get by_default(){return this[get]('by_default')}
+    set by_default(v){this[set]('by_default',v)}
   }
   classes.CatBranchesOrganizationsRow = CatBranchesOrganizationsRow;
 
   class CatBranchesPartnersRow extends TabularSectionRow{
-    get acl_obj(){return this._getter('acl_obj')}
-    set acl_obj(v){this._setter('acl_obj',v)}
-    get by_default(){return this._getter('by_default')}
-    set by_default(v){this._setter('by_default',v)}
+    get acl_obj(){return this[get]('acl_obj')}
+    set acl_obj(v){this[set]('acl_obj',v)}
+    get by_default(){return this[get]('by_default')}
+    set by_default(v){this[set]('by_default',v)}
   }
   classes.CatBranchesPartnersRow = CatBranchesPartnersRow;
 
   class CatBranchesDivisionsRow extends TabularSectionRow{
-    get acl_obj(){return this._getter('acl_obj')}
-    set acl_obj(v){this._setter('acl_obj',v)}
-    get by_default(){return this._getter('by_default')}
-    set by_default(v){this._setter('by_default',v)}
+    get acl_obj(){return this[get]('acl_obj')}
+    set acl_obj(v){this[set]('acl_obj',v)}
+    get by_default(){return this[get]('by_default')}
+    set by_default(v){this[set]('by_default',v)}
   }
   classes.CatBranchesDivisionsRow = CatBranchesDivisionsRow;
 
   class CatBranchesPriceTypesRow extends TabularSectionRow{
-    get acl_obj(){return this._getter('acl_obj')}
-    set acl_obj(v){this._setter('acl_obj',v)}
+    get acl_obj(){return this[get]('acl_obj')}
+    set acl_obj(v){this[set]('acl_obj',v)}
   }
   classes.CatBranchesPriceTypesRow = CatBranchesPriceTypesRow;
 
   class CatBranchesKeysRow extends TabularSectionRow{
-    get acl_obj(){return this._getter('acl_obj')}
-    set acl_obj(v){this._setter('acl_obj',v)}
+    get acl_obj(){return this[get]('acl_obj')}
+    set acl_obj(v){this[set]('acl_obj',v)}
   }
   classes.CatBranchesKeysRow = CatBranchesKeysRow;
 
-  class CatBranchesExtraFieldsRow extends ExtraFieldsRow{}
+  class CatBranchesExtraFieldsRow extends ExtraFieldsRow {}
   classes.CatBranchesExtraFieldsRow = CatBranchesExtraFieldsRow;
 
-  class CatBranchesManager extends CatManager {
-
-    constructor (owner, class_name) {
-      super(owner, class_name);
-
-      const {adapters: {pouch}, jobPrm, enm, cat, dp} = $p;
-
-      // после загрузки данных, надо настроить отборы в метаданных полей рисовалки
-      !jobPrm.isNode && pouch.once('pouch_complete_loaded', () => {
-        const {current_user} = $p;
-
-        // если отделы не загружены и полноправный пользователь...
-        let next = Promise.resolve();
-
-        if(jobPrm.properties && current_user && !current_user.branch.empty() && jobPrm.builder) {
-
-          const {ПараметрВыбора} = enm.parameters_keys_applying;
-          const {furn, sys, client_of_dealer_mode} = jobPrm.properties;
-
-          // накапливаем
-          const branch_filter = jobPrm.builder.branch_filter = {furn: [], sys: []};
-          next.then(() => current_user.branch.is_new() ? current_user.branch.load() : current_user.branch)
-            .then(({keys, divisions}) => {
-              const add = ({acl_obj}) => {
-                if(acl_obj.applying == ПараметрВыбора) {
-                  acl_obj.params.forEach(({property, value}) => {
-                    if(property === furn) {
-                      !branch_filter.furn.includes(value) && branch_filter.furn.push(value);
-                    }
-                    else if(property === sys) {
-                      !branch_filter.sys.includes(value) && branch_filter.sys.push(value);
-                    }
-                  });
-                }
-              };
-              keys.forEach(add);
-              divisions.forEach(({acl_obj}) => {
-                acl_obj.keys.forEach(add);
-                acl_obj.extra_fields.find_rows({property: client_of_dealer_mode}, ({value}) => {
-                  jobPrm.builder.client_of_dealer_mode = value;
-                });
-              });
-            })
-            .then(() => {
-
-              // применяем
-              if(branch_filter.furn.length) {
-                const mf = cat.characteristics.metadata('constructions').fields.furn;
-                mf.choice_params.push({
-                  name: 'ref',
-                  path: {inh: branch_filter.furn}
-                });
-              }
-              if(branch_filter.sys.length) {
-                const mf = dp.buyers_order.metadata().fields.sys;
-                mf.choice_params = [{
-                  name: 'ref',
-                  path: {inh: branch_filter.sys}
-                }];
-              }
-
-            })
-            .catch((err) => null);
-
-        }
-      });
-    }
-
-  }
+  class CatBranchesManager extends CatManager {}
   classes.CatBranchesManager = CatBranchesManager;
 
-  if(!exclude.includes('branches')) {
+  if(!exclude.includes('cat.branches')) {
     cat.create('branches');
+    exclude.push('cat.branches');
   }
 };

@@ -11,7 +11,6 @@ export const meta = {
       listPresentation: "Абоненты",
       inputBy: ["name", "id"],
       hierarchical: false,
-      hasOwners: false,
       groupHierarchy: true,
       mainPresentation: "name",
       codeLength: 6,
@@ -57,8 +56,8 @@ export const meta = {
             types: [
               "string"
             ],
-            "str_len": 2,
-            "str_fix": true
+            strLen: 2,
+            strFix: true
           }
         }
       },
@@ -159,7 +158,7 @@ export const meta = {
                 "types": [
                   "string"
                 ],
-                "str_len": 255
+                strLen: 255
               }
             }
           }
@@ -178,7 +177,7 @@ export const meta = {
                 "types": [
                   "string"
                 ],
-                "str_len": 25
+                strLen: 25
               }
             },
             "server": {
@@ -215,7 +214,7 @@ export const meta = {
               "synonym": "Значение",
               "multiline": false,
               "tooltip": "Значение дополнительного реквизита",
-              "choice_links": [
+              choiceLinks: [
                 {
                   "name": [
                     "selection",
@@ -289,7 +288,7 @@ export const meta = {
                   "cch.properties",
                   "cat.clrs"
                 ],
-                "str_len": 1024,
+                strLen: 1024,
                 "date_part": "date_time",
                 "digits": 15,
                 "fraction": 3
@@ -303,7 +302,7 @@ export const meta = {
                 "types": [
                   "string"
                 ],
-                "str_len": 0
+                strLen: 0
               }
             }
           }
@@ -374,7 +373,7 @@ export const meta = {
                 "types": [
                   "string"
                 ],
-                "str_len": 255
+                strLen: 255
               }
             },
             "proxy": {
@@ -385,7 +384,7 @@ export const meta = {
                 "types": [
                   "string"
                 ],
-                "str_len": 255
+                strLen: 255
               }
             }
           }
@@ -439,7 +438,8 @@ export default function ({cat, classes, symbols}, exclude) {
   }
   classes.CatAbonentsManager = CatAbonentsManager;
 
-  if(!exclude.includes('abonents')) {
+  if(!exclude.includes('cat.abonents')) {
     cat.create('abonents');
+    exclude.push('cat.abonents');
   }
 };

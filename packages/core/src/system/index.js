@@ -1,6 +1,11 @@
 
 import {meta as log} from './log';
 import {meta as schemeSettings} from './schemeSettings';
+import {meta as destinations} from './destinations';
+import {meta as values} from './propertyValues';
+import {meta as formulas} from './formulas';
+import propertiesClasses, {meta as properties} from './properties';
+import predefinedElmntsClasses, {meta as predefinedElmnts} from './predefinedElmnts';
 import accountsClasses, {meta as accounts} from './accounts';
 import usersClasses, {meta as users} from './users';
 import abonentsClasses, {meta as abonents} from './abonents';
@@ -9,6 +14,11 @@ import branchesClasses, {meta as branches} from './branches';
 const meta = [
   log,
   schemeSettings,
+  destinations,
+  values,
+  formulas,
+  properties,
+  predefinedElmnts,
   accounts,
   users,
   abonents,
@@ -52,6 +62,8 @@ export const sysClasses = [
   usersClasses,
   abonentsClasses,
   branchesClasses,
+  propertiesClasses,
+  predefinedElmntsClasses,
 ];
 
 for(const curr of meta) {

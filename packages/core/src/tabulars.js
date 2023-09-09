@@ -88,7 +88,7 @@ export class TabularSection extends Array {
       this.length = 0;
     }
     const {_data, _manager} = this;
-    !_data._loading && _manager.emit_async('rows', this[own], {[this.#meta[alias]]: true});
+    !_data.loading && _manager.emit_async('rows', this[own], {[this.#meta[alias]]: true});
     return this;
   }
 
@@ -98,19 +98,31 @@ export class TabularSection extends Array {
 	 */
 	del(val) {
 
+    const {_manager, _data} = this;
+    const owner = this[own];
+
+    let index;
+    if(typeof val === "number") {
+      index = val;
+      val = this[index];
+    }
+    else {
+      index = this.indexOf(val);
+    }
+
 		// триггер
-    if(!_data._loading && _owner.del_row(_obj[index]._row) === false){
+    if(!_data.loading && owner.beforeDelRow(val) === false){
       return;
     }
 
-		const drows = _obj.splice(index, 1);
+		const drows = this.splice(index, 1);
 
     // триггер
-    !_data._loading && _owner.after_del_row(_name, drows);
+    !_data.loading && drows.length && owner.afterDelRow(drows[0]);
 
     // obj, {ts_name: null}
-    !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
-		_data._modified = true;
+    !_data.loading && _manager.emit_async('rows', owner, {[_name]: true});
+		_data.modified = true;
 	}
 
 	/**
@@ -174,16 +186,16 @@ export class TabularSection extends Array {
 
     // obj, {ts_name: null}
     const {_data, _manager} = _owner;
-    !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
-    _data._modified = true;
+    !_data.loading && _manager.emit_async('rows', _owner, {[_name]: true});
+    _data.modified = true;
 	}
 
 	/**
 	 * Добавляет строку табчасти
 	 * @method add
-	 * @param attr {object} - объект со значениями полей. если некого поля нет в attr, для него используется пустое значение типа
-	 * @param silent {Boolean} - тихий режим, без генерации событий изменения объекта
-   * @param Constructor {function} - альтернативный конструктор строки
+	 * @param {object} attr - объект со значениями полей. если некого поля нет в attr, для него используется пустое значение типа
+	 * @param {Boolean} [silent] - тихий режим, без генерации событий изменения объекта
+   * @param {Function} [Constructor] - альтернативный конструктор строки
 	 * @return {TabularSectionRow}
 	 *
 	 * @example
@@ -201,14 +213,16 @@ export class TabularSection extends Array {
 		const row = new Constructor(attr, this, _data.loading || silent, true);
 
     // триггер
-		if(!_data._loading && !silent && owner.add_row(row, attr) === false){
+		if(!_data.loading && owner.beforeAddRow(row, attr) === false){
 		  return;
     }
 
-    // obj, {ts_name: null}
-    !_data._loading && !silent && _manager.emit_async('rows', owner, {[this.#meta[alias]]: true});
-		_data._modified = true;
     this.push(row);
+    _data.modified = true;
+    !_data.loading && !silent && _manager.emit_async('rows', owner, {[this.#meta[alias]]: true});
+
+    // триггер
+    !_data.loading && owner.afterAddRow(row, attr);
 
 		return row;
 	}
@@ -332,10 +346,10 @@ export class TabularSection extends Array {
 	load(raw) {
 
     const {_manager, _data} = this;
-    const {_loading} = _data;
+    const {loading} = _data;
 
-    if (!_loading) {
-      _data._loading = true;
+    if (!loading) {
+      _data.loading = true;
     }
 
     this.clear();
@@ -345,7 +359,7 @@ export class TabularSection extends Array {
     }
 
     // obj, {ts_name: null}
-    _data._loading = _loading;
+    _data.loading = loading;
 
 		return this;
 	}
