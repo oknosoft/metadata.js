@@ -403,6 +403,8 @@ export default function ({cat, classes, symbols}, exclude) {
   class CatAbonents extends CatObj{
     get no_mdm(){return this[get]('no_mdm')}
     set no_mdm(v){this[set]('no_mdm',v)}
+    get area(){return this[get]('area')}
+    set area(v){this[set]('area',v)}
     get servers(){return this[get]('servers')}
     set servers(v){this[set]('servers',v)}
   }

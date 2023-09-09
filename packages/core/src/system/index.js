@@ -4,6 +4,7 @@ import {meta as schemeSettings} from './schemeSettings';
 import {meta as destinations} from './destinations';
 import {meta as values} from './propertyValues';
 import {meta as formulas} from './formulas';
+import {meta as servers} from './servers';
 import propertiesClasses, {meta as properties} from './properties';
 import predefinedElmntsClasses, {meta as predefinedElmnts} from './predefinedElmnts';
 import accountsClasses, {meta as accounts} from './accounts';
@@ -17,6 +18,7 @@ const meta = [
   destinations,
   values,
   formulas,
+  servers,
   properties,
   predefinedElmnts,
   accounts,

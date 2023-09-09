@@ -329,6 +329,15 @@ export class MetaTabular extends OwnerObj {
     return `${owner.className}.${this[alias]}`;
   }
 
+  get root() {
+    return this[own][own].root;
+  }
+
+  /**
+   * Приведением типа табчасти, является сама табчасть
+   * @param {TabularSection} v
+   * @return {TabularSection}
+   */
   fixSingle(v) {
     return v;
   }

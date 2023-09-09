@@ -476,7 +476,7 @@ export class RefDataManager extends DataManager {
 	load(aattr, forse){
 		const res = [];
     const {jobPrm} = this.root;
-    const {grouping, tabular_sections} = this.metadata();
+    const {grouping, tabulars} = this.metadata();
 		for(const attr of aattr){
 		  if(grouping === 'array' && attr.ref.length <= 3) {
 		    res.push.apply(res, this.load(attr.rows, forse));
@@ -497,16 +497,16 @@ export class RefDataManager extends DataManager {
         else if(forse === 'update_only' && attr.timestamp) {
           if(attr.timestamp.user === (this.adapter.authorized || jobPrm.get('user_name'))) {
             if(new Date() - moment(attr.timestamp.moment, "YYYY-MM-DDTHH:mm:ss ZZ").toDate() < 30000) {
-              attr._rev && (obj._obj._rev = attr._rev);
+              attr._rev && (obj._rev = attr._rev);
               continue;
             }
           }
         }
         this.utils.mixin(obj, attr);
-        attr._rev && (obj._obj._rev = attr._rev);
+        attr._rev && (obj._rev = attr._rev);
 			}
-      for(const ts in tabular_sections) {
-        obj[ts]._index && obj[ts]._index.clear();
+      for(const ts in tabulars) {
+        obj[ts]?._index?.clear();
       }
 			res.push(obj);
 		}
@@ -552,7 +552,7 @@ export class RefDataManager extends DataManager {
         sql += ", " + f0 + sqlType(t, f, cmd.fields[f].type, true);
       }
 
-      for(f in cmd["tabular_sections"])
+      for(f in cmd.tabulars)
         sql += ", " + "ts_" + f + " JSON";
 
     }
@@ -567,7 +567,7 @@ export class RefDataManager extends DataManager {
       for(f in cmd.fields)
         sql += sql_mask(f) + sqlType(t, f, cmd.fields[f].type);
 
-      for(f in cmd["tabular_sections"])
+      for(f in cmd.tabulars)
         sql += ", " + "`ts_" + f + "` JSON";
     }
 

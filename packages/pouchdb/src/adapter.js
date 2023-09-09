@@ -108,7 +108,7 @@ function attachments(adapter) {
     .bind(adapter);
 }
 
-function adapter({AbstracrAdapter}) {
+function adapter({AbstracrAdapter}, {own}) {
 
 
   /**
@@ -121,6 +121,14 @@ function adapter({AbstracrAdapter}) {
     constructor(owner) {
       super(owner);
       attachments(this);
+    }
+
+    get props() {
+      return this[own].jobPrm;
+    }
+
+    fetch(...attr) {
+      return fetch(...attr);
     }
 
     /**
@@ -154,9 +162,9 @@ function adapter({AbstracrAdapter}) {
 
 export default (constructor) => {
 
-  const {classes} = constructor;
+  const {classes, symbols} = constructor;
   classes.PouchDB = PouchDB;
-  classes.AdapterPouch = adapter(classes);
+  classes.AdapterPouch = adapter(classes, symbols);
 
 }
 
