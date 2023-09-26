@@ -9,6 +9,7 @@
 import React from 'react';
 import TextField from '@material-ui/core/TextField';
 import InputRadio from './InputRadio';
+import InputCheckbox from './InputCheckbox';
 
 export default {
 
@@ -105,16 +106,21 @@ export default {
       }
 
       if(list) {
-        if(!initialValue) {
-          initialValue = list[0].value || list[0].ref || list[0];
+        if (type === "checkbox") {
+          value = list;
+          iface_state.value.children = <InputCheckbox list={list} />;
+        } else {
+          if (!initialValue) {
+            initialValue = list[0].value || list[0].ref || list[0];
+          }
+          value = initialValue.value || initialValue.ref || initialValue;
+          iface_state.value.children = <InputRadio
+            value={value}
+            list={list}
+            handleChange={handleChange}
+          />;
         }
-        value = initialValue.value || initialValue.ref || initialValue;
-        iface_state.value.children = <InputRadio
-          value={value}
-          list={list}
-          handleChange={handleChange}
-        />;
-      }
+      } 
       else if(type.includes('.')) {
         value = initialValue ? (initialValue.ref || initialValue) : '';
         const _mgr = $p.md.mgr_by_class_name(type);
