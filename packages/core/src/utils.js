@@ -426,7 +426,7 @@ class MetaUtils extends OwnerObj {
      */
 
     /**
-     * Методы приведения типов
+     * Методы приведения примитивных типов
      * @type FixTypes
      */
     this.fix = {
@@ -549,44 +549,6 @@ class MetaUtils extends OwnerObj {
         return str ? str : (typeof str === 'number' ? str : '');
       },
 
-      /**
-       * Приводит строки дат к датам, ссылки к ссылкам
-       * @param obj
-       * @param _obj
-       * @param fields
-       */
-      collection: (obj, _obj, fields) => {
-        for (const fld in fields) {
-          let {type, choice_type} = fields[fld];
-          if(choice_type?.path) {
-            const prop = obj[choice_type.path[choice_type.path.length - 1]];
-            if(prop && prop.type) {
-              type = prop.type;
-            }
-          }
-          if(_obj.hasOwnProperty(fld)) {
-            if (type.isRef && typeof _obj[fld] === object) {
-              if(!(fld === 'type' && obj.className && obj.className.indexOf('cch.') === 0)) {
-                _obj[fld] = this.fix.guid(_obj[fld], false);
-              }
-            }
-            else if (type.datePart && typeof _obj[fld] === string) {
-              _obj[fld] = this.fix.date(_obj[fld], type.types.length === 1);
-            }
-          }
-          else {
-            if(type.digits && !type.hasOwnProperty('str_len')) {
-              _obj[fld] = 0;
-            }
-            else if (type.isRef && !type.hasOwnProperty('str_len')) {
-              _obj[fld] = this.blank.guid;
-            }
-            else if (type.hasOwnProperty('str_len')) {
-              _obj[fld] = '';
-            }
-          }
-        }
-      }
     };
 
     /**

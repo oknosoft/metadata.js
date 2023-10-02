@@ -495,7 +495,7 @@ export class RefDataManager extends DataManager {
           obj._data.loading = true;
         }
         else if(forse === 'update_only' && attr.timestamp) {
-          if(attr.timestamp.user === (this.adapter.authorized || jobPrm.get('user_name'))) {
+          if(attr.timestamp.user === (this.adapter.authorized || jobPrm.get('userName'))) {
             if(new Date() - moment(attr.timestamp.moment, "YYYY-MM-DDTHH:mm:ss ZZ").toDate() < 30000) {
               attr._rev && (obj._rev = attr._rev);
               continue;

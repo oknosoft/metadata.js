@@ -85,14 +85,6 @@ class MetaEngine {
 
   }
 
-  on(type, listener) {
-    this.md.on(type, listener);
-  }
-
-  off(type, listener) {
-    this.md.off(type, listener);
-  }
-
   get version() {
     return PACKAGE_VERSION;
   }
@@ -100,7 +92,6 @@ class MetaEngine {
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
   }
-
 
   /**
    * i18n
@@ -118,19 +109,19 @@ class MetaEngine {
   };
 
   /**
-   * дублируем ссылку на символы в объекте
-   * @type {Object}
-   */
-  get symbols() {
-    return symbols;
-  };
-
-  /**
    * дублируем ссылку на конструкторы в конструкторе
    * @type {Object}
    */
   static get classes() {
     return classes;
+  };
+
+  /**
+   * дублируем ссылку на символы в объекте
+   * @type {Object}
+   */
+  get symbols() {
+    return symbols;
   };
 
   /**
@@ -143,106 +134,25 @@ class MetaEngine {
 
   /**
    * Текущий пользователь
-   * Свойство определено после загрузки метаданных и входа впрограмму
-   * @property current_user
+   * Свойство определено после загрузки метаданных и входа в программу
+   * @property currentUser
    * @type CatUsers
    * @final
    */
-  get current_user() {
-
-    const {cat, superlogin, jobPrm, adapters: {pouch}} = this;
-
-    // заглушка "всё разрешено", если методы acl не переопределены внешним приложением
-    this.patchCatUsers();
-
-    let user_name, user;
+  get currentUser() {
+    const {cat, jobPrm, adapters: {pouch}} = this;
+    let user;
     if (cat && cat.users) {
 
       if(pouch && pouch.props._user) {
         user = cat.users.get(pouch.props._user);
       }
       else {
-        if (superlogin) {
-          const session = superlogin.getSession();
-          user_name = session ? session.user_id : '';
-        }
-
-        if (!user_name) {
-          user_name = jobPrm.get('user_name');
-        }
-
-        user = cat.users.by_id(user_name);
-        if (!user || user.empty()) {
-          if (superlogin) {
-            // если superlogin, всю онформацию о пользователе получаем из sl_users
-            user = superlogin.create_user();
-          }
-          else if(jobPrm.use_ram !== false) {
-            cat.users.find_rows_remote({
-              _top: 1,
-              id: user_name,
-            });
-          }
-        }
+        const userName = jobPrm.get('userName');
+        user = userName && cat.users.byId(userName);
       }
     }
-
     return user && !user.empty() ? user : null;
-  }
-
-  patchCatUsers() {
-    const {CatUsers} = this;
-
-    // заглушка "всё разрешено", если методы acl не переопределены внешним приложением
-    if (CatUsers && !CatUsers.prototype.hasOwnProperty('role_available')) {
-
-      /**
-       * ### Роль доступна
-       *
-       * @param name {String}
-       * @returns {Boolean}
-       */
-      CatUsers.prototype.role_available = function (name) {
-        return this.acl_objs ? this.acl_objs._obj.some((row) => row.type == name) : true;
-      };
-
-      /**
-       * ### Права на класс данных
-       * @param className
-       * @return {string}
-       */
-      CatUsers.prototype.get_acl = function(className) {
-        const {_acl} = this._obj;
-        let res = 'rvuidepo';
-        if(Array.isArray(_acl)){
-          _acl.some((acl) => {
-            if(acl.hasOwnProperty(className)) {
-              res = acl[className];
-              return true;
-            }
-          });
-          return res;
-        }
-        else{
-          const acn = className.split('.');
-          return _acl && _acl[acn[0]] && _acl[acn[0]][acn[1]] ? _acl[acn[0]][acn[1]] : res;
-        }
-      };
-
-      /**
-       * ### Идентификаторы доступных контрагентов
-       * Для пользователей с ограниченным доступом
-       *
-       * @returns {Array}
-       */
-      Object.defineProperty(CatUsers.prototype, 'partners_uids', {
-        get: function () {
-          const res = [];
-          this.acl_objs && this.acl_objs.find_rows({type: 'cat.partners'}, ({acl_obj}) => acl_obj && res.push(acl_obj.ref));
-          return res;
-        },
-      });
-    }
   }
 
   /**
