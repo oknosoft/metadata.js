@@ -1278,7 +1278,7 @@ class MetaUtils extends OwnerObj {
    * @param {Promise} promise
    */
   record_log = (err, promise) => {
-    this[own].ireg?.log?.record(err, promise);
+    this[own].ireg?.log?.record?.(err, promise);
     console?.log(err, promise);
   };
 
