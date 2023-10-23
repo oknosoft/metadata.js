@@ -8,16 +8,18 @@ import React from "react";
 import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
+import Button from '@material-ui/core/Button';
+import Box from '@material-ui/core/Box';
 
 export default class InputCheckbox extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { list: props.list };
+    this.state = { list: props.list, isChecked: !!props.list.find(el => el.checked)};
   }
 
   render() {
     const {
-      state: { list },
+      state: { list, isChecked },
     } = this;
 
     const handleChange = (event) => {
@@ -28,7 +30,22 @@ export default class InputCheckbox extends React.Component {
           return true;
         }
       });
+      if (list.find(item=>item.checked)){
+        this.setState({isChecked: true})
+      }else{
+        this.setState({isChecked: false})
+      }
     };
+
+    const handleClick = () => {
+      let newList;
+      if (isChecked){
+        newList = list.map(item => ({ ...item, checked: false }))
+      } else {
+        newList = list.map(item => ({ ...item, checked: true }))
+      }
+      this.setState({ list: newList, isChecked: !isChecked })
+    }
 
     return (
       <FormControl component="fieldset">
@@ -45,6 +62,11 @@ export default class InputCheckbox extends React.Component {
             label={item.text || item.presentation || item.value || v}
           />
         ))}
+        <Box sx={{ pt: 1 }}>
+          <Button color="primary" onClick={handleClick}>
+            {isChecked ? "Снять выбор" : "Выбрать все"}
+          </Button>
+        </Box>
       </FormControl>
     );
   }
