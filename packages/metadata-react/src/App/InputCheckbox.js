@@ -8,18 +8,21 @@ import React from "react";
 import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
-import Button from '@material-ui/core/Button';
-import Box from '@material-ui/core/Box';
+import IconButton from '@material-ui/core/IconButton';
+import Grid from "@material-ui/core/Grid";
+
+import LibraryAddCheckIcon from '@material-ui/icons/LibraryAddCheck';
+import FilterNoneIcon from '@material-ui/icons/FilterNone';
 
 export default class InputCheckbox extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { list: props.list, isChecked: !!props.list.find(el => el.checked)};
+    this.state = { list: props.list };
   }
 
   render() {
     const {
-      state: { list, isChecked },
+      state: { list },
     } = this;
 
     const handleChange = (event) => {
@@ -28,27 +31,40 @@ export default class InputCheckbox extends React.Component {
           item.checked = !item.checked;
           this.setState({ list });
           return true;
-        }
+        };
       });
-      if (list.find(item=>item.checked)){
-        this.setState({isChecked: true})
-      }else{
-        this.setState({isChecked: false})
-      }
     };
 
-    const handleClick = () => {
-      let newList;
-      if (isChecked){
-        newList = list.map(item => ({ ...item, checked: false }))
-      } else {
-        newList = list.map(item => ({ ...item, checked: true }))
-      }
-      this.setState({ list: newList, isChecked: !isChecked })
-    }
+    const selectAll = () => {
+      for (let index = 0; index < list.length; index++) {
+        const item = list[index];
+        item.checked = true;
+      };
+      this.setState({ list });
+    };
+
+    const unselectAll = () => {
+      for (let index = 0; index < list.length; index++) {
+        const item = list[index];
+        item.checked = false;
+      };
+      this.setState({ list });
+    };
 
     return (
       <FormControl component="fieldset">
+        <Grid container spacing={1}>
+          <Grid item>
+            <IconButton onClick={selectAll}>
+              <LibraryAddCheckIcon />
+            </IconButton>
+          </Grid>
+          <Grid item>
+            <IconButton onClick={unselectAll}>
+              <FilterNoneIcon />
+            </IconButton>
+          </Grid>
+        </Grid>
         {list.map((item, index) => (
           <FormControlLabel
             key={`r-${index}`}
@@ -62,11 +78,6 @@ export default class InputCheckbox extends React.Component {
             label={item.text || item.presentation || item.value || v}
           />
         ))}
-        <Box sx={{ pt: 1 }}>
-          <Button color="primary" onClick={handleClick}>
-            {isChecked ? "Снять выбор" : "Выбрать все"}
-          </Button>
-        </Box>
       </FormControl>
     );
   }
