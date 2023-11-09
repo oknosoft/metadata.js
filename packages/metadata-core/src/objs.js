@@ -118,7 +118,18 @@ export class BaseDataObj {
       return utils.fix_boolean(_obj[f]);
     }
     else if(mf.types[0] == 'json') {
-      return typeof res === 'object' ? res : {};
+      if(typeof res === 'object') {
+        return res;  
+      }
+      if(typeof res === 'string') {
+        try {
+          const v = JSON.parse(res);
+          _obj[f] = v;
+          return v;
+        }
+        catch (e) {}
+      }
+      return {};
     }
     else {
       return _obj[f] || '';

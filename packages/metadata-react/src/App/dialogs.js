@@ -109,7 +109,8 @@ export default {
         if (type === "checkbox") {
           value = list;
           iface_state.value.children = <InputCheckbox list={list} />;
-        } else {
+        } 
+        else {
           if (!initialValue) {
             initialValue = list[0].value || list[0].ref || list[0];
           }
