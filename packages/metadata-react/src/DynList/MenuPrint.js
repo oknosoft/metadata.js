@@ -16,15 +16,13 @@ import PrintIcon from '@material-ui/icons/Print';
 import ChevronLeft from '@material-ui/icons/ChevronLeft';
 
 class SubMenu extends React.Component {
-  state = {anchorEl: null};
-
-  handleOpen = (event) => {
-    this.setState({anchorEl: event.currentTarget});
-  };
-
-  handleClose = () => {
-    this.setState({ anchorEl: null });
-  };
+  
+  constructor(props, context) {
+    super(props, context);
+    this.state = {anchorEl: props.anchorEl || null};
+    this.handleClose = props.handleClose || (() => this.setState({ anchorEl: null }));
+    this.handleOpen = (event) => this.setState({anchorEl: event.currentTarget});
+  }  
 
   render() {
     const {props: {items, Icon, text, handlePrint, prefix, variant}, state: {anchorEl}} = this;
@@ -54,10 +52,13 @@ class SubMenu extends React.Component {
 
 class MenuPrint extends SubMenu {
 
-  state = {anchorEl: null, plates: []};
+  constructor(props, context) {
+    super(props, context);
+    this.state.plates = [];
+  }
 
   componentDidMount() {
-    const {_mgr} = this.props.scheme.child_meta();
+    const _mgr = this.props._mgr || this.props.scheme?.child_meta();
     _mgr && _mgr.printing_plates()
       .then((plates) => {
         const groups = new Map();
@@ -88,11 +89,20 @@ class MenuPrint extends SubMenu {
         variant={variant}
       />;
     }
+    
+    let button;
+    if(variant === 'button') {
+      button = <IconButton key="btn_open" onClick={this.handleOpen}><PrintIcon/></IconButton>;
+    }
+    else if(variant === 'hidden') {
+      button = null;
+    }
+    else {
+      button = <MenuItem key="prn_open" onClick={this.handleOpen}><ListItemIcon><PrintIcon/></ListItemIcon>Печать</MenuItem>;
+    }
     return [
-      variant === 'button' ?
-        <IconButton key="btn_open" onClick={this.handleOpen}><PrintIcon/></IconButton>
-        :
-        <MenuItem key="prn_open" onClick={this.handleOpen}><ListItemIcon><PrintIcon/></ListItemIcon>Печать</MenuItem>,
+      button,
+      
       <Menu key="prn_menu"
             open={Boolean(anchorEl)}
             anchorEl={anchorEl}
@@ -113,7 +123,8 @@ class MenuPrint extends SubMenu {
 }
 
 MenuPrint.propTypes = {
-  scheme: PropTypes.object.isRequired,    // значение настроек компоновки
+  _mgr: PropTypes.object,                 // менеджер данных
+  scheme: PropTypes.object,               // значение настроек компоновки
   handlePrint: PropTypes.func.isRequired, // обработчик открытия диалога печати
   variant: PropTypes.string,              // использовать IconButton вместо MenuItem
 };

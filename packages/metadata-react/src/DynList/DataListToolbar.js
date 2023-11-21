@@ -130,8 +130,7 @@ class DataListToolbar extends Component {
             `${props.settings_open ? 'Скрыть н' : 'Н'}астройки`
           }</MenuItem>}
 
-          {props.handlePrint &&
-          <MenuPrint scheme={scheme} handlePrint={props.handlePrint} />}
+          {props.handlePrint && <MenuPrint scheme={scheme} handlePrint={props.handlePrint} />}
 
           {props.handleHistory &&
             <MenuItem onClick={() => {

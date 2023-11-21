@@ -277,7 +277,6 @@ export default {
    * @param text
    */
   snack({timeout = 10000, ...other}) {
-
     if(this.handleIfaceState) {
       const close_confirm = () => {
         this.close_confirm('snack');
@@ -326,6 +325,24 @@ export default {
             handleClose: this.close_confirm.bind(this, 'wnd_portal'),
           }
         });
+      });
+    }
+  },
+
+  popup({anchorEl, timeout = 30000, open, ...other}) {
+    if(this.handleIfaceState) {
+      const handleClose = () => {
+        this.close_confirm('popup');
+        if(timer) {
+          clearTimeout(timer);
+          timer = 0;
+        }
+      };
+      let timer = setTimeout(handleClose, timeout);
+      this.handleIfaceState({
+        component: '',
+        name: 'popup',
+        value: {anchorEl, handleClose, open: Boolean(anchorEl), ...other}
       });
     }
   },
