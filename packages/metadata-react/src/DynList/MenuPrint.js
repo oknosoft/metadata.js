@@ -58,7 +58,7 @@ class MenuPrint extends SubMenu {
   }
 
   componentDidMount() {
-    const _mgr = this.props._mgr || this.props.scheme?.child_meta();
+    const _mgr = this.props._mgr || this.props.scheme?.child_meta()?._mgr;
     _mgr && _mgr.printing_plates()
       .then((plates) => {
         const groups = new Map();
