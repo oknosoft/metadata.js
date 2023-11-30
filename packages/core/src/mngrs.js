@@ -707,7 +707,14 @@ export class EnumManager extends RefDataManager{
     else if(typeof ref === 'object') {
       ref = this.getRef(ref)
     }
-    return this[ref] || super.get(ref, create);
+    if(!this[ref]) {
+      if(ref === "_" || create) {
+        const {EnumObj} = this.root.classes;
+        const value = new EnumObj({ref, order: 0, synonym: ''}, this, true);
+        Object.defineProperty(this, ref, {value});
+      }
+    }
+    return this[ref];
   }
 
   /**

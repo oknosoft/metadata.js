@@ -1,6 +1,6 @@
 // метаданные и класс компоновки
 
-const selection_fields = {
+const selectionFields = {
   parent: {
     synonym: 'Родитель',
     tooltip: '',
@@ -658,7 +658,7 @@ export const meta = {
           name: 'selection',
           synonym: 'Отбор',
           tooltip: '',
-          fields: selection_fields,
+          fields: selectionFields,
         },
         params: {
           name: 'params',
@@ -754,10 +754,10 @@ export const meta = {
           }
         },
         conditionalAppearance: {
-          name: 'conditional_appearance',
+          name: 'conditionalAppearance',
           synonym: 'Условное оформление',
           tooltip: '',
-          fields: Object.assign({}, selection_fields, {
+          fields: Object.assign({}, selectionFields, {
             columns: {
               synonym: 'Колонки',
               tooltip: 'Список колонок через запятую, к которым будет применено оформление (по умолчанию - ко всей строке)',

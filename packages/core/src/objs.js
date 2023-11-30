@@ -1047,12 +1047,12 @@ export class DataObj extends BaseDataObj {
    * @type Array.<CchProperties>
    */
   get _extraProps() {
-    const {cat, cch, md} = this._manager.root;
+    const {cat, cch} = this._manager.root;
     // ищем предопределенный элемент, сответствующий классу данных
     const dests = cat.destinations || cch.destinations;
     const res = [];
     if(dests) {
-      const condition = obj?._destinations_condition || {predefined_name: md.className_to_1c(this.className).replace('.', '_')};
+      const condition = this._destinations_condition || {predefined_name: `${this instanceof DocObj ? 'Документ' : 'Справочник'}_${this._metadata().name}`};
       dests.find_rows(condition, destination => {
         const ts = destination.extra_fields;
         if(ts) {

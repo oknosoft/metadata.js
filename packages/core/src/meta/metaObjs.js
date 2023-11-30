@@ -177,6 +177,12 @@ export class MetaObj extends OwnerObj {
             res.synonym = 'Имя предопределенных данных';
             return res;
         }
+      case 'enm':
+        switch (field) {
+          case 'synonym':
+            res.synonym = 'Синоним';
+            return res;
+        }
     }
     throw new Error(`Unknown field ${field} in ${this}`);
   }
