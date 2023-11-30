@@ -157,7 +157,7 @@ export default {
           {
             order: 10,
             name: 'lke',
-            synonym: 'Содержит '
+            synonym: 'Содержит'
           },
           {
             order: 11,
@@ -167,7 +167,7 @@ export default {
           {
             order: 12,
             name: 'filled',
-            synonym: 'Заполнено '
+            synonym: 'Заполнено'
           },
           {
             order: 13,

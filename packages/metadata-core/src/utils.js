@@ -858,6 +858,12 @@ const utils = {
    */
   check_compare(left, right, comparison_type, comparison_types) {
       const {ne, gt, gte, lt, lte, nin, inh, ninh, lke, nlk, filled, nfilled} = comparison_types;
+      if(comparison_type === lke && (Array.isArray(left) || Array.isArray(right))) {
+        comparison_type = comparison_types.in;
+      }
+      else if(comparison_type === nlk && (Array.isArray(left) || Array.isArray(right))) {
+        comparison_type = nin;
+      }
       switch (comparison_type) {
       case ne:
         return left != right;
@@ -871,9 +877,15 @@ const utils = {
         return left <= right;
       case nin:
         if(Array.isArray(left) && !Array.isArray(right)) {
+          if(left.every(v => typeof v?.contains === "function")) {
+            return !left.some(v => v.contains(right, null, true) || right?.contains?.(v, null, true));
+          }
           return !left.includes(right);
         }
         else if(!Array.isArray(left) && Array.isArray(right)) {
+          if(right.every(v => typeof v?.contains === "function")) {
+            return !right.some(v => v.contains(left, null, true) || left?.contains?.(v, null, true));
+          }
           return !right.includes(left);
         }
         else if(!Array.isArray(left) && !Array.isArray(right)) {
@@ -885,9 +897,15 @@ const utils = {
         break;
       case comparison_types.in:
         if(Array.isArray(left) && !Array.isArray(right)) {
+          if(left.every(v => typeof v?.contains === "function")) {
+            return left.some(v => v.contains(right, null, true) || right?.contains?.(v, null, true));
+          }
           return left.includes(right);
         }
         else if(!Array.isArray(left) && Array.isArray(right)) {
+          if(right.every(v => typeof v?.contains === "function")) {
+            return right.some(v => v.contains(left, null, true) || left?.contains?.(v, null, true));
+          } 
           return right.includes(left);
         }
         else if(!Array.isArray(left) && !Array.isArray(right)) {
