@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.34-beta.2, built:2023-11-30
+ metadata-core v2.0.34-beta.2, built:2023-12-02
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3743,6 +3743,34 @@ const utils = {
         return left <= right;
       case nin:
         if(Array.isArray(left) && !Array.isArray(right)) {
+          return !left.includes(right);
+        }
+        else if(!Array.isArray(left) && Array.isArray(right)) {
+          return !right.includes(left);
+        }
+        else if(!Array.isArray(left) && !Array.isArray(right)) {
+          return right != left;
+        }
+        else if(Array.isArray(left) && Array.isArray(right)) {
+          return right.every((val) => !left.includes(val));
+        }
+        break;
+      case comparison_types.in:
+        if(Array.isArray(left) && !Array.isArray(right)) {
+          return left.includes(right);
+        }
+        else if(!Array.isArray(left) && Array.isArray(right)) {
+          return right.includes(left);
+        }
+        else if(!Array.isArray(left) && !Array.isArray(right)) {
+          return left == right;
+        }
+        else if(Array.isArray(left) && Array.isArray(right)) {
+          return right.some((val) => left.includes(val));
+        }
+        break;
+      case nlk:
+        if(Array.isArray(left) && !Array.isArray(right)) {
           if(left.every(v => typeof v?.contains === "function")) {
             return !left.some(v => v.contains(right, null, true) || right?.contains?.(v, null, true));
           }
@@ -3761,7 +3789,7 @@ const utils = {
           return right.every((val) => !left.includes(val));
         }
         break;
-      case comparison_types.in:
+      case lke:
         if(Array.isArray(left) && !Array.isArray(right)) {
           if(left.every(v => typeof v?.contains === "function")) {
             return left.some(v => v.contains(right, null, true) || right?.contains?.(v, null, true));

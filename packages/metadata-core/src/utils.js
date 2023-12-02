@@ -877,6 +877,34 @@ const utils = {
         return left <= right;
       case nin:
         if(Array.isArray(left) && !Array.isArray(right)) {
+          return !left.includes(right);
+        }
+        else if(!Array.isArray(left) && Array.isArray(right)) {
+          return !right.includes(left);
+        }
+        else if(!Array.isArray(left) && !Array.isArray(right)) {
+          return right != left;
+        }
+        else if(Array.isArray(left) && Array.isArray(right)) {
+          return right.every((val) => !left.includes(val));
+        }
+        break;
+      case comparison_types.in:
+        if(Array.isArray(left) && !Array.isArray(right)) {
+          return left.includes(right);
+        }
+        else if(!Array.isArray(left) && Array.isArray(right)) {
+          return right.includes(left);
+        }
+        else if(!Array.isArray(left) && !Array.isArray(right)) {
+          return left == right;
+        }
+        else if(Array.isArray(left) && Array.isArray(right)) {
+          return right.some((val) => left.includes(val));
+        }
+        break;
+      case nlk:
+        if(Array.isArray(left) && !Array.isArray(right)) {
           if(left.every(v => typeof v?.contains === "function")) {
             return !left.some(v => v.contains(right, null, true) || right?.contains?.(v, null, true));
           }
@@ -895,7 +923,7 @@ const utils = {
           return right.every((val) => !left.includes(val));
         }
         break;
-      case comparison_types.in:
+      case lke:
         if(Array.isArray(left) && !Array.isArray(right)) {
           if(left.every(v => typeof v?.contains === "function")) {
             return left.some(v => v.contains(right, null, true) || right?.contains?.(v, null, true));
