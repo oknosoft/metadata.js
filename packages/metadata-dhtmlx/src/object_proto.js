@@ -150,7 +150,7 @@ Function.prototype._extend = function( Parent ) {
     var digit;
 
     while (length >= 0) {
-      digit = number.substr(length, 1);
+      digit = number.substring(length, length + 1);
       parts = digit + parts;
 
       if ((parts.length === 3 || length === 0) && !isNaN(toFloat(parts))) {
