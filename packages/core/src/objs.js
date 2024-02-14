@@ -245,7 +245,7 @@ export class BaseDataObj extends OwnerObj {
     // выполняем value_change с блокировкой эскалации
     if(!_data.loading) {
       _data.loading = true;
-      const res = this.value_change(f, mf, v);
+      const res = this.valueChange(f, mf, v);
       _data.loading = false;
       if(res === false) {
         return;
@@ -315,10 +315,10 @@ export class BaseDataObj extends OwnerObj {
       obj[f] = utils.fix.date(v, !mf.hasOwnProperty('str_len'));
     }
     else if(mf.digits) {
-      obj[f] = utils.fix_number(v, !mf.hasOwnProperty('str_len'));
+      obj[f] = utils.fix.number(v, !mf.hasOwnProperty('str_len'));
     }
     else if(mf.types[0] == 'boolean') {
-      obj[f] = utils.fix_boolean(v);
+      obj[f] = utils.fix.boolean(v);
     }
     else if(mf.types[0] == 'json') {
       if(v && typeof v === string) {

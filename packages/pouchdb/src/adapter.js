@@ -25,7 +25,7 @@ function attachments(adapter) {
    * @return {Promise}
    */
   adapter.attachment.get = function getAttachment(_mgr, ref, att_id) {
-    return this.db(_mgr).getAttachment(_mgr.class_name + '|' + this.$p.utils.fix_guid(ref), att_id);
+    return this.db(_mgr).getAttachment(_mgr.class_name + '|' + this.$p.utils.fix.guid(ref), att_id);
   }
   .bind(adapter);
 
@@ -55,7 +55,7 @@ function attachments(adapter) {
     let _rev,
       db = this.db(_mgr);
 
-    ref = _mgr.class_name + '|' + this.$p.utils.fix_guid(ref);
+    ref = _mgr.class_name + '|' + this.$p.utils.fix.guid(ref);
 
     return db.get(ref)
       .then((res) => {
@@ -88,7 +88,7 @@ function attachments(adapter) {
     let _rev,
       db = this.db(_mgr);
 
-    ref = _mgr.class_name + '|' + this.$p.utils.fix_guid(ref);
+    ref = _mgr.class_name + '|' + this.$p.utils.fix.guid(ref);
 
     return db.get(ref)
       .then((res) => {
@@ -136,6 +136,14 @@ function adapter({AbstracrAdapter}, {own}) {
      * @param {Object} attr
      */
     async init(attr) {
+
+    }
+
+    logIn(login, password) {
+
+    }
+
+    logOut() {
 
     }
 
