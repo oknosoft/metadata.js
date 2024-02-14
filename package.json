@@ -6,9 +6,10 @@
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
-    "node": "^20.2",
+    "node": "^20.11",
     "yarn": "^1.22"
   },
+  "packageManager": "yarn@1.22.21",
   "dependencies": {
     "camelcase": "^8.0",
     "dayjs": "^1.11",
@@ -16,20 +17,20 @@
   },
   "devDependencies": {
     "@babel/core": "^7.23",
-    "@babel/preset-env": "^7.22",
-    "@babel/preset-react": "^7.22",
+    "@babel/preset-env": "^7.23",
+    "@babel/preset-react": "^7.23",
     "@rollup/plugin-node-resolve": "^15.2",
     "@rollup/plugin-replace": "^5.0",
     "babel-loader": "^9.1",
-    "lerna": "^7.3",
+    "lerna": "^8.1",
     "react": "^18.2",
     "react-dom": "^18.2",
-    "rollup": "^3.29",
+    "rollup": "^4.10",
     "rollup-plugin-cleanup": "^3.2",
-    "typescript": "^5.2",
-    "webpack": "^5.88",
+    "typescript": "^5.3",
+    "webpack": "^5.90",
     "webpack-cli": "^5.1",
-    "webpack-dev-server": "^4.15"
+    "webpack-dev-server": "^5.0"
   },
   "peerDependecies": {
   },

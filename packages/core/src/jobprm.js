@@ -66,7 +66,7 @@ export default class JobPrm extends OwnerObj {
         }
       }
       else if (!this.isSet(prm.p)){
-        this.set(prm.p, this.fetch_type(this.hasOwnProperty(prm.p) ? this[prm.p] : prm.v, prm.t));
+        this.set(prm.p, this.fetchType(this.hasOwnProperty(prm.p) ? this[prm.p] : prm.v, prm.t));
       }
     }
 
@@ -134,7 +134,7 @@ export default class JobPrm extends OwnerObj {
   get(name, type){
     const {_ls, lsPrefix} = this;
     if(!this.#params.hasOwnProperty(name)){
-      this.#params[name] = this.fetch_type(_ls.getItem(lsPrefix+name), type);
+      this.#params[name] = this.fetchType(_ls.getItem(lsPrefix+name), type);
     }
     return this.#params[name];
   }
@@ -187,7 +187,7 @@ export default class JobPrm extends OwnerObj {
    * @param type
    * @returns {*}
    */
-  fetch_type(prm, type){
+  fetchType(prm, type){
     const {fix} = this[own].utils;
     if(type === "object"){
       try{

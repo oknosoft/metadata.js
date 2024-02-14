@@ -502,7 +502,7 @@ export class RefDataManager extends DataManager {
             }
           }
         }
-        this.utils.mixin(obj, attr);
+        this.utils.mixin(obj, attr, null, ['ref']);
         attr._rev && (obj._rev = attr._rev);
 			}
       for(const ts in tabulars) {

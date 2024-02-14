@@ -127,10 +127,6 @@ function adapter({AbstracrAdapter}, {own}) {
       return this[own].jobPrm;
     }
 
-    fetch(...attr) {
-      return fetch(...attr);
-    }
-
     /**
      * Инициализация после авторизации
      * @param {Object} attr
@@ -139,31 +135,7 @@ function adapter({AbstracrAdapter}, {own}) {
 
     }
 
-    logIn(login, password) {
 
-    }
-
-    logOut() {
-
-    }
-
-    /**
-     * Загружает данные, которые не зависят от отдела абонента
-     * @param {Object} attr
-     * @return {Promise<never>|Promise<any>}
-     */
-    async loadСommon(attr) {
-
-    }
-
-    /**
-     * Загружает данные после авторизации
-     * @param {Object} attr
-     * @return {Promise<never>|Promise<any>}
-     */
-    async loadRam(attr) {
-
-    }
 
   };
 }
