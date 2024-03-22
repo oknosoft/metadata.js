@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.34-beta.2, built:2023-12-14
+ metadata-core v2.0.34-beta.2, built:2024-03-21
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3286,7 +3286,7 @@ if (!Object.prototype.__define) {
 		},
 	});
 }
-const date_frmts = ['DD-MM-YYYY', 'DD-MM-YYYY HH:mm', 'DD-MM-YYYY HH:mm:ss', 'DD-MM-YY HH:mm', 'YYYYDDMMHHmmss', 'YYYY-MM-DDTHH:mm:ss[Z]',
+const date_frmts = ['DD-MM-YYYY', 'YYYY-MM-DD', 'DD-MM-YYYY HH:mm', 'DD-MM-YYYY HH:mm:ss', 'DD-MM-YY HH:mm', 'YYYYDDMMHHmmss', 'YYYY-MM-DDTHH:mm:ss[Z]',
    'DD.MM.YYYY', 'DD.MM.YYYY HH:mm', 'DD.MM.YYYY HH:mm:ss', 'DD.MM.YY HH:mm'];
 const rxref = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 const utils = {

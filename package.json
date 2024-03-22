@@ -54,7 +54,7 @@
   },
   "peerDependecies": {
   },
-  "packageManager": "^yarn@1.22",
+  "packageManager": "yarn@1.22.21",
   "scripts": {
     "build:core": "node ./packages/metadata-core/build.js",
     "build:transition": "node ./packages/metadata-dhtmlx/build.js",

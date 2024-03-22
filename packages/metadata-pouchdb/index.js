@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.34-beta.2, built:2023-11-30
+ metadata-pouchdb v2.0.34-beta.2, built:2024-03-06
  © 2014-2022 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -522,7 +522,7 @@ function adapter({AbstracrAdapter}) {
         if((!auth && remote[name]) ||
           name.match(/(e1cib|github|user)/) ||
           (name === 'ram' && props.use_ram === false) ||
-          (name === 'pgsql' && wsql.alasql.utils.isNode)) {
+          (name === 'pgsql')) {
           return;
         }
         remote[name] = new PouchDB$1(this.dbpath(name), opts);
@@ -879,7 +879,7 @@ function adapter({AbstracrAdapter}) {
         return path + zone + '_ram';
       }
       else if(name === 'pgsql') {
-        return (job_prm.pg_path.startsWith('/') && !wsql.alasql.utils.isNode ? location.origin + job_prm.pg_path : job_prm.pg_path) + zone;
+        return (job_prm.pg_path?.startsWith('/') && !wsql.alasql.utils.isNode ? location.origin + job_prm.pg_path : job_prm.pg_path) + zone;
       }
       else {
         return path + zone + '_' + name + (_suffix ? '_' + _suffix : '');

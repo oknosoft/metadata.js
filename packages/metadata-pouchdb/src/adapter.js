@@ -167,7 +167,7 @@ function adapter({AbstracrAdapter}) {
         if((!auth && remote[name]) ||
           name.match(/(e1cib|github|user)/) ||
           (name === 'ram' && props.use_ram === false) ||
-          (name === 'pgsql' && wsql.alasql.utils.isNode)) {
+          (name === 'pgsql')) {
           return;
         }
         remote[name] = new PouchDB(this.dbpath(name), opts);
@@ -607,7 +607,7 @@ function adapter({AbstracrAdapter}) {
         return path + zone + '_ram';
       }
       else if(name === 'pgsql') {
-        return (job_prm.pg_path.startsWith('/') && !wsql.alasql.utils.isNode ? location.origin + job_prm.pg_path : job_prm.pg_path) + zone;
+        return (job_prm.pg_path?.startsWith('/') && !wsql.alasql.utils.isNode ? location.origin + job_prm.pg_path : job_prm.pg_path) + zone;
       }
       else {
         return path + zone + '_' + name + (_suffix ? '_' + _suffix : '');
