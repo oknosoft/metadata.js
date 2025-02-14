@@ -312,4 +312,92 @@ export const meta = {
 
 export default function propertiesClasses({cat, classes, symbols}, exclude) {
 
+  const {CchObj, ChartOfCharacteristicManager, TabularSectionRow} = classes;
+  const {get, set} = symbols;
+
+  class CchProperties extends CchObj {
+    get shown(){return this[get]('shown')}
+    set shown(v){this[set]('shown',v)}
+    get sorting_field(){return this[get]('sorting_field')}
+    set sorting_field(v){this[set]('sorting_field',v)}
+    get extra_values_owner(){return this[get]('extra_values_owner')}
+    set extra_values_owner(v){this[set]('extra_values_owner',v)}
+    get available(){return this[get]('available')}
+    set available(v){this[set]('available',v)}
+    get mandatory(){return this[get]('mandatory')}
+    set mandatory(v){this[set]('mandatory',v)}
+    get include_to_name(){return this[get]('include_to_name')}
+    set include_to_name(v){this[set]('include_to_name',v)}
+    get list(){return this[get]('list')}
+    set list(v){this[set]('list',v)}
+    get caption(){return this[get]('caption')}
+    set caption(v){this[set]('caption',v)}
+    get note(){return this[get]('note')}
+    set note(v){this[set]('note',v)}
+    get destination(){return this[get]('destination')}
+    set destination(v){this[set]('destination',v)}
+    get tooltip(){return this[get]('tooltip')}
+    set tooltip(v){this[set]('tooltip',v)}
+    get is_extra_property(){return this[get]('is_extra_property')}
+    set is_extra_property(v){this[set]('is_extra_property',v)}
+    get include_to_description(){return this[get]('include_to_description')}
+    set include_to_description(v){this[set]('include_to_description',v)}
+    get calculated(){return this[get]('calculated')}
+    set calculated(v){this[set]('calculated',v)}
+    get showcalc(){return this[get]('showcalc')}
+    set showcalc(v){this[set]('showcalc',v)}
+    get inheritance(){return this[get]('inheritance')}
+    set inheritance(v){this[set]('inheritance',v)}
+    get captured(){return this[get]('captured')}
+    set captured(v){this[set]('captured',v)}
+    get editor(){return this[get]('editor')}
+    set editor(v){this[set]('editor',v)}
+    get predefined_name(){return this[get]('predefined_name')}
+    set predefined_name(v){this[set]('predefined_name',v)}
+    get type(){return this[get]('type')}
+    set type(v){this[set]('type',v)}
+    get applying(){return this[get]('applying')}
+    set applying(v){this[get]('applying').load(v)}
+    get use(){return this[get]('use')}
+    set use(v){this[get]('use').load(v)}
+    get hide(){return this[get]('hide')}
+    set hide(v){this[get]('hide').load(v)}
+
+    get isCalculated() {
+      return !this.calculated.empty();
+    }
+
+    calculatedValue(obj) {
+      return this.calculated.execute(obj);
+    }
+  }
+  classes.CchProperties = CchProperties;
+
+  class CchPropertiesHideRow extends TabularSectionRow {
+    get value(){return this[get]('value')}
+    set value(v){this[set]('value',v)}
+  }
+  classes.CchPropertiesHideRow = CchPropertiesHideRow;
+
+  class CchPropertiesApplyingRow extends TabularSectionRow {
+    get elm_type(){return this[get]('elm_type')}
+    set elm_type(v){this[set]('elm_type',v)}
+    get pos(){return this[get]('pos')}
+    set pos(v){this[set]('pos',v)}
+  }
+  classes.CchPropertiesApplyingRow = CchPropertiesApplyingRow;
+
+  class CchPropertiesUseRow extends TabularSectionRow{
+    get count_calc_method(){return this[get]('count_calc_method')}
+    set count_calc_method(v){this[set]('count_calc_method',v)}
+  }
+  classes.CchPropertiesUseRow = CchPropertiesUseRow;
+
+  class CchPropertiesManager extends ChartOfCharacteristicManager {
+
+  }
+  classes.CchPropertiesManager = CchPropertiesManager;
+
+  exclude.push('cch.properties');
+
 };

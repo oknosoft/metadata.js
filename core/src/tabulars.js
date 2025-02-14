@@ -264,7 +264,7 @@ export class TabularSection extends Array {
 			return this.load(res);
 		}
 		catch (err) {
-			this._owner._manager._owner.$p.record_log(err);
+			this._owner._manager.root.utils.recordLog(err);
 		}
 	}
 

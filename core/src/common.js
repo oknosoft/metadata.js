@@ -74,8 +74,8 @@ class MetaEngine {
       emitter = window;
     }
     if(emitter) {
-      emitter.addEventListener('error', this.utils.record_log, false);
-      //emitter.addEventListener('unhandledRejection', this.record_log, false);
+      emitter.addEventListener('error', this.utils.recordLog, false);
+      //emitter.addEventListener('unhandledRejection', this.recordLog, false);
     }
 
     // при налчии расширений, выполняем их методы инициализации

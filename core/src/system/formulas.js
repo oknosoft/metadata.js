@@ -316,8 +316,29 @@ export default function formulasClasses({cat, classes, symbols, md, utils}, excl
 
   class CatFormulas extends CatObj {
 
-    execute() {
-
+    execute(obj, attr) {
+      const {_data, _manager} = this;
+      if(!_data._formula) {
+        try{
+          if(this.jsx) {
+            _data._formula = new Function('$p', this.formula)(_manager.root);
+          }
+          else {
+            if(this.async) {
+              const AsyncFunction = Object.getPrototypeOf(eval('(async function(){})')).constructor;
+              _data._formula = (new AsyncFunction('obj,$p,attr', this.formula)).bind(this);
+            }
+            else {
+              _data._formula = (new Function('obj,$p,attr', this.formula)).bind(this);
+            }
+          }
+        }
+        catch(err){
+          _data._formula = () => false;
+          _manager.root.utils.recordLog(err);
+        }
+      }
+      return _data._formula(obj, _manager.root, attr);
     }
 
   }

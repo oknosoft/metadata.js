@@ -39,10 +39,7 @@ export default class JobPrm extends OwnerObj {
     }
 
     // если зона не указана, устанавливаем "1"
-    let zone = this.get('zone', 'number');
-    if(!zone) {
-      zone = this.hasOwnProperty('zone') ? this.zone : 1;
-    }
+    let {zone} = this;
 
     // значения базовых параметров по умолчанию
     const nesesseryPrms = [{p: 'zone', v: zone, t: 'number'}];
@@ -215,6 +212,19 @@ export default class JobPrm extends OwnerObj {
       return prm ? prm.toString() : '';
     }
     return prm;
+  }
+
+  get zone() {
+    return this.get('zone', 'number');
+  }
+
+  get branch() {
+    const ref = this.get('branch', 'string');
+    return this[own].cat.branches.get(ref);
+  }
+
+  get abonent() {
+    return this[own].cat.abonents.find({id: this.zone});
   }
 
 }
