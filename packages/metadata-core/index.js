@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.36-beta.1, built:2025-02-13
+ metadata-core v2.0.36-beta.1, built:2025-02-14
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -374,11 +374,9 @@ class TabularSection {
 		  return;
     }
     const data = row._obj;
-    if(!silent) {
-      for (const f in row._metadata().fields){
-        if(!data.hasOwnProperty(f)) {
-          row[f] = attr[f] || '';
-        }
+    for (const f in row._metadata().fields){
+      if(!data.hasOwnProperty(f)) {
+        row[f] = attr[f] || '';
       }
     }
     data.row = _obj.push(data);

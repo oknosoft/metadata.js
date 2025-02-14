@@ -271,12 +271,10 @@ export class TabularSection {
     }
 
 		// присваиваем типизированные значения по умолчанию
-    const data = row._obj; 
-    if(!silent) {
-      for (const f in row._metadata().fields){
-        if(!data.hasOwnProperty(f)) {
-          row[f] = attr[f] || '';
-        }
+    const data = row._obj;
+    for (const f in row._metadata().fields){
+      if(!data.hasOwnProperty(f)) {
+        row[f] = attr[f] || '';
       }
     }
 
