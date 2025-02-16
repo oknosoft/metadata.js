@@ -967,13 +967,13 @@ class MetaUtils extends OwnerObj {
    * Сравнивает левое значение с правым
    * @param left              {Any}
    * @param right             {Any}
-   * @param comparisonType   {EnumObj}
-   * @param comparison_types  {EnumManager}
+   * @param cmpType   {EnumObj}
+   * @param cmpTypes  {EnumManager}
    * @return {*}
    */
-  checkCompare(left, right, comparisonType, comparison_types) {
-    const {ne, gt, gte, lt, lte, nin, inh, ninh, lke, nlk} = comparison_types;
-    switch (comparisonType) {
+  checkCompare(left, right, cmpType, cmpTypes) {
+    const {ne, gt, gte, lt, lte, nin, inh, ninh, lke, nlk} = cmpTypes;
+    switch (cmpType) {
       case ne:
         return left != right;
       case gt:
@@ -998,7 +998,7 @@ class MetaUtils extends OwnerObj {
           return right.every((val) => !left.includes(val));
         }
         break;
-      case comparison_types.in:
+      case cmpTypes.in:
         if(Array.isArray(left) && !Array.isArray(right)) {
           return left.includes(right);
         }

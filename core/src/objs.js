@@ -167,7 +167,14 @@ export class BaseDataObj extends OwnerObj {
 
   [get](f) {
     const res = this.#obj[f];
-    return this._metadata(f).type.fetchType(res, this.#obj, f);
+    let {choiceType, type} = this._metadata(f);
+    if(choiceType?.path) {
+      const prm = this[choiceType.path.length === 2 ? choiceType.path[1] : choiceType.path[0]];
+      if(prm?.type instanceof this._manager.root.classes.TypeDef) {
+        type = prm.type;
+      }
+    }
+    return type.fetchType(res, this.#obj, f);
   }
 
   [notify](f) {
