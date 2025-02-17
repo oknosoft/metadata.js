@@ -3,8 +3,7 @@
  *
  */
 
-import {string} from './utils';
-import {own, get, set, hash, notify, mf} from './meta/symbols';
+import {own, get, set, hash, notify, mf, string} from './meta/symbols';
 import {OwnerObj, MetaField} from './meta/metaObjs';
 import {TabularSection} from './tabulars';
 
@@ -971,7 +970,7 @@ export class DataObj extends BaseDataObj {
         extra_fields.add({property, value});
       }
     }
-    else {
+    else if(row) {
       const {type: {types, isSingleRef}} = property;
       if(!list) {
         list = property.list;
@@ -979,7 +978,7 @@ export class DataObj extends BaseDataObj {
       if(list === 4) {
         const res = new Map();
         try {
-          const mgr = md.mgr_by_className(types[0]);
+          const mgr = md.mgr(types[0]);
           const raw = row?.txt_row ? JSON.parse(row.txt_row) : {};
           for(const ref in raw) {
             res.set(mgr.get(ref), raw[ref]);
@@ -988,13 +987,7 @@ export class DataObj extends BaseDataObj {
         catch (e) {}
         return res;
       }
-      if(row) {
-        return row.value;
-      }
-      if(isSingleRef) {
-        const mgr = md.mgr_by_className(types[0]);
-        return mgr && mgr.get();
-      }
+      return row.value;
     }
   }
 

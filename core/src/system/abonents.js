@@ -18,7 +18,6 @@ export const meta = {
       fields: {
         server: {
           synonym: "Сервер",
-          multiline: false,
           tooltip: "Основной сервер абонента (отделы абонента могут использовать другие серверы)",
           choiceGrp: "elm",
           mandatory: true,
@@ -30,12 +29,9 @@ export const meta = {
         },
         area: {
           synonym: "Это фильтр технологии",
-          multiline: false,
           tooltip: "Если \"Истина\", абонент используется не как владелец репликаций, а как фильтр технологических справочников",
           type: {
-            types: [
-              "boolean"
-            ]
+            types: ["boolean"]
           }
         },
         no_mdm: {
@@ -43,9 +39,7 @@ export const meta = {
           multiline: false,
           tooltip: "Отключить MDM для данного абонента (напрмиер, если это dev-база)",
           type: {
-            types: [
-              "boolean"
-            ]
+            types: ["boolean"]
           }
         },
         lang: {
@@ -53,11 +47,15 @@ export const meta = {
           multiline: false,
           tooltip: "Язык интерфейса пользователя",
           type: {
-            types: [
-              "string"
-            ],
+            types: ["string"],
             strLen: 2,
             strFix: true
+          }
+        },
+        params: {
+          synonym: "Умолчания параметров",
+          type: {
+            types: ["object"]
           }
         }
       },
@@ -407,6 +405,11 @@ export default function abonentsClasses({cat, classes, symbols}, exclude) {
     set area(v){this[set]('area',v)}
     get servers(){return this[get]('servers')}
     set servers(v){this[set]('servers',v)}
+    get params(){return this[get]('params')}
+    prmDefault(property) {
+      const value = this.params[property.valueOf()];
+      return property.type.fetchType(value);
+    }
   }
   classes.CatAbonents = CatAbonents;
 

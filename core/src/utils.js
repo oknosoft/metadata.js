@@ -7,7 +7,7 @@
  */
 
 import {OwnerObj} from './meta/metaObjs';
-import {own} from './meta/symbols';
+import {own, string} from './meta/symbols';
 import {typeDef} from './meta/typeDef';
 
 import Aes from '../lib/aes';
@@ -29,7 +29,6 @@ const ctnames = '$eq,between,$between,$gte,gte,$gt,gt,$lte,lte,$lt,lt,ninh,inh,n
 
 export const object = 'object';
 export const number = 'number';
-export const string = 'string';
 export const boolean = 'boolean';
 
 /**
@@ -968,10 +967,10 @@ class MetaUtils extends OwnerObj {
    * @param left              {Any}
    * @param right             {Any}
    * @param cmpType   {EnumObj}
-   * @param cmpTypes  {EnumManager}
    * @return {*}
    */
-  checkCompare(left, right, cmpType, cmpTypes) {
+  checkCompare(left, right, cmpType) {
+    const {cmpTypes} = this[own].enm;
     const {ne, gt, gte, lt, lte, nin, inh, ninh, lke, nlk} = cmpTypes;
     switch (cmpType) {
       case ne:
