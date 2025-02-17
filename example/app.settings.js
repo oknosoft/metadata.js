@@ -18,9 +18,6 @@ module.exports = function settings(prm = {}) {
       // разделитель для localStorage
       lsPrefix,
 
-      // по умолчанию, обращаемся к зоне 1
-      zone: 0,
-
       // размер вложений 5Mb
       attachmentMaxSize: 5000000,
 
