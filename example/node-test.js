@@ -7,4 +7,13 @@ $p.jobPrm.init(require('./app.settings'));
 $p.md.init(require('./meta.json'));
 $p.md.createManagers([]);
 
-console.log($p.cat);
+const raw = require('./rawData.json');
+$p.cat.tags.load(raw.cat.tags);
+const tag = $p.cat.tags.find({});
+const tag2 = $p.cat.tags.create({name: 'Имя2'});
+const tags = $p.cat.tags.findRows({name: 'Имя2'});
+const all = $p.cat.tags.findRows({});
+const doc = $p.doc.test.create({numberDoc: 7});
+
+
+console.log(tag, doc.numberDoc);

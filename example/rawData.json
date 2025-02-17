@@ -1,0 +1,16 @@
+{
+  "cat": {
+    "tags": [{
+      "ref": "9ad312f7-4700-11e8-8509-d85d4c80ec2a",
+      "_rev": "2-94352f81e1089ff22542bbc9e69955f4",
+      "name": "Документация",
+      "synonym": "docs",
+      "className": "cat.tags",
+      "timestamp": {
+        "user": "Администратор",
+        "moment": "2022-09-28T02:08:00 +0500",
+        "e1cib": true
+      }
+    }]
+  }
+}

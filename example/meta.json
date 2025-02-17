@@ -1839,7 +1839,12 @@
       "cachable": "ram"
     }
   },
-  "doc": {},
+  "doc": {
+    "test": {
+      "name": "Документ",
+      "fields": []
+    }
+  },
   "ireg": {},
   "areg": {},
   "dp": {},
