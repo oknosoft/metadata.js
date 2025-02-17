@@ -41,7 +41,7 @@ export function typeDef(utils) {
      * @type Boolean
      */
     get isTabular() {
-      return this.types[0] === 'tabular';
+      return this.types.includes('tabular');
     }
 
     /**

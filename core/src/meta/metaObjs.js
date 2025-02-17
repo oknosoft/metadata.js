@@ -233,6 +233,10 @@ export class MetaObj extends OwnerObj {
         text += `get ${rf}(){return this[get]('${rf}')}\n`;
         text += `set ${rf}(v){this[set]('${rf}',v)}\n`;
       }
+      for (const ts2 in this.tabulars[ts].tabulars) {
+        text += `get ${ts2}(){return this[get]('${ts2}')}\n`;
+        text += `set ${ts2}(v){this[get]('${ts2}').load(v)}\n`;
+      }
       text += `}\n`;
       text += `classes.${fnName} = ${fnName};\n`;
     }
@@ -294,7 +298,9 @@ export class MetaFields extends OwnerObj {
   constructor(owner, fields) {
     super(owner, MetaFields.alias);
     for(const name in fields) {
-      this[name] = new MetaField(this, name, fields);
+      if(!fields[name].type.types.includes('tabular')) {
+        this[name] = new MetaField(this, name, fields);
+      }
     }
   }
 
@@ -339,10 +345,23 @@ export class MetaSchemas extends OwnerObj {
  * @summary Коллекция метаданных табличных частей
  */
 export class MetaTabulars extends OwnerObj {
-  constructor(owner, tabulars) {
+  constructor(owner, tabulars, fields) {
     super(owner);
     for(const name in tabulars) {
       this[name] = new MetaTabular(this, name, tabulars);
+    }
+    if(owner instanceof MetaTabular) {
+      for(const name in fields) {
+        if(fields[name].type.types.includes('tabular')) {
+          const tname = fields[name].proto;
+          Object.defineProperty(this, name, {
+            get() {
+              return owner[own][tname];
+            },
+            enumerable: true,
+          });
+        }
+      }
     }
   }
 }
@@ -356,7 +375,7 @@ export class MetaTabular extends OwnerObj {
     const {fields, tabulars, schemas, ...other} = raw[name];
     this.fields = new MetaFields(this, fields);
     this.schemas = new MetaSchemas(this, schemas);
-    this.tabulars = new MetaTabulars(this, tabulars);
+    this.tabulars = new MetaTabulars(this, tabulars, fields);
     Object.assign(this, other);
   }
 

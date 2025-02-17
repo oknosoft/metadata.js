@@ -83,7 +83,9 @@ export class BaseDataObj extends OwnerObj {
 
     const {tabulars, fields} = this._metadata();
     for(const name in tabulars) {
-      this.#obj[name] = new TabularSection(this, name, this.#obj[name]);
+      if(!tabulars[name].virtual || (this instanceof TabularSectionRow)) {
+        this.#obj[name] = new TabularSection(this, name, this.#obj[name]);
+      }
     }
     // TODO: заменить на метод класса MetaObj
     if(fields?.type && this.#obj.type) {
@@ -542,15 +544,6 @@ export class DataObj extends BaseDataObj {
     return this[get]('_rev') || '';
   }
   set _rev(v) {
-  }
-
-  /**
-   *
-   * @type {boolean}
-   */
-  get isFolder() {
-    const {hierarchical, groupHierarchy} = this._metadata();
-    return hierarchical && groupHierarchy && this[get]('isFolder') ? true : false;
   }
 
   /**
@@ -1043,6 +1036,15 @@ export class CatObj extends DataObj {
   }
 
   /**
+   *
+   * @type {boolean}
+   */
+  get isFolder() {
+    const {hierarchical, groupHierarchy} = this._metadata();
+    return hierarchical && groupHierarchy && this[get]('isFolder') ? true : false;
+  }
+
+  /**
    * Представление объекта
    * @property presentation
    * @for CatObj
@@ -1234,7 +1236,7 @@ export class DocObj extends DataObj {
   }
   set numberDoc(v) {
     this[notify]('numberDoc');
-    this[set](numberDoc, v);
+    this[set]('numberDoc', v);
   }
 
   /**
