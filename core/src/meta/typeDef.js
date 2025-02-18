@@ -22,7 +22,7 @@ export function typeDef(utils) {
 
     /**
      * @summary Среди типов есть ссылочный
-     * @type Boolean
+     * @type {Boolean}
      */
     get isRef() {
       return this.types.some(type => type.includes('.'));
@@ -30,7 +30,7 @@ export function typeDef(utils) {
 
     /**
      * @summary Это JSON объект
-     * @type Boolean
+     * @type {Boolean}
      */
     get isJson() {
       return this.types[0] === 'json';
@@ -38,15 +38,23 @@ export function typeDef(utils) {
 
     /**
      * @summary Это табличная часть
-     * @type Boolean
+     * @type {Boolean}
      */
     get isTabular() {
       return this.types.includes('tabular');
     }
 
     /**
+     * @summary Это вложенная структура
+     * @type {Boolean}
+     */
+    get isStruct() {
+      return this.types.includes('struct');
+    }
+
+    /**
      * @summary Это составной тип
-     * @type Boolean
+     * @type {Boolean}
      */
     get isComposite() {
       return this.types.length > 1;
@@ -54,7 +62,7 @@ export function typeDef(utils) {
 
     /**
      * @summary Этот тип не составной и ссылочный
-     * @type Boolean
+     * @type {Boolean}
      */
     get isSingleRef() {
       return !this.isComposite && this.isRef;
@@ -62,7 +70,7 @@ export function typeDef(utils) {
 
     /**
      * @summary Этот тип не составной и простой (строка, число, булево)
-     * @type Boolean
+     * @type {Boolean}
      */
     get isSingleType() {
       return !this.isComposite && !this.isRef;
@@ -105,7 +113,7 @@ export function typeDef(utils) {
      * @return {*}
      */
     fetchType(res, obj, f) {
-      if(this.isTabular) {
+      if(this.isTabular || this.isStruct) {
         return res;
       }
       const {types} = this;

@@ -3,8 +3,8 @@
  *
  */
 
-import {own, get, set, hash, notify, mf, string} from './meta/symbols';
-import {OwnerObj, MetaField} from './meta/metaObjs';
+import {own, get, set, hash, notify, mf, struct, string} from './meta/symbols';
+import {OwnerObj, MetaField, MetaTabular} from './meta/metaObjs';
 import {TabularSection} from './tabulars';
 
 class InnerData {
@@ -61,8 +61,11 @@ export class BaseDataObj extends OwnerObj {
 
     super(manager);
 
-    if(Array.isArray(manager)) {
+    if(Array.isArray(manager) || (manager instanceof TabularSectionRow) || (manager instanceof DataStruct)) {
       this.#obj = direct ? attr : {};
+      if(loading instanceof MetaTabular) {
+        this.#obj[mf] = loading;
+      }
     }
     else {
       // в режиме direct, новый объект не создаём - используем сырые данные
@@ -83,7 +86,7 @@ export class BaseDataObj extends OwnerObj {
 
     const {tabulars, fields} = this._metadata();
     for(const name in tabulars) {
-      if(!tabulars[name].virtual || (this instanceof TabularSectionRow)) {
+      if(!tabulars[name].virtual || (this instanceof TabularSectionRow) || (this instanceof DataStruct)) {
         this.#obj[name] = new TabularSection(this, name, this.#obj[name]);
       }
     }
@@ -184,6 +187,14 @@ export class BaseDataObj extends OwnerObj {
       _data.modified = true;
       _manager.emit_async('update', this, {[f]: this.#obj[f]});
     }
+  }
+
+  [struct](f, owner, meta, Constructor) {
+    if(!(this.#obj[f] instanceof DataStruct)) {
+      const raw = this.#obj[f] || {};
+      this.#obj[f] = new Constructor(raw, owner, meta, true);
+    }
+    return this.#obj[f];
   }
 
   /**
@@ -1520,6 +1531,34 @@ export class TabularSectionRow extends BaseDataObj {
     return _manager.utils.mixin(_manager.objConstructor(this[own]._name, this[own]), this);
   }
 
+}
+
+export class DataStruct extends BaseDataObj {
+
+  /**
+   * @summary Метаданые строки табличной части
+   * @param {String} name - имя поля, данные которого интересуют
+   * @return {MetaTabular|MetaField}
+   */
+  _metadata(name) {
+    const meta = this._raw(mf);
+    if(name) {
+      return meta.fields[name] || meta.tabulars[name];
+    }
+    return meta;
+  }
+
+  get _manager() {
+    return this[own]._manager;
+  }
+
+  get _data() {
+    return this[own][own]._data;
+  }
+
+  get className() {
+    return this._metadata().className;
+  }
 }
 
 /**
