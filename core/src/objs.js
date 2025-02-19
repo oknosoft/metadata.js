@@ -221,8 +221,9 @@ export class BaseDataObj extends OwnerObj {
     else if(f === 'ref') {
       obj[f] = utils.fix.guid(v);
     }
-    else if(mf instanceof DataObj) {
-      obj[f] = utils.fix.guid(v, false);
+    else if(v instanceof DataObj && mf.isRef) {
+      const ref = utils.fix.guid(v, false);
+      obj[f] = mf.isSingleRef ? ref : `${v._metadata().id}|${ref}`;
     }
     else if(mf.isRef) {
 
