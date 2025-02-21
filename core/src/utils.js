@@ -698,7 +698,7 @@ class MetaUtils extends OwnerObj {
      * @return {{docs: Array, count: number}}
      * @private
      */
-    this.find.with_sort = (src, selection) => {
+    this.find.withSort = (src, selection) => {
       let pre = [], docs = [], sort, top = 300, skip = 0, count = 0, skipped = 0;
 
       if(selection) {
@@ -1139,7 +1139,7 @@ class MetaUtils extends OwnerObj {
           // пропускаем служебные свойства
           if (j.substring(0, 1) == '_') {
             if(j === '_search' && sel.fields && sel.value) {
-              ok = sel.value.every((str) => sel.fields.some((fld) => this.is._like(o[fld], str)));
+              ok = sel.value.every((str) => sel.fields.some((fld) => this.is.like(o[fld], str)));
               if(!ok) {
                 break;
               }

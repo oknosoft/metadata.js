@@ -787,12 +787,54 @@ export const meta = {
   },
 };
 
-export default function schemeSettingsClasses({classes, symbols, md}, exclude) {
+export default function schemeSettingsClasses({classes, symbols, md, utils}, exclude) {
   md.get('ss').constructorBase();
   const {CatSchemeSettings: CatObj} = classes;
   const {get, set} = symbols;
 
   class CatSchemeSettings extends CatObj {
+
+    filter(rows, selection) {
+      if(!selection) {
+        return [...rows];
+      }
+      const sel = this.rawSelection();
+      // заглушка
+      if(selection.hasOwnProperty('_search')) {
+        const res = [];
+        for(const row of rows) {
+          if(utils.selection(row, selection)) {
+            res.push(row);
+          }
+        }
+        return res;
+      }
+      return utils.find.rows(rows, selection);
+    }
+
+    rawSelection() {
+      const {_data} = this;
+      if(!_data._or) {
+        _data._or = new Map();
+        for(const row of this.selection) {
+          if(row.use) {
+            if(!_data._or.has(row.area)) {
+              _data._or.set(row.area, []);
+            }
+            _data._or.get(row.area).push(row);
+          }
+        }
+      }
+    }
+
+    searchSelection() {
+      return this._search ? {
+        _search: {
+          fields: this.columns.map((column) => column.key),
+          value: this._search.trim().replace(/\s\s/g, ' ').split(' ').filter(v => v),
+        }
+      } : null;
+    }
 
     get columns() {
       const {editors, formatters} = this._manager.root.ui;
@@ -811,7 +853,7 @@ export default function schemeSettingsClasses({classes, symbols, md}, exclude) {
             fieldDef.renderEditCell = editors[row.editor];
           }
           return fieldDef;
-        })
+        });
     }
   }
   classes.CatSchemeSettings = CatSchemeSettings;
