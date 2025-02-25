@@ -215,7 +215,8 @@ export default class JobPrm extends OwnerObj {
   }
 
   get zone() {
-    return this.get('zone', 'number');
+    return (typeof sessionStorage === 'object' && parseInt(sessionStorage.getItem('zone')))
+      || this.get('zone', 'number');
   }
 
   get branch() {
@@ -224,7 +225,8 @@ export default class JobPrm extends OwnerObj {
   }
 
   get abonent() {
-    return this[own].cat.abonents.find({id: this.zone});
+    const {abonents} = this[own].cat;
+    return abonents.find({id: this.zone}) || abonents.find({});
   }
 
 }
