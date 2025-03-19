@@ -353,24 +353,21 @@ export class BaseDataObj extends OwnerObj {
    */
   toJSON() {
     const res = {};
-    const {_obj, _manager} = this;
-    const {utils: {blank}, classes: {Meta}} = _manager.root;
+    const {utils: {blank}, classes: {Meta}} = this._manager.root;
+    const raw = this.#obj;
 
-    for(const fld in _obj) {
-      const mfld = _manager.metadata(fld);
+    for(const fld in raw) {
+      const mfld = this._metadata(fld);
       if(mfld || fld === '_attachments') {
-        if(Array.isArray(_obj[fld])) {
+        if(Array.isArray(raw[fld])) {
           res[fld] = this[fld].toJSON();
         }
         else {
           if(!Meta.sysFields.includes(fld) &&
-            (_obj[fld] === blank.guid || (_obj[fld] === '' && mfld.type.types.length === 1 && mfld.type.types[0] === string))) {
+            (raw[fld] === blank.guid || (raw[fld] === '' && mfld.type.isSingleType && mfld.type.types[0] === string))) {
             continue;
           }
-          res[fld] = _obj[fld];
-          if(fld === 'type' && typeof res[fld] === 'object') {
-            delete res[fld]._mgr;
-          }
+          res[fld] = raw[fld];
         }
       }
     }

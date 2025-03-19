@@ -72,6 +72,14 @@ export class TabularSection extends Array {
     return this.length;
   }
 
+  splice(index, count) {
+    const tmp = [...this];
+    const deleted = tmp.splice(index, count);
+    this.length = 0;
+    this.push(...tmp);
+    return deleted;
+  }
+
 	/**
 	 * @summary Очищает табличную часть
 	 * @return {TabularSection}
@@ -124,7 +132,7 @@ export class TabularSection extends Array {
     !_data.loading && drows.length && owner.afterDelRow(drows[0]);
 
     // obj, {ts_name: null}
-    !_data.loading && _manager.emit_async('rows', owner, {[_name]: true});
+    !_data.loading && _manager.emit_async('rows', owner, {[this.#meta[alias]]: true});
 		_data.modified = true;
 	}
 
