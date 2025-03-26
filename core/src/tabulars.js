@@ -99,7 +99,7 @@ export class TabularSection extends Array {
       this.length = 0;
     }
     const {_data, _manager} = this;
-    !_data.loading && _manager.emit_async('rows', this[own], {[this.#meta[alias]]: true});
+    !_data.loading && _manager.emit('rows', this[own], {[this.#meta[alias]]: true});
     return this;
   }
 
@@ -132,7 +132,7 @@ export class TabularSection extends Array {
     !_data.loading && drows.length && owner.afterDelRow(drows[0]);
 
     // obj, {ts_name: null}
-    !_data.loading && _manager.emit_async('rows', owner, {[this.#meta[alias]]: true});
+    !_data.loading && _manager.emit('rows', owner, {[this.#meta[alias]]: true});
 		_data.modified = true;
 	}
 
@@ -203,20 +203,20 @@ export class TabularSection extends Array {
 	 * @param rowid2 {number|TabularSectionRow}
 	 */
 	swap(rowid1, rowid2) {
-    const {_obj, _owner, _name} = this;
     if(typeof rowid1 !== 'number') {
-      rowid1 = rowid1.row - 1;
+      rowid1 = this.indexOf(rowid1);
     }
     if(typeof rowid2 !== 'number') {
-      rowid2 = rowid2.row - 1;
+      rowid2 = this.indexOf(rowid2);
     }
-		[_obj[rowid1], _obj[rowid2]] = [_obj[rowid2], _obj[rowid1]];
-		_obj[rowid1].row = rowid1 + 1;
-		_obj[rowid2].row = rowid2 + 1;
+    const row1 = this[rowid1];
+    const row2 = this[rowid2];
+    this[rowid1] = row2;
+    this[rowid2] = row1;
 
-    // obj, {ts_name: null}
-    const {_data, _manager} = _owner;
-    !_data.loading && _manager.emit_async('rows', _owner, {[_name]: true});
+    const owner = this[own];
+    const {_data, _manager} = owner;
+    !_data.loading && _manager.emit('rows', owner, {[this.#meta[alias]]: [row1, row2]});
     _data.modified = true;
 	}
 
@@ -249,9 +249,11 @@ export class TabularSection extends Array {
 
     this.push(row);
     _data.modified = true;
-    !_data.loading && !silent && _manager.emit_async('rows', owner, {[this.#meta[alias]]: true});
 
-    // триггер
+    // триггер менеджера
+    !_data.loading && !silent && _manager.emit('rows', owner, {[this.#meta[alias]]: row});
+
+    // триггер объекта
     !_data.loading && owner.afterAddRow(row, attr);
 
 		return row;

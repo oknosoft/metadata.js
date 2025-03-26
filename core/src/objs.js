@@ -185,7 +185,7 @@ export class BaseDataObj extends OwnerObj {
     const {_data, _manager} = this;
     if(_data && !_data.loading) {
       _data.modified = true;
-      _manager.emit_async('update', this, {[f]: this.#obj[f]});
+      _manager.emit('update', this, {[f]: this.#obj[f]});
     }
   }
 
@@ -303,6 +303,7 @@ export class BaseDataObj extends OwnerObj {
     else {
       obj[f] = v;
     }
+    this[notify](f);
   }
 
   /**
