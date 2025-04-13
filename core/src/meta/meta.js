@@ -175,12 +175,20 @@ class AppMetadata extends MetaEventEmitter {
 
   /**
    * @summary Возвращает менеджер объекта по имени или идентификатору класса
-   * @param id {String}
+   * @param id {String|TypeDef}
    * @return {DataManager|undefined}
    * @private
    */
   mgr(id) {
-    return this.#index.mgrs[id];
+    if(typeof id === 'string') {
+      return this.#index.mgrs[id];
+    }
+    for(const type of id.types) {
+      const mgr = this.#index.mgrs[type];
+      if(mgr) {
+        return mgr;
+      }
+    }
   }
 
   /**
