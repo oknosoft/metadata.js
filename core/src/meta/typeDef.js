@@ -113,7 +113,7 @@ export function typeDef(utils) {
      * @return {*}
      */
     fetchType(res, obj, f) {
-      if(this.isTabular || this.isStruct) {
+      if(this.isTabular || this.isStruct || (utils.is.dataObj(res) && this.hasType(res.className))) {
         return res;
       }
       const {types} = this;
@@ -225,6 +225,13 @@ export function typeDef(utils) {
       else {
         return res;
       }
+    }
+
+    isFilled(value) {
+      if(value?.empty?.()) {
+        return false;
+      }
+      return Boolean(value);
     }
 
   }
