@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.36-beta.1, built:2025-02-14
+ metadata-core v2.0.36-beta.1, built:2025-04-18
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -293,10 +293,10 @@ class TabularSection {
 		const {_obj, _owner, _name} = this;
     const {_data, _manager} = _owner;
 		let index;
-    if(typeof val == 'undefined') {
+    if(typeof val === 'undefined') {
       return;
     }
-    else if(typeof val == 'number') {
+    else if(typeof val === 'number') {
       index = val;
     }
 		else if (val.row && _obj[val.row - 1] && _obj[val.row - 1]._row === val){
@@ -2327,7 +2327,7 @@ class RefDataManager extends DataManager{
 	}
 	load_array(aattr, forse){
 		const res = [];
-    const {wsql} = this._owner.$p;
+    const {wsql, utils} = this._owner.$p;
     const {grouping, tabular_sections} = this.metadata();
 		for(const attr of aattr){
 		  if(grouping === 'array' && attr.ref.length <= 3) {
@@ -2361,6 +2361,13 @@ class RefDataManager extends DataManager{
         obj[ts]?._index?.clear();
       }
 			res.push(obj);
+      const {timestamp} = attr;
+      if(timestamp && attr._rev) {
+        const curr = utils.fix_date(timestamp.moment);
+        if(!this.slice || this.slice.moment < curr) {
+          this.slice = {moment: Number(curr), rev: attr._rev};
+        }
+      }
 		}
 		return res;
 	}
@@ -3525,10 +3532,22 @@ const utils = {
     });
   },
 	fix_date(str, strict) {
-		if (str instanceof Date || (!strict && (this.is_guid(str) || (str && (str.length === 11 || str.length === 9))))){
+		if (str instanceof Date || (!strict && (this.is_guid(str) || (str?.length === 11 || str?.length === 9)))){
       return str;
     }
 		else {
+      if(str?.length > 22) {
+        try {
+          let [raw, zone] = str.split(' ');
+          if(raw && zone) {
+            const strDate = new Date(raw).toString();
+            const index = strDate.indexOf('GMT');
+            const fixed = strDate.substring(0, index + 3) + zone;
+            return new Date(fixed);
+          }
+        }
+        catch (e) {}
+      }
 			const m = moment$1(str, date_frmts);
 			return m.isValid() ? m.toDate() : (strict ? this.blank.date : str);
 		}
@@ -3650,7 +3669,7 @@ const utils = {
     return v instanceof EnumManager;
   },
   is_tabular(v) {
-    return v instanceof TabularSectionRow || v instanceof TabularSection || v?._row instanceof TabularSectionRow;
+    return v instanceof TabularSectionRow || v instanceof TabularSection || v?.is_tabular || v?._row instanceof TabularSectionRow;
   },
 	is_equal(v1, v2) {
 		if (v1 == v2) {

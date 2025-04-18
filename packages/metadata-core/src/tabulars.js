@@ -134,10 +134,10 @@ export class TabularSection {
 
 		let index;
 
-    if(typeof val == 'undefined') {
+    if(typeof val === 'undefined') {
       return;
     }
-    else if(typeof val == 'number') {
+    else if(typeof val === 'number') {
       index = val;
     }
 		else if (val.row && _obj[val.row - 1] && _obj[val.row - 1]._row === val){

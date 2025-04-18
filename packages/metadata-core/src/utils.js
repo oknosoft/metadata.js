@@ -351,10 +351,23 @@ const utils = {
 	 * @return {Date|*}
 	 */
 	fix_date(str, strict) {
-		if (str instanceof Date || (!strict && (this.is_guid(str) || (str && (str.length === 11 || str.length === 9))))){
+		if (str instanceof Date || (!strict && (this.is_guid(str) || (str?.length === 11 || str?.length === 9)))){
       return str;
     }
 		else {
+      // 2024-12-03T18:04:35 +0500
+      if(str?.length > 22) {
+        try {
+          let [raw, zone] = str.split(' ');
+          if(raw && zone) {
+            const strDate = new Date(raw).toString();
+            const index = strDate.indexOf('GMT');
+            const fixed = strDate.substring(0, index + 3) + zone;
+            return new Date(fixed);
+          }
+        }
+        catch (e) {}
+      }
 			const m = moment(str, date_frmts);
 			return m.isValid() ? m.toDate() : (strict ? this.blank.date : str);
 		}
@@ -588,7 +601,7 @@ const utils = {
    * @return {Boolean} - true, если значение является табличной частью
    */
   is_tabular(v) {
-    return v instanceof TabularSectionRow || v instanceof TabularSection || v?._row instanceof TabularSectionRow;
+    return v instanceof TabularSectionRow || v instanceof TabularSection || v?.is_tabular || v?._row instanceof TabularSectionRow;
   },
 
 	/**

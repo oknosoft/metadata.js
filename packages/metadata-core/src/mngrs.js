@@ -806,7 +806,7 @@ export class RefDataManager extends DataManager{
 	 */
 	load_array(aattr, forse){
 		const res = [];
-    const {wsql} = this._owner.$p;
+    const {wsql, utils} = this._owner.$p;
     const {grouping, tabular_sections} = this.metadata();
 		for(const attr of aattr){
 		  if(grouping === 'array' && attr.ref.length <= 3) {
@@ -840,6 +840,14 @@ export class RefDataManager extends DataManager{
         obj[ts]?._index?.clear();
       }
 			res.push(obj);
+      
+      const {timestamp} = attr;
+      if(timestamp && attr._rev) {
+        const curr = utils.fix_date(timestamp.moment);
+        if(!this.slice || this.slice.moment < curr) {
+          this.slice = {moment: Number(curr), rev: attr._rev};
+        }
+      }
 		}
 		return res;
 	}
