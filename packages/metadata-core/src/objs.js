@@ -1035,7 +1035,7 @@ export class DataObj extends BaseDataObj {
     return _manager.adapter
       .get_attachment(_manager, ref, att_id)
       .then((blob) => {
-        if(blob?.type === 'application/internet-shortcut' && dhtmlx === 1 && typeof 'window' !== 'undefined') {
+        if(blob?.type === 'application/internet-shortcut' && dhtmlx === 1 && typeof window !== 'undefined') {
           return utils.blob_url_open(blob);
         }
         return blob;

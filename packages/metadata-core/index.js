@@ -1292,7 +1292,7 @@ class DataObj extends BaseDataObj {
     return _manager.adapter
       .get_attachment(_manager, ref, att_id)
       .then((blob) => {
-        if(blob?.type === 'application/internet-shortcut' && dhtmlx === 1 && typeof 'window' !== 'undefined') {
+        if(blob?.type === 'application/internet-shortcut' && dhtmlx === 1 && typeof window !== 'undefined') {
           return utils.blob_url_open(blob);
         }
         return blob;
@@ -1372,7 +1372,7 @@ class DataObj extends BaseDataObj {
     const tmp = new Set();
     const {fields, tabular_sections} = this._metadata();
     const {_obj, _manager: {_owner}} = this;
-    _owner.$p;
+    const {md} = _owner.$p;
     if(this.empty() || this.is_new()){
       return tmp;
     }
@@ -2940,7 +2940,7 @@ class RegisterManager extends DataManager{
 		if (attr.ref && return_row)
 			return this.by_ref[attr.ref];
 		attr.action = "select";
-		this._owner.$p.wsql;
+		const {alasql} = this._owner.$p.wsql;
 		const arr = wsql.alasql(this.get_sql_struct(attr), attr._values);
 		let res;
 		delete attr.action;
