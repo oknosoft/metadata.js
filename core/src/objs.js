@@ -174,7 +174,10 @@ export class BaseDataObj extends OwnerObj {
     let {choiceType, type} = this._metadata(f);
     if(choiceType?.path) {
       const prm = this[choiceType.path.length === 2 ? choiceType.path[1] : choiceType.path[0]];
-      if(prm?.type instanceof this._manager.root.classes.TypeDef) {
+      if(prm instanceof this._manager.root.classes.TypeDef) {
+        type = prm;
+      }
+      else if(prm?.type instanceof this._manager.root.classes.TypeDef) {
         type = prm.type;
       }
     }
@@ -1499,6 +1502,25 @@ export class TabularSectionRow extends BaseDataObj {
    */
   _metadata(name) {
     return this[own]._metadata(name);
+  }
+
+  [get](f) {
+    const res = this._raw(f);
+    let {choiceType, type} = this._metadata(f);
+    if(choiceType?.path) {
+      let obj = this[own][own];
+      if(choiceType.path.length === 2) {
+        obj = obj[choiceType.path[0]];
+      }
+      const prm = obj[choiceType.path.length === 2 ? choiceType.path[1] : choiceType.path[0]];
+      if(prm instanceof this._manager.root.classes.TypeDef) {
+        type = prm;
+      }
+      else if(prm?.type instanceof this._manager.root.classes.TypeDef) {
+        type = prm.type;
+      }
+    }
+    return type.fetchType(res);
   }
 
   get _manager() {

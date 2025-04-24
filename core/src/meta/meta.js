@@ -155,6 +155,7 @@ class AppMetadata extends MetaEventEmitter {
         }
       }
     }
+    this.emit('managersCreateed', this[own]);
   }
 
   /**
