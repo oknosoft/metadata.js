@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.36-beta.2, built:2025-04-21
+ metadata-core v2.0.36-beta.2, built:2025-05-03
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1255,6 +1255,9 @@ class DataObj extends BaseDataObj {
           const v = obj[fld];
           if(v instanceof DataObj && !v.empty() && v.is_new()) {
             const {_manager} = v;
+            if(_manager.metadata().joint) {
+              continue;
+            }
             const {adapter} = _manager;
             const db = adapter.db(_manager);
             if(db) {

@@ -988,6 +988,9 @@ export class DataObj extends BaseDataObj {
           const v = obj[fld];
           if(v instanceof DataObj && !v.empty() && v.is_new()) {
             const {_manager} = v;
+            if(_manager.metadata().joint) {
+              continue;
+            }            
             const {adapter} = _manager;
             const db = adapter.db(_manager);
             if(db) {
