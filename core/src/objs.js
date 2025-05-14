@@ -1508,15 +1508,14 @@ export class TabularSectionRow extends BaseDataObj {
     const res = this._raw(f);
     let {choiceType, type} = this._metadata(f);
     if(choiceType?.path) {
-      let obj = this[own][own];
-      if(choiceType.path.length === 2) {
-        obj = obj[choiceType.path[0]];
-      }
-      const prm = obj[choiceType.path.length === 2 ? choiceType.path[1] : choiceType.path[0]];
-      if(prm instanceof this._manager.root.classes.TypeDef) {
+      const isSelf = choiceType.path.length === 2;
+      const obj = isSelf ? this : this[own][own];
+      const prm = obj[isSelf ? choiceType.path[1] : choiceType.path[0]];
+      const {TypeDef} = this._manager.root.classes;
+      if(prm instanceof TypeDef) {
         type = prm;
       }
-      else if(prm?.type instanceof this._manager.root.classes.TypeDef) {
+      else if(prm?.type instanceof TypeDef) {
         type = prm.type;
       }
     }

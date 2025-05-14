@@ -472,33 +472,33 @@ export class RefDataManager extends DataManager {
 	 * Сохраняет массив объектов в менеджере
 	 *
 	 * @param aattr {Array} - массив объектов для трансформации в объекты ссылочного типа
-	 * @param {Boolean|String} [forse] - перезаполнять объект
-   * при forse == "update_only", новые объекты не создаются, а только перезаполняются ранее загруженные в озу
+	 * @param {Boolean|String} [force] - перезаполнять объект
+   * при force == "update_only", новые объекты не создаются, а только перезаполняются ранее загруженные в озу
 	 */
-	load(aattr, forse){
+	load(aattr, force){
 		const res = [];
     const {root: {jobPrm}, index: {predefined}} = this;
     const {grouping, tabulars, names} = this.metadata();
 		for(const attr of aattr){
       let skipMixin;
 		  if(grouping === 'array' && attr.ref.length <= 3) {
-		    res.push.apply(res, this.load(attr.rows, forse));
+		    res.push.apply(res, this.load(attr.rows, force));
 		    continue;
       }
 			let obj = this.get(attr, false);
 			if(!obj){
-        if(forse === 'update_only') {
+        if(force === 'update_only') {
 					continue;
 				}
 				obj = this.objConstructor('', [attr, this, true]);
 				obj.isNew() && obj._loaded();
         skipMixin = true;
 			}
-			else if(obj.isNew() || forse){
-			  if(obj.isNew() || forse !== 'update_only') {
+			else if(obj.isNew() || force){
+			  if(obj.isNew() || force !== 'update_only') {
           obj._data.loading = true;
         }
-        else if(forse === 'update_only' && attr.timestamp) {
+        else if(force === 'update_only' && attr.timestamp) {
           if(attr.timestamp.user === (this.adapter.authorized || jobPrm.get('userName'))) {
             if(new Date() - moment(attr.timestamp.moment, "YYYY-MM-DDTHH:mm:ss ZZ").toDate() < 30000) {
               attr._rev && (obj._rev = attr._rev);
@@ -929,9 +929,9 @@ export class RegisterManager extends DataManager {
 	/**
 	 * сохраняет массив объектов в менеджере
 	 * @param aattr {Array} - массив объектов для трансформации в объекты ссылочного типа
-	 * @param forse {Boolean} - перезаполнять объект
+	 * @param force {Boolean} - перезаполнять объект
 	 */
-  load(aattr, forse) {
+  load(aattr, force) {
 
 		const res = [];
 
@@ -947,7 +947,7 @@ export class RegisterManager extends DataManager {
         obj.unload();
         continue;
       }
-      else if (forse) {
+      else if (force) {
         obj._data.loading = true;
         this.utils.mixin(obj, row);
       }
