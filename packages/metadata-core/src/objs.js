@@ -406,7 +406,12 @@ export class BaseDataObj {
     return !!this._obj._deleted;
   }
   set _deleted(v) {
-    this._obj._deleted = !!v;
+    if(v) {
+      this._obj._deleted = true;  
+    }
+    else {
+      delete this._obj._deleted; 
+    }
   }
 
   /**
@@ -449,6 +454,7 @@ export class BaseDataObj {
    * @param deleted {Boolean}
    */
   mark_deleted(deleted) {
+    this._data._modified = true;
     this._obj._deleted = !!deleted;
     return this.save();
   }

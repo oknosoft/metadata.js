@@ -11,7 +11,7 @@ export const Tabs = withStyles({
 
 export const Tab = withStyles({
   root: {
-    fontSize: 'large',
+    //fontSize: 'large',
     '@media (min-width: 600px)': {
       minWidth: 72
     },

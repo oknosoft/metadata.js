@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.36-beta.2, built:2025-05-03
+ metadata-core v2.0.36-beta.2, built:2025-05-24
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -896,7 +896,12 @@ class BaseDataObj {
     return !!this._obj._deleted;
   }
   set _deleted(v) {
-    this._obj._deleted = !!v;
+    if(v) {
+      this._obj._deleted = true;
+    }
+    else {
+      delete this._obj._deleted;
+    }
   }
   get _modified() {
     return !!this._data._modified;
@@ -917,6 +922,7 @@ class BaseDataObj {
     return this;
   }
   mark_deleted(deleted) {
+    this._data._modified = true;
     this._obj._deleted = !!deleted;
     return this.save();
   }
