@@ -1,4 +1,21 @@
 
+const prmTypes = [
+  "cch.properties",
+  "cat.property_values",
+  "cat.property_values_hierarchy",
+  "cat.parameters_keys",
+  "cat.formulas",
+  "cat.abonents",
+  "cat.accounts",
+  "cat.branches",
+  "cat.users",
+  "cat.values_options",
+  "boolean",
+  "string",
+  "date",
+  "number"
+];
+
 export const meta = {
   cat: {
     formulas: {
@@ -19,7 +36,7 @@ export const meta = {
           multiline: false,
           tooltip: "Текст функции на языке javascript",
           type: {
-            "types": [
+            types: [
               "string"
             ],
             strLen: 0
@@ -31,13 +48,13 @@ export const meta = {
           tooltip: "Если указано, выполняется код ведущей формулы с параметрами, заданными для текущей формулы",
           choiceParams: [
             {
-              "name": "leading_formula",
-              "path": "00000000-0000-0000-0000-000000000000"
+              name: "leading_formula",
+              path: "00000000-0000-0000-0000-000000000000"
             }
           ],
           choiceGrp: "elm",
           type: {
-            "types": [
+            types: [
               "cat.formulas"
             ]
           }
@@ -47,7 +64,7 @@ export const meta = {
           multiline: false,
           tooltip: "Формула используется, как фильтр, а не как алгоритм расчета количества.\nЕсли возвращает не Истина, строка в спецификацию не добавляется",
           type: {
-            "types": [
+            types: [
               "boolean"
             ]
           }
@@ -57,7 +74,7 @@ export const meta = {
           multiline: true,
           tooltip: "Описание в формате html",
           type: {
-            "types": [
+            types: [
               "string"
             ],
             strLen: 0
@@ -68,7 +85,7 @@ export const meta = {
           multiline: true,
           tooltip: "html или jsx шаблон отчета",
           type: {
-            "types": [
+            types: [
               "string"
             ],
             strLen: 0
@@ -79,11 +96,11 @@ export const meta = {
           multiline: false,
           tooltip: "Используется для упорядочивания (служебный)",
           type: {
-            "types": [
+            types: [
               "number"
             ],
-            "digits": 6,
-            "fraction": 0
+            digits: 6,
+            fraction: 0
           }
         },
         async: {
@@ -91,7 +108,7 @@ export const meta = {
           multiline: false,
           tooltip: "Создавать асинхронную функцию",
           type: {
-            "types": [
+            types: [
               "boolean"
             ]
           }
@@ -101,7 +118,7 @@ export const meta = {
           multiline: false,
           tooltip: "Имеет смысл только для печатных форм и модификаторов",
           type: {
-            "types": [
+            types: [
               "boolean"
             ]
           }
@@ -110,14 +127,14 @@ export const meta = {
           synonym: "Контекст",
           multiline: false,
           tooltip: "Выполнять в браузере, node или везде",
-          "max": 2,
-          "min": 0,
+          max: 2,
+          min: 0,
           type: {
-            "types": [
+            types: [
               "number"
             ],
-            "digits": 6,
-            "fraction": 0
+            digits: 6,
+            fraction: 0
           }
         },
         jsx: {
@@ -125,7 +142,7 @@ export const meta = {
           multiline: false,
           tooltip: "Транспилировать формулу из шаблона jsx",
           type: {
-            "types": [
+            types: [
               "boolean"
             ]
           }
@@ -136,7 +153,7 @@ export const meta = {
           tooltip: "Реквизит подсистемы MDM. Указывает, что объект в настоящий момент, захвачен для редактирования",
           choiceGrp: "elm",
           type: {
-            "types": [
+            types: [
               "boolean",
               "string"
             ],
@@ -149,7 +166,7 @@ export const meta = {
           tooltip: "Реквизит подсистемы MDM, указывает на {@link CatUsers|Пользователя}, захватившего объект для редактирования",
           choiceGrp: "elm",
           type: {
-            "types": [
+            types: [
               "cat.users"
             ]
           }
@@ -159,7 +176,7 @@ export const meta = {
           multiline: false,
           tooltip: "",
           type: {
-            "types": [
+            types: [
               "string"
             ],
             strLen: 256
@@ -169,9 +186,9 @@ export const meta = {
           synonym: "Группа",
           multiline: false,
           tooltip: "Группа формул",
-          "mandatory": true,
+          mandatory: true,
           type: {
-            "types": [
+            types: [
               "cat.formulas"
             ]
           }
@@ -189,26 +206,11 @@ export const meta = {
               tooltip: "",
               choiceGrp: "elm",
               type: {
-                types: [
-                  "cat.abonents",
-                  "cat.accounts",
-                  "cat.branches",
-                  "cat.users",
-                  "cat.values_options",
-                  "cat.property_values_hierarchy",
-                  "cat.formulas",
-                  "cat.property_values",
-                  "cat.parameters_keys",
-                  "cch.properties",
-                  "boolean",
-                  "string",
-                  "date",
-                  "number"
-                ],
-                "strLen": 1024,
-                "datePart": "date_time",
-                "digits": 15,
-                "fraction": 3
+                types: prmTypes,
+                strLen: 1024,
+                datePart: "date_time",
+                digits: 15,
+                fraction: 3
               }
             },
             value: {
@@ -217,37 +219,22 @@ export const meta = {
               tooltip: "",
               choiceLinks: [
                 {
-                  "name": [
+                  name: [
                     "selection",
                     "owner"
                   ],
-                  "path": [
+                  path: [
                     "params",
                     "param"
                   ]
                 }
               ],
               type: {
-                types: [
-                  "cat.abonents",
-                  "cat.accounts",
-                  "cat.branches",
-                  "cat.users",
-                  "cat.values_options",
-                  "cat.property_values_hierarchy",
-                  "cat.formulas",
-                  "cat.property_values",
-                  "cat.parameters_keys",
-                  "cch.properties",
-                  "boolean",
-                  "string",
-                  "date",
-                  "number"
-                ],
-                "strLen": 1024,
-                "datePart": "date_time",
-                "digits": 15,
-                "fraction": 3
+                types: prmTypes,
+                strLen: 1024,
+                datePart: "date_time",
+                digits: 15,
+                fraction: 3
               }
             }
           }
