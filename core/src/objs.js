@@ -1551,6 +1551,13 @@ export class TabularSectionRow extends BaseDataObj {
     return _manager.utils.mixin(_manager.objConstructor(this[own]._name, this[own]), this);
   }
 
+  /**
+   * @summary Удаляет строку табличной части
+   */
+  del() {
+    this[own].del(this);
+  }
+
 }
 
 export class DataStruct extends BaseDataObj {
