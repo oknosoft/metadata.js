@@ -67,7 +67,19 @@ function stream_load(md, pouch) {
   function load(part) {
     const data = JSON.parse(part);
     const mgr = md.mgr_by_class_name(data.name);
-    mgr && mgr.load_array(data.rows, true);
+    if(mgr) {
+      mgr.load_array(data.rows, true);
+    }
+    else if(data.name?.startsWith('raw.')) {
+      const parts = data.name.split('.');
+      if(!md.$p.raw) {
+        Object.defineProperty(md.$p, 'raw', {value: {}});
+      }
+      if(!md.$p.raw[parts[1]]) {
+        Object.defineProperty(md.$p.raw, parts[1], {value: {}});
+      }
+      md.$p.raw[parts[1]][parts[2]] = data.rows;
+    }
     page.docs_written += data.rows.length;
     page.page++;
     pouch.emit('pouch_data_page', page);
