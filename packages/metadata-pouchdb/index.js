@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.36-beta.2, built:2025-04-21
+ metadata-pouchdb v2.0.36-beta.2, built:2025-07-05
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -420,7 +420,7 @@ else {
     .plugin(require('pouchdb-replication').default)
     .plugin(require('pouchdb-mapreduce').default)
     .plugin(require('pouchdb-find').default)
-    .plugin(require('pouchdb-adapter-idb').default);
+    .plugin(require('pouchdb-adapter-indexeddb').default);
   if(typeof window !== 'undefined') {
     window.PouchDB = PouchDB;
   }
