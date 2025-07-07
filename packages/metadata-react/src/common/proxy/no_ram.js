@@ -5,7 +5,10 @@ const page = {
   start: Date.now(),
   manifest: [],
   add(arr) {
-    this.manifest.push.apply(this.manifest, arr);
+    this.manifest.push.apply(this.manifest, Array.isArray(arr) ?
+      arr :
+      Object.keys(arr).map(v => ({[v]: arr[v][1]}))
+    );
   },
   get total_rows() {
     let v = 0;
