@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.36-beta.2, built:2025-07-05
+ metadata-core v2.0.36-beta.2, built:2025-07-11
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -727,7 +727,7 @@ class BaseDataObj {
       if(mf.digits && typeof v === 'number' || mf.hasOwnProperty('str_len') && typeof v === 'string' && !utils.is_guid(v)) {
         _obj[f] = v;
       }
-      else if(typeof v === 'boolean' && mf.types.indexOf('boolean') != -1) {
+      else if(typeof v === 'boolean' && mf.types.includes('boolean')) {
         _obj[f] = v;
       }
       else if(mf.date_part && v instanceof Date) {
@@ -735,7 +735,15 @@ class BaseDataObj {
       }
       else {
         _obj[f] = utils.fix_guid(v);
-        if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1) ;
+        if(utils.is_data_obj(v) && mf.types.includes(v._manager.class_name)) {
+          if(mf.types.length > 1 && mf.types.filter(v => v.includes('.') > 1)) {
+            const {md} = v._manager._owner.$p;
+            const id = md._ids?.[v._manager.class_name];
+            if(id) {
+              _obj[f] = `${id}|${_obj[f]}`;
+            }
+          }
+        }
         else {
           let mgr = this._manager.value_mgr(_obj, f, mf, false, v);
           if(mgr) {
@@ -2078,10 +2086,26 @@ class DataManager extends MetaEventEmitter{
         return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
       }
     }
-		else if (v && v.type) {
-      const tnames = v.type.split('.');
-      if(tnames.length > 1 && $p[tnames[0]]) {
-        return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
+		else {
+      if (v && v.type) {
+        const tnames = v.type.split('.');
+        if (tnames.length > 1 && $p[tnames[0]]) {
+          return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
+        }
+      }
+      const cv = row[f];
+      if(typeof cv === 'string') {
+        const parts = cv.split('|');
+        if(parts.length > 1) {
+          let tnames = parts[0].split('.');
+          if (tnames.length > 1 && $p[tnames[0]]) {
+            return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
+          }
+          tnames = $p.md._ids?.[parts[0]]?.split('.');
+          if (tnames.length > 1 && $p[tnames[0]]) {
+            return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
+          }
+        }
       }
     }
 		let property = row.property || row.param;
@@ -2245,9 +2269,7 @@ class RefDataManager extends DataManager{
     }
   }
 	get(ref, no_create){
-		if(!ref || typeof ref !== string){
-      ref = utils.fix_guid(ref);
-    }
+    ref = utils.fix_guid(ref);
 		let o = this.by_ref[ref];
 		if(arguments.length == 3){
 			if(no_create){
@@ -3562,7 +3584,11 @@ const utils = {
 		}
 	},
 	fix_guid(ref, generate) {
-		if (ref && typeof ref == 'string') ;
+		if (ref && typeof ref == 'string') {
+      if(ref.includes('|')) {
+        ref = ref.substring(ref.indexOf('|')+1);
+      }
+		}
 		else if (ref instanceof DataObj) {
 			return ref.ref;
 		}

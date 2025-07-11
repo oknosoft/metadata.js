@@ -374,9 +374,8 @@ const utils = {
 	},
 
 	/**
-	 * ### Извлекает guid из строки или ссылки или объекта
+	 * @summary Извлекает guid из строки или ссылки, или объекта
 	 *
-	 * @method fix_guid
 	 * @param ref {*} - значение, из которого надо извлечь идентификатор
 	 * @param generate {Boolean} - указывает, генерировать ли новый guid для пустого значения
 	 * @return {String}
@@ -384,7 +383,9 @@ const utils = {
 	fix_guid(ref, generate) {
 
 		if (ref && typeof ref == 'string') {
-
+      if(ref.includes('|')) {
+        ref = ref.substring(ref.indexOf('|')+1);
+      }
 		}
 		else if (ref instanceof DataObj) {
 			return ref.ref;

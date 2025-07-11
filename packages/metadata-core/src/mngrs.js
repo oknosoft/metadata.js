@@ -404,13 +404,12 @@ export class DataManager extends MetaEventEmitter{
   }
 
 	/**
-	 * ### Возвращает менеджер значения по свойству строки
-	 * @method value_mgr
-	 * @param row {Object|TabularSectionRow} - строка табчасти или объект
-	 * @param f {String} - имя поля
-	 * @param mf {Object} - описание типа поля mf.type
-	 * @param array_enabled {Boolean} - возвращать массив для полей составного типа или первый доступный тип
-	 * @param v {*} - устанавливаемое значение
+	 * @summary Возвращает менеджер значения по свойству строки
+	 * @param {Object} row - сырые данные Data-объекта
+	 * @param {String} f - имя поля
+	 * @param {Object} [mf] - описание типа поля mf.type
+	 * @param {Boolean} [array_enabled] - возвращать массив для полей составного типа или первый доступный тип
+	 * @param {Any} [v] - устанавливаемое значение
 	 * @return {DataManager|Array|undefined}
 	 */
 	value_mgr(row, f, mf, array_enabled, v) {
@@ -427,10 +426,26 @@ export class DataManager extends MetaEventEmitter{
         return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
       }
     }
-		else if (v && v.type) {
-      const tnames = v.type.split('.');
-      if(tnames.length > 1 && $p[tnames[0]]) {
-        return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
+		else {
+      if (v && v.type) {
+        const tnames = v.type.split('.');
+        if (tnames.length > 1 && $p[tnames[0]]) {
+          return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
+        }
+      }
+      const cv = row[f];
+      if(typeof cv === 'string') {
+        const parts = cv.split('|');
+        if(parts.length > 1) {
+          let tnames = parts[0].split('.');
+          if (tnames.length > 1 && $p[tnames[0]]) {
+            return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
+          }
+          tnames = $p.md._ids?.[parts[0]]?.split('.');
+          if (tnames.length > 1 && $p[tnames[0]]) {
+            return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
+          }
+        }
       }
     }
 
@@ -667,9 +682,7 @@ export class RefDataManager extends DataManager{
 	 */
 	get(ref, no_create){
 
-		if(!ref || typeof ref !== string){
-      ref = utils.fix_guid(ref);
-    }
+    ref = utils.fix_guid(ref);
 		let o = this.by_ref[ref];
 
 		if(arguments.length == 3){

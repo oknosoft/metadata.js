@@ -175,7 +175,7 @@ export class BaseDataObj {
       if(mf.digits && typeof v === 'number' || mf.hasOwnProperty('str_len') && typeof v === 'string' && !utils.is_guid(v)) {
         _obj[f] = v;
       }
-      else if(typeof v === 'boolean' && mf.types.indexOf('boolean') != -1) {
+      else if(typeof v === 'boolean' && mf.types.includes('boolean')) {
         _obj[f] = v;
       }
       else if(mf.date_part && v instanceof Date) {
@@ -184,8 +184,14 @@ export class BaseDataObj {
       else {
         _obj[f] = utils.fix_guid(v);
 
-        if(utils.is_data_obj(v) && mf.types.indexOf(v._manager.class_name) != -1) {
-
+        if(utils.is_data_obj(v) && mf.types.includes(v._manager.class_name)) {
+          if(mf.types.length > 1 && mf.types.filter(v => v.includes('.') > 1)) {
+            const {md} = v._manager._owner.$p;
+            const id = md._ids?.[v._manager.class_name];
+            if(id) {
+              _obj[f] = `${id}|${_obj[f]}`;
+            }
+          }
         }
         else {
           let mgr = this._manager.value_mgr(_obj, f, mf, false, v);
