@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.37-beta.1, built:2025-07-12
+ metadata-core v2.0.37-beta.1, built:2025-07-28
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1191,34 +1191,32 @@ class DataObj extends BaseDataObj {
     }
     const {_data, _manager} = this;
     _data._saving_trans = true;
+    const reset_modified = (save_res) => {
+      if(save_res === false) {
+        if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted !== initial_posted) {
+          this.posted = initial_posted;
+        }
+      }
+      else {
+        _data._modified = false;
+      }
+      _data._saving = 0;
+      _data._saving_trans = false;
+      return this;
+    };
     return _manager.emit_promise('before_save', this, attr)
       .then(() => {
         return this.before_save(attr);
       })
       .then((before_save_res) => {
-        const reset_modified = () => {
-          if(before_save_res === false) {
-            if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted !== initial_posted) {
-              this.posted = initial_posted;
-            }
-          }
-          else {
-            _data._modified = false;
-          }
-          _data._saving = 0;
-          _data._saving_trans = false;
-          return this;
-        };
         if(before_save_res === false) {
-          return Promise.reject(reset_modified());
+          return Promise.reject(reset_modified(before_save_res));
         }
         else if(before_save_res === null) {
-          return Promise.resolve(reset_modified());
+          return Promise.resolve(reset_modified(before_save_res));
         }
         else ;
         const reset_mandatory = (msg) => {
-          before_save_res = false;
-          reset_modified();
           _manager._owner.$p.md.emit('alert', msg);
           const err = new Error(msg.text);
           err.msg = msg;
@@ -1253,11 +1251,11 @@ class DataObj extends BaseDataObj {
           .then(() => _manager.adapter.save_obj(this, Object.assign({post, operational, attachments}, attr)))
           .then(() => this.after_save())
           .then(reset_modified)
-          .then(() => _manager.emit_promise('after_save', this))
-          .catch((err) => {
-            reset_modified();
-            throw err;
-          });
+          .then(() => _manager.emit_promise('after_save', this));
+      })
+      .catch((err) => {
+        reset_modified(false);
+        throw err;
       });
   }
   load_linked_refs() {
