@@ -185,7 +185,7 @@ export class BaseDataObj {
         _obj[f] = utils.fix_guid(v);
 
         if(utils.is_data_obj(v) && mf.types.includes(v._manager.class_name)) {
-          if(mf.types.length > 1 && mf.types.filter(v => v.includes('.') > 1)) {
+          if(mf.types.length > 1 && mf.types.filter(v => v.includes('.')).length > 1) {
             const {md} = v._manager._owner.$p;
             const id = md._ids?.[v._manager.class_name];
             if(id) {

@@ -199,7 +199,7 @@ const utils = {
         const fileReader = new FileReader();
         fileReader.onload = function (r) {
           const dataUrl = fileReader.result;
-          const base64 = dataUrl.substr(dataUrl.indexOf(',') + 1);
+          const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1);
           resolve(base64);
         };
         const blob = new Blob([buffer], {type: 'application/octet-binary'});
@@ -690,7 +690,7 @@ const utils = {
       .then((text) => {
         for(const row of text.split('\n')) {
           if(row.toLowerCase().startsWith('url=')) {
-            window.open(row.substr(4), '_blank');
+            window.open(row.substring(4), '_blank');
             break;
           }
         }        

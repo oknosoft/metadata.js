@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.37-beta.1, built:2025-07-28
+ metadata-core v2.0.37-beta.2, built:2025-08-04
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -736,7 +736,7 @@ class BaseDataObj {
       else {
         _obj[f] = utils.fix_guid(v);
         if(utils.is_data_obj(v) && mf.types.includes(v._manager.class_name)) {
-          if(mf.types.length > 1 && mf.types.filter(v => v.includes('.') > 1)) {
+          if(mf.types.length > 1 && mf.types.filter(v => v.includes('.')).length > 1) {
             const {md} = v._manager._owner.$p;
             const id = md._ids?.[v._manager.class_name];
             if(id) {
@@ -3467,7 +3467,7 @@ const utils = {
         const fileReader = new FileReader();
         fileReader.onload = function (r) {
           const dataUrl = fileReader.result;
-          const base64 = dataUrl.substr(dataUrl.indexOf(',') + 1);
+          const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1);
           resolve(base64);
         };
         const blob = new Blob([buffer], {type: 'application/octet-binary'});
@@ -3760,7 +3760,7 @@ const utils = {
       .then((text) => {
         for(const row of text.split('\n')) {
           if(row.toLowerCase().startsWith('url=')) {
-            window.open(row.substr(4), '_blank');
+            window.open(row.substring(4), '_blank');
             break;
           }
         }
@@ -5343,7 +5343,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.37-beta.1";
+    return "2.0.37-beta.2";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;
