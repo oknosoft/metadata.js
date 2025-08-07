@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.37-beta.2, built:2025-08-04
+ metadata-pouchdb v2.0.38-beta.1, built:2025-08-07
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -428,7 +428,7 @@ else {
 var PouchDB$1 = PouchDB;
 
 function adapter({AbstracrAdapter}) {
-  const fieldsToDelete = '_id,search,timestamp'.split(',');
+  const redundantFields = '_id,search,timestamp'.split(',');
   return class AdapterPouch extends AbstracrAdapter {
     constructor($p) {
       super($p);
@@ -1130,15 +1130,34 @@ function adapter({AbstracrAdapter}) {
         .catch(do_reload);
     }
     load_obj(tObj, attr) {
-      const db = (attr && attr.db) || this.db(tObj._manager);
+      const {_manager} = tObj;
+      const db = (attr && attr.db) || this.db(_manager);
       if(!db) {
         return Promise.resolve(tObj);
       }
-      return db.get(tObj._manager.class_name + '|' + tObj.ref)
-        .then((res) => {
-          for(const fld of fieldsToDelete) {
-            delete res[fld];
+      return db.get(_manager.class_name + '|' + tObj.ref)
+        .then((raw) => {
+          for(const fld of redundantFields) {
+            delete raw[fld];
           }
+          let queue;
+          for(const ts in _manager.metadata().tabular_sections) {
+            if(typeof raw[ts] === 'string') {
+              const {deflate} = this.$p.utils;
+              const decompress = () => deflate.base64ToBufferAsync(raw[ts])
+                .then((uint8Array) => deflate.decompress(uint8Array))
+                .then(string => raw[ts] = JSON.parse(string));
+              if(queue) {
+                queue = queue.then(decompress);
+              }
+              else {
+                queue = decompress();
+              }
+            }
+          }
+          return queue ? queue.then(() => raw) : raw;
+        })
+        .then((res) => {
           tObj._data._loading = true;
           tObj._mixin(res);
           tObj._obj._rev = res._rev;
@@ -1465,7 +1484,7 @@ function adapter({AbstracrAdapter}) {
         .catch($p.record_log);
     }
     load_array(_mgr, refs, with_attachments, db) {
-      if(!refs || !refs.length) {
+      if(!refs?.length) {
         return Promise.resolve(false);
       }
       if(!db && _mgr) {

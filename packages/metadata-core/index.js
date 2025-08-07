@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.37-beta.2, built:2025-08-04
+ metadata-core v2.0.38-beta.1, built:2025-08-07
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3474,24 +3474,26 @@ const utils = {
         fileReader.readAsDataURL(blob);
       });
     },
-    compress(string) {
+    compress(string, format = 'gzip', as = 'string') {
       const byteArray = new TextEncoder().encode(string);
-      const cs = new CompressionStream('deflate');
+      const cs = new CompressionStream(format);
       const writer = cs.writable.getWriter();
       writer.write(byteArray);
       writer.close();
       return new Response(cs.readable)
         .arrayBuffer()
-        .then((buffer) => new Uint8Array(buffer));
+        .then((buffer) => as === 'string' ?
+          this.bufferToBase64Async(buffer) : (as === 'buffer' ? buffer : new Uint8Array(buffer)));
     },
-    decompress(byteArray) {
-      const cs = new DecompressionStream('deflate');
+    decompress(byteArray, format = 'gzip', as = 'string') {
+      const cs = new DecompressionStream(format);
       const writer = cs.writable.getWriter();
       writer.write(byteArray);
       writer.close();
       return new Response(cs.readable)
         .arrayBuffer()
-        .then((arrayBuffer) => new TextDecoder().decode(arrayBuffer));
+        .then((arrayBuffer) => as === 'string' ?
+          new TextDecoder().decode(arrayBuffer) : (as === 'buffer' ? buffer : new Uint8Array(buffer)));
     }
   },
   debounce(func, wait = 166) {
@@ -5343,7 +5345,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.37-beta.2";
+    return "2.0.38-beta.1";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

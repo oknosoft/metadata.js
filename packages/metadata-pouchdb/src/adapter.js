@@ -15,7 +15,7 @@ import PouchDB from './pouchdb';
 
 function adapter({AbstracrAdapter}) {
 
-  const fieldsToDelete = '_id,search,timestamp'.split(',');
+  const redundantFields = '_id,search,timestamp'.split(',');
 
   /**
    * ### Интерфейс локальной и сетевой баз данных PouchDB
@@ -962,17 +962,37 @@ function adapter({AbstracrAdapter}) {
     load_obj(tObj, attr) {
 
       // нас могли попросить прочитать объект не из родной базы менеджера, а из любой другой
-      const db = (attr && attr.db) || this.db(tObj._manager);
+      const {_manager} = tObj;
+      const db = (attr && attr.db) || this.db(_manager);
 
       if(!db) {
         return Promise.resolve(tObj);
       }
 
-      return db.get(tObj._manager.class_name + '|' + tObj.ref)
-        .then((res) => {
-          for(const fld of fieldsToDelete) {
-            delete res[fld];
+      return db.get(_manager.class_name + '|' + tObj.ref)
+        .then((raw) => {
+          // лишние поля и decompress при необходимости
+          for(const fld of redundantFields) {
+            delete raw[fld];
           }
+          let queue;
+          for(const ts in _manager.metadata().tabular_sections) {
+            if(typeof raw[ts] === 'string') {
+              const {deflate} = this.$p.utils; 
+              const decompress = () => deflate.base64ToBufferAsync(raw[ts])
+                .then((uint8Array) => deflate.decompress(uint8Array))
+                .then(string => raw[ts] = JSON.parse(string));
+              if(queue) {
+                queue = queue.then(decompress);
+              }
+              else {
+                queue = decompress();
+              }
+            }
+          }
+          return queue ? queue.then(() => raw) : raw;
+        })
+        .then((res) => {
           tObj._data._loading = true;
           tObj._mixin(res);
           tObj._obj._rev = res._rev;
@@ -1390,7 +1410,7 @@ function adapter({AbstracrAdapter}) {
      * @return {*}
      */
     load_array(_mgr, refs, with_attachments, db) {
-      if(!refs || !refs.length) {
+      if(!refs?.length) {
         return Promise.resolve(false);
       }
       if(!db && _mgr) {
