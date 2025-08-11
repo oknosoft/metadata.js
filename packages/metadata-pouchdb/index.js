@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.38-beta.1, built:2025-08-07
+ metadata-pouchdb v2.0.38-beta.1, built:2025-08-11
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1499,7 +1499,30 @@ function adapter({AbstracrAdapter}) {
         options.attachments = true;
         options.binary = true;
       }
-      return db.allDocs(options).then((result) => this.load_changes(result, {}));
+      return db.allDocs(options).then((result) => {
+        const {md, utils: {deflate}} = this.$p;
+        let queue;
+        for(const {doc, value, error} of result.rows) {
+          if(doc && !error && value && !value.deleted) {
+            const mgr = $p.md.mgr_by_class_name(doc.class_name);
+            for(const ts in mgr.metadata().tabular_sections) {
+              if(typeof doc[ts] === 'string') {
+                const decompress = () => deflate.base64ToBufferAsync(doc[ts])
+                  .then((uint8Array) => deflate.decompress(uint8Array))
+                  .then(string => doc[ts] = JSON.parse(string));
+                if(queue) {
+                  queue = queue.then(decompress);
+                }
+                else {
+                  queue = decompress();
+                }
+              }
+            }
+          }
+        }
+        return queue ? queue.then(() => result) : result;
+      })
+        .then((result) => this.load_changes(result, {}));
     }
     load_view(_mgr, _view, options) {
       return new Promise((resolve, reject) => {
