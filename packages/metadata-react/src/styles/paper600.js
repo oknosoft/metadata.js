@@ -6,7 +6,7 @@ export default withStyles(({mixins, custom, spacing, shadows, palette}) => ({
     marginTop: custom && custom.appbar.position == 'fixed' ? 72 : 24,
     marginLeft: 'auto',
     marginRight: 'auto',
-    paddingTop: spacing(),
+    padding: spacing(),
   },
   disabled: {
     pointerEvents: 'none',

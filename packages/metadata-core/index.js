@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.38-beta.1, built:2025-08-11
+ metadata-core v2.0.38-beta.1, built:2025-08-26
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3573,11 +3573,19 @@ const utils = {
       if(str?.length > 22) {
         try {
           let [raw, zone] = str.split(' ');
-          if(raw && zone) {
-            const strDate = new Date(raw).toString();
-            const index = strDate.indexOf('GMT');
-            const fixed = strDate.substring(0, index + 3) + zone;
-            return new Date(fixed);
+          if(raw) {
+            if(zone) {
+              const strDate = new Date(raw).toString();
+              const index = strDate.indexOf('GMT');
+              const fixed = strDate.substring(0, index + 3) + zone;
+              return new Date(fixed);
+            }
+            else {
+              const date = new Date(raw);
+              if(!isNaN(date)) {
+                return date;
+              }
+            }
           }
         }
         catch (e) {}
