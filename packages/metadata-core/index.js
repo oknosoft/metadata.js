@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.38-beta.2, built:2025-08-27
+ metadata-core v2.0.38-beta.2, built:2025-09-08
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3512,12 +3512,14 @@ const utils = {
     return debounced;
   },
   sort(fld, desc) {
+    const d = Array.isArray(fld) ?
+      (v) => fld.reduce((sum, curr) => sum[curr], v) : (v) => v[fld];
     return desc ?
       (a, b) => {
-        if(a[fld] < b[fld]) {
+        if(d(a) < d(b)) {
           return 1;
         }
-        else if(a[fld] > b[fld]) {
+        else if(d(a) > d(b)) {
           return -1;
         }
         else {
@@ -3526,10 +3528,10 @@ const utils = {
       }
       :
       (a, b) => {
-        if(a[fld] < b[fld]) {
+        if(d(a) < d(b)) {
           return -1;
         }
-        else if(a[fld] > b[fld]) {
+        else if(d(a) > d(b)) {
           return 1;
         }
         else {

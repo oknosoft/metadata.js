@@ -275,16 +275,18 @@ const utils = {
 
   /**
    * Возвращает функцию для сортировки массива объектов по полю fld
-   * @param fld {String}
-   * @return {(function(*, *): (number))|*}
+   * @param fld {String|Array}
+   * @return {(function(*, *): (number))}
    */
   sort(fld, desc) {
+    const d = Array.isArray(fld) ?
+      (v) => fld.reduce((sum, curr) => sum[curr], v) : (v) => v[fld];
     return desc ?
       (a, b) => {
-        if(a[fld] < b[fld]) {
+        if(d(a) < d(b)) {
           return 1;
         }
-        else if(a[fld] > b[fld]) {
+        else if(d(a) > d(b)) {
           return -1;
         }
         else {
@@ -293,10 +295,10 @@ const utils = {
       }
       :
       (a, b) => {
-        if(a[fld] < b[fld]) {
+        if(d(a) < d(b)) {
           return -1;
         }
-        else if(a[fld] > b[fld]) {
+        else if(d(a) > d(b)) {
           return 1;
         }
         else {
