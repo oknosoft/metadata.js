@@ -249,7 +249,7 @@ const utils = {
    * Отложенное выполнение с подавлением дребезга
    * @param func {Function}
    * @param wait {Number}
-   * @return {debounced}
+   * @return {Function}
    */
   debounce(func, wait = 166) {
     let timeout;
@@ -276,7 +276,7 @@ const utils = {
   /**
    * Возвращает функцию для сортировки массива объектов по полю fld
    * @param fld {String|Array}
-   * @return {(function(*, *): (number))}
+   * @return {Function}
    */
   sort(fld, desc) {
     const d = Array.isArray(fld) ?
