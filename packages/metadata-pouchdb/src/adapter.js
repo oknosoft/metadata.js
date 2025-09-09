@@ -83,7 +83,7 @@ function adapter({AbstracrAdapter}) {
         noreplicate: job_prm.noreplicate,
         autologin: job_prm.autologin || [],
       });
-      if(props.path && props.path.indexOf('http') != 0 && typeof location != 'undefined') {
+      if(props.path && props.path.indexOf('http') !== 0 && typeof location != 'undefined') {
         props.path = `${location.protocol}//${location.host}${props.path}`;
       }
       if(job_prm.use_meta === false) {
@@ -115,7 +115,7 @@ function adapter({AbstracrAdapter}) {
       }
 
       for (const name of pbases) {
-        if(bases.indexOf(name) != -1) {
+        if(bases.indexOf(name) !== -1) {
           // в Node, локальные базы - это алиасы удалённых
           // если direct, то все базы, кроме ram, так же - удалённые
           Object.defineProperty(local, name, {
@@ -1206,7 +1206,7 @@ function adapter({AbstracrAdapter}) {
      * @return {Promise.<Array>}
      */
     get_selection(_mgr, attr) {
-      const {classes} = this.$p;
+      const {classes, moment, utils, iface} = this.$p;
       const cmd = attr.metadata || _mgr.metadata();
       const flds = ['ref', '_deleted']; // поля запроса
       const selection = {
@@ -1276,7 +1276,7 @@ function adapter({AbstracrAdapter}) {
           attr.date_from = new Date('2017-01-01');
         }
         if(!attr.date_till) {
-          attr.date_till = $p.utils.date_add_day(new Date(), 1);
+          attr.date_till = utils.date_add_day(new Date(), 1);
         }
 
         selection.date = {between: [attr.date_from, attr.date_till]};
@@ -1368,10 +1368,10 @@ function adapter({AbstracrAdapter}) {
               const mf = _mgr.metadata(fld);
               if(mf) {
                 if(mf.type.date_part) {
-                  o[fldsyn] = $p.moment(doc[fld]).format($p.moment._masks[mf.type.date_part]);
+                  o[fldsyn] = moment(doc[fld]).format(moment._masks[mf.type.date_part]);
                 }
                 else if(mf.type.is_ref) {
-                  if(!doc[fld] || doc[fld] == $p.utils.blank.guid) {
+                  if(!doc[fld] || doc[fld] == utils.blank.guid) {
                     o[fldsyn] = '';
                   }
                   else {
@@ -1395,9 +1395,9 @@ function adapter({AbstracrAdapter}) {
             ares.push(o);
           });
 
-          return $p.iface.data_to_grid.call(_mgr, ares, attr);
+          return iface.data_to_grid.call(_mgr, ares, attr);
         })
-        .catch($p.record_log);
+        .catch(err => this.$p.record_log(err));
 
     }
 
@@ -1430,7 +1430,7 @@ function adapter({AbstracrAdapter}) {
         let queue;
         for(const {doc, value, error} of result.rows) {
           if(doc && !error && value && !value.deleted) {
-            const mgr = $p.md.mgr_by_class_name(doc.class_name);
+            const mgr = md.mgr_by_class_name(doc.class_name);
             for(const ts in mgr.metadata().tabular_sections) {
               if(typeof doc[ts] === 'string') {
                 const decompress = () => deflate.base64ToBufferAsync(doc[ts])
@@ -1852,7 +1852,7 @@ function adapter({AbstracrAdapter}) {
     save_attachment(_mgr, ref, att_id, attachment, type) {
 
       if(!type) {
-        type: 'text/plain'
+        type = 'text/plain';
       }
 
       if(!(attachment instanceof Blob)) {
@@ -2066,10 +2066,6 @@ function adapter({AbstracrAdapter}) {
     fetch(url, opts = {}) {
       const {authorized, remote, props} = this;
       if(!opts.headers) {
-        if(typeof Headers === 'undefined') {
-          const {Headers} = require('node-fetch');
-          global.Headers = Headers;
-        }
         opts.headers = new Headers({Accept: 'application/json'});
       }
       if(authorized) {
