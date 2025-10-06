@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.38-beta.3, built:2025-09-09
+ metadata-core v2.0.38-beta.3, built:2025-10-06
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3513,7 +3513,7 @@ const utils = {
   },
   sort(fld, desc) {
     const d = Array.isArray(fld) ?
-      (v) => fld.reduce((sum, curr) => sum[curr], v) : (v) => v[fld];
+      (v) => fld.reduce((sum, curr) => sum?.[curr], v) : (v) => v[fld];
     return desc ?
       (a, b) => {
         if(d(a) < d(b)) {
@@ -4617,7 +4617,7 @@ class WSQL {
 		    this.set_user_param(prm.p, this.fetch_type(job_prm.hasOwnProperty(prm.p) ? job_prm[prm.p] : prm.v, prm.t));
 		  }
 		});
-    if(typeof sessionStorage === 'object' && !sessionStorage.key('zone')) {
+    if(typeof sessionStorage === 'object' && !sessionStorage.getItem('zone')) {
       sessionStorage.setItem('zone', this.get_user_param('zone'));
       sessionStorage.setItem('branch', '');
       sessionStorage.setItem('impersonation', '');

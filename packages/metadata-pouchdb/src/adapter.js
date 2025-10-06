@@ -2086,15 +2086,18 @@ function adapter({AbstracrAdapter}) {
         }
       }
 
-      if(typeof sessionStorage === 'object' && sessionStorage.key('zone')) {
-        const zone = sessionStorage.getItem('zone');
+      if(typeof sessionStorage === 'object') {
+        let zone = sessionStorage.getItem('zone');
         if(zone) {
-          url = url.replace(/_\d\d_/, `_${zone}_`);
-          opts.headers.set('zone', zone);
-          opts.headers.set('branch', sessionStorage.getItem('branch'));
-          opts.headers.set('impersonation', sessionStorage.getItem('impersonation'));
-          opts.headers.set('year', sessionStorage.getItem('year'));
+          opts.headers.set('branch', sessionStorage.getItem('branch') || '');
+          opts.headers.set('impersonation', sessionStorage.getItem('impersonation') || '');
+          opts.headers.set('year', sessionStorage.getItem('year') || '');
         }
+        else {
+          zone = props.zone;
+        }
+        opts.headers.set('zone', zone);
+        url = url.replace(/_\d\d_/, `_${zone}_`);
       }
 
       if(!opts.headers.has('Content-Type')) {

@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.38-beta.3, built:2025-09-09
+ metadata-pouchdb v2.0.38-beta.3, built:2025-10-06
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1965,15 +1965,18 @@ function adapter({AbstracrAdapter}) {
           opts.headers.set('Authorization', `Basic ${new Buffer(str, 'utf8').toString('base64')}`);
         }
       }
-      if(typeof sessionStorage === 'object' && sessionStorage.key('zone')) {
-        const zone = sessionStorage.getItem('zone');
+      if(typeof sessionStorage === 'object') {
+        let zone = sessionStorage.getItem('zone');
         if(zone) {
-          url = url.replace(/_\d\d_/, `_${zone}_`);
-          opts.headers.set('zone', zone);
-          opts.headers.set('branch', sessionStorage.getItem('branch'));
-          opts.headers.set('impersonation', sessionStorage.getItem('impersonation'));
-          opts.headers.set('year', sessionStorage.getItem('year'));
+          opts.headers.set('branch', sessionStorage.getItem('branch') || '');
+          opts.headers.set('impersonation', sessionStorage.getItem('impersonation') || '');
+          opts.headers.set('year', sessionStorage.getItem('year') || '');
         }
+        else {
+          zone = props.zone;
+        }
+        opts.headers.set('zone', zone);
+        url = url.replace(/_\d\d_/, `_${zone}_`);
       }
       if(!opts.headers.has('Content-Type')) {
         opts.headers.set('Content-Type', 'application/json');

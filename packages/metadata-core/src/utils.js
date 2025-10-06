@@ -280,7 +280,7 @@ const utils = {
    */
   sort(fld, desc) {
     const d = Array.isArray(fld) ?
-      (v) => fld.reduce((sum, curr) => sum[curr], v) : (v) => v[fld];
+      (v) => fld.reduce((sum, curr) => sum?.[curr], v) : (v) => v[fld];
     return desc ?
       (a, b) => {
         if(d(a) < d(b)) {

@@ -149,7 +149,7 @@ export default class WSQL {
 		  }
 		});
 
-    if(typeof sessionStorage === 'object' && !sessionStorage.key('zone')) {
+    if(typeof sessionStorage === 'object' && !sessionStorage.getItem('zone')) {
       sessionStorage.setItem('zone', this.get_user_param('zone'));  // number
       sessionStorage.setItem('branch', '');                         // guid
       sessionStorage.setItem('impersonation', '');                  // guid
