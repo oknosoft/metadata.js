@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.38-beta.3, built:2025-10-06
+ metadata-core v2.0.38-beta.3, built:2025-10-08
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -995,10 +995,12 @@ class BaseDataObj {
           const {fields} = tabular_sections[ts];
           for(let i = 0; i < _obj[ts].length; i++) {
             const row = _obj[ts][i];
-            const _row = new Constructor(tabular, row);
             row.row = i + 1;
-            Object.defineProperty(row, '_row', {value: _row});
-            DataObj.fix_collection(_row, row, fields);
+            if(!row.hasOwnProperty('_row')) {
+              const _row = new Constructor(tabular, row);
+              Object.defineProperty(row, '_row', {value: _row});
+              DataObj.fix_collection(_row, row, fields);
+            }
           }
         }
       }
