@@ -31,6 +31,7 @@ class MangoSelection {
 
     this.select = this.select.bind(this);
     this.body_keydown = this.body_keydown.bind(this);
+    this.reload = $p.utils.debounce(this.reload, 160).bind(this);
 
     // создаём и настраиваем форму
     if(this.has_tree && attr.initial_value && attr.initial_value != $p.utils.blank.guid && !attr.parent) {
@@ -263,6 +264,29 @@ class MangoSelection {
     grid.load = this.load();
 
   }
+  
+  static async query(filter, db) {
+    if(filter instanceof Promise) {
+      return filter;
+    }
+    const {dereference, ...other} = filter;
+    if(dereference) {
+      const opts = {
+        method: 'POST',
+        body: JSON.stringify(other),
+        headers: new Headers({ 'Content-type': 'application/json' })
+      }
+
+      const response = await db.fetch('_find?dereference=true', opts);
+      const json = await response.json();
+      if (!response.ok) {
+        json.status = response.status;
+        throw new Error(json);
+      }
+      return json;
+    }
+    return db.find(filter);
+  }
 
   // загружает очередную порцию данных в грид
   load() {
@@ -288,7 +312,7 @@ class MangoSelection {
       }
 
       let start = this._current_load ? this._current_load[0] : 0;
-      let count = this._current_load ? this._current_load[1] : 40;
+      let count = this._current_load ? this._current_load[1] : 180;
       const parts = url.split('?');
       if(parts.length > 1) {
         const prm = $p.job_prm.parse_url_str(parts[1]);
@@ -302,7 +326,7 @@ class MangoSelection {
       const filter = that.get_filter(start, count);
 
       // если вместо фильтра нам подсунули промис, запросов не делаем - берём результат из него
-      (filter instanceof Promise ? filter : that._mgr.pouch_db.find(filter))
+      MangoSelection.query(filter, that._mgr.pouch_db)
         .then(({docs}) => {
 
           if(that._need_reload) {
@@ -310,14 +334,13 @@ class MangoSelection {
             return this.load(url, call);
           }
 
+          const {partners, users} = $p.cat;
           return {
             xmlDoc: $p.iface.data_to_grid.call(that._mgr, docs.map(v => {
               v.ref = v._id.substr(15);
               delete v._id;
               v.date = new Date(v.date);
               v.posted = v.posted || false;
-              v.partner = $p.cat.partners.get(v.partner).presentation;
-              v.manager = $p.cat.users.get(v.manager).presentation;
               return v;
             }), {
               _total_count: start + (docs.length < count ? docs.length : docs.length + 1),
@@ -416,6 +439,9 @@ class MangoSelection {
     if(_index.ddoc) {
       filter.use_index = _index.ddoc;
     }
+    if(_index.dereference) {
+      filter.dereference = _index.dereference;
+    }    
 
     return filter;
   }
