@@ -455,7 +455,7 @@ export default {
         makeStyles,
         ...muiCore,
         classnames,
-        reactDataGrid: {Editors, Formatters, Draggable},
+        reactDataGrid: {Editors, Formatters, Draggable, DataGrid},
         prevent(evt) {
           try {evt.preventDefault();}
           catch(e) {}
