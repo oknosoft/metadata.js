@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.38-beta.3, built:2025-10-08
+ metadata-core v2.0.39-beta.1, built:2025-12-11
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -4548,7 +4548,7 @@ class JobPrm {
 	}
 }
 
-const alasql$1 = (typeof window != 'undefined' && window.alasql) || require('alasql/dist/alasql.min');
+const alasql$1 = (typeof window != 'undefined' && window.alasql) || require('alasql');
 if(typeof window != 'undefined' && !window.alasql){
   window.alasql = alasql$1;
 }
@@ -5357,7 +5357,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.38-beta.3";
+    return "2.0.39-beta.1";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

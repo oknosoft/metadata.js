@@ -1,5 +1,5 @@
 /*!
- metadata-abstract-ui v2.0.38-beta.3, built:2025-09-09
+ metadata-abstract-ui v2.0.39-beta.1, built:2025-12-11
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -205,7 +205,7 @@ function tabulars($p) {
     },
   });
 }
-var tabulars$1 = {
+var tabulars_default = {
   proto(constructor) {
   },
   constructor() {
@@ -214,5 +214,5 @@ var tabulars$1 = {
   }
 };
 
-module.exports = tabulars$1;
+module.exports = tabulars_default;
 //# sourceMappingURL=tabulars.js.map

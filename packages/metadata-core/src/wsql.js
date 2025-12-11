@@ -8,7 +8,7 @@
 import utils from './utils';
 
 //import alasql from 'alasql/dist/alasql.min';
-const alasql = (typeof window != 'undefined' && window.alasql) || require('alasql/dist/alasql.min');
+const alasql = (typeof window != 'undefined' && window.alasql) || require('alasql');
 if(typeof window != 'undefined' && !window.alasql){
   window.alasql = alasql;
 }
