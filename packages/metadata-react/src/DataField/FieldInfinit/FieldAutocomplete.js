@@ -107,7 +107,9 @@ class FieldAutocomplete extends AbstractField {
     if(_manager.metadata().main_presentation_name) {
       select._sort = [{field: 'name', direction: 'asc'}];
     }
-    const {docs, count} = $p.utils._find_rows_with_sort.call(_manager, _manager.alatable, select);
+    const docs = function ({docs}) {
+      return docs.filter(v => v?.name || v?.id);
+    }($p.utils._find_rows_with_sort.call(_manager, _manager.alatable, select));
     const options = [this.masked_value()];
     let added = 0;
     for (const {ref} of docs) {
