@@ -16,7 +16,9 @@ class ProxySettings extends React.Component {
 
     const abonents = [];
     for(const abonent of cat.abonents) {
-      abonents.push(abonent);
+      if(!abonent.area) {
+        abonents.push(abonent);
+      }
     }
     let abonent = parseInt(sessionStorage.getItem('zone'), 10);
     if(!abonent) {
