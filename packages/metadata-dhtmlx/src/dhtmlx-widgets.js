@@ -1373,23 +1373,26 @@ function OCombo(attr){
 		if(this.name == "select"){
 			if(_mgr)
 				_mgr.form_selection(_pwnd, {
+          _obj,
+          _field,
 					initial_value: _obj[_field].ref,
 					selection: [get_filter()]
 				});
 			else
 				aclick.call({name: "type"});
 
-		} else if(this.name == "add"){
+		} 
+    else if(this.name == "add"){
 			if(_mgr)
 				_mgr.create({}, true)
 					.then(function (o) {
 						o._set_loaded(o.ref);
-						o.form_obj(attr.pwnd);
+						o.form_obj(attr.pwnd, {_obj, _field});
 					});
 		}
 		else if(this.name == "open"){
 			if(_obj && _obj[_field] && !_obj[_field].empty())
-				_obj[_field].form_obj(attr.pwnd);
+				_obj[_field].form_obj(attr.pwnd, {_obj, _field});
 		}
 		else if(_meta && this.name == "type"){
 			var tlist = [], tmgr, tmeta, tobj = _obj, tfield = _field;
@@ -1411,6 +1414,7 @@ function OCombo(attr){
             const {_metadata} = _obj;
 						_meta = typeof _metadata == 'function' ? _metadata.call(_obj, _field) : _metadata.fields[_field];
 						_mgr.form_selection({
+              ref: _obj.ref,
 							on_select: function (selv) {
 								_obj[_field] = selv;
 								_obj = null;
@@ -1418,6 +1422,8 @@ function OCombo(attr){
 								_meta = null;
 
 							}}, {
+              _obj,
+              _field,
 							selection: [get_filter()]
 						});
 					}
@@ -1460,11 +1466,11 @@ function OCombo(attr){
 
 		// для полных прав разрешаем добавление элементов
 		// TODO: учесть реальные права на добавление
-		if(!attr.hide_frm){
-			var _acl = $p.current_user.get_acl(_mgr.class_name);
-			if(_acl.indexOf("i") != -1)
-				innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><i class='fa fa-plus fa-fwfa-fw'></i></a>";
-		}
+		// if(!attr.hide_frm){
+		// 	var _acl = $p.current_user.get_acl(_mgr.class_name);
+		// 	if(_acl.indexOf("i") != -1)
+		// 		innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><i class='fa fa-plus fa-fwfa-fw'></i></a>";
+		// }
 
 		// для составных типов разрешаем выбор типа
 		// TODO: реализовать поддержку примитивных типов
@@ -1499,22 +1505,32 @@ function OCombo(attr){
 		if(!_mgr || _mgr instanceof EnumManager){
       return;
     }
+    const {code, ctrlKey, shiftKey} = e;
 
-		if(e.keyCode == 115){ // F4
-			if(e.ctrlKey && e.shiftKey){
-				if(!_obj[_field].empty())
-					_obj[_field].form_obj(attr.pwnd);
-
-			}else if(!e.ctrlKey && !e.shiftKey){
-				if(_mgr)
-					_mgr.form_selection(_pwnd, {
-						initial_value: _obj[_field].ref,
-						selection: [get_filter()]
-					});
+		if(code == 'F4'){ // F4
+			if(ctrlKey && shiftKey){
+				if(!_obj[_field].empty()) {
+          _obj[_field].form_obj(attr.pwnd);
+        }
 			}
-			return $p.iface.cancel_bubble(e);
+      else if(!ctrlKey && !shiftKey){
+        _mgr.form_selection(_pwnd, {_obj, _field, initial_value: _obj[_field].ref, selection: [get_filter()]});
+			}
 		}
+    return $p.iface.cancel_bubble(e);
 	}
+  
+  function onkeydown(e) {
+    if(!_mgr || _mgr instanceof EnumManager){
+      return;
+    }
+    const {code, ctrlKey} = e;
+
+    if (ctrlKey && code === 'KeyF') {
+      _mgr.form_selection(_pwnd, {_obj, _field, initial_value: _obj[_field].ref, selection: [get_filter()]});
+      return $p.iface.cancel_bubble(e);
+    }
+  }
 
 	function onfocus(e) {
 		setTimeout(function () {
@@ -1532,7 +1548,7 @@ function OCombo(attr){
 	t.getBase().addEventListener("contextmenu", oncontextmenu);
 
 	t.getInput().addEventListener("keyup", onkeyup);
-
+  t.getInput().addEventListener("keydown", onkeydown);
 	t.getInput().addEventListener("focus", onfocus);
 
 
