@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.39-beta.1, built:2025-12-11
+ metadata-core v2.0.39-beta.1, built:2025-12-27
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3351,7 +3351,7 @@ var data_managers = /*#__PURE__*/Object.freeze({
 	TaskManager: TaskManager
 });
 
-const {v1: uuidv1} = require('uuid');
+const {v7: uuidv7} = require('uuid');
 const moment$1 = require('moment');
 require('moment/locale/ru');
 moment$1.locale('ru');
@@ -3688,7 +3688,7 @@ const utils = {
 		return newDt;
 	},
 	generate_guid() {
-		return uuidv1();
+		return uuidv7();
 	},
 	is_guid(v) {
 		if (typeof v !== 'string' || v.length < 36) {

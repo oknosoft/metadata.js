@@ -4,7 +4,7 @@ import {DataObj, DocObj} from './objs';
 import {TabularSection, TabularSectionRow} from './tabulars';
 
 // UUID
-const {v1: uuidv1} = require('uuid');
+const {v7: uuidv7} = require('uuid');
 
 // Moment для операций с интервалами и датами
 const moment = require('moment');
@@ -531,7 +531,7 @@ const utils = {
 	 * @return {String}
 	 */
 	generate_guid() {
-		return uuidv1();
+		return uuidv7();
 	},
 
 	/**
