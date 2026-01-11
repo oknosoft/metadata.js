@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.39-beta.1, built:2025-12-27
+ metadata-core v2.0.39-beta.1, built:2025-12-30
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3351,7 +3351,7 @@ var data_managers = /*#__PURE__*/Object.freeze({
 	TaskManager: TaskManager
 });
 
-const {v7: uuidv7} = require('uuid');
+const {v7: uuidv7, validate: uuidValidate, NIL: uuidNil } = require('uuid');
 const moment$1 = require('moment');
 require('moment/locale/ru');
 moment$1.locale('ru');
@@ -3411,7 +3411,6 @@ if (!Object.prototype.__define) {
 }
 const date_frmts = ['DD-MM-YYYY', 'YYYY-MM-DD', 'DD-MM-YYYY HH:mm', 'DD-MM-YYYY HH:mm:ss', 'DD-MM-YY HH:mm', 'YYYYDDMMHHmmss', 'YYYY-MM-DDTHH:mm:ss[Z]',
    'DD.MM.YYYY', 'DD.MM.YYYY HH:mm', 'DD.MM.YYYY HH:mm:ss', 'DD.MM.YY HH:mm'];
-const rxref = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 const translit = {
   in: "а А б Б в В г Г д Д е Е ё Ё ж Ж з З и И й Й к К л Л м М н Н о О п П р Р с С т Т у У ф Ф х Х ц Ц ч Ч ш Ш щ Щ ъ Ъ ы Ы ь Ь э Э ю Ю я Я « » № { [ } ] | \ ^ ~ `".split(' '),
   out: "a A b B v V g G d D e E yo Yo zh Zh z Z i I j J k K l L m M n N o O p P r R s S t T u U f F x X c C ch Ch sh Sh w W ' ' y Y ' ' e E ju Ju ya Ya < > N ( ( ) ) I / ' - '".split(' '),
@@ -3695,13 +3694,13 @@ const utils = {
 			return false;
 		}
     else if (v.length === 72) {
-      return rxref.test(v.substring(0, 36)) && rxref.test(v.substring(36));
+      return uuidValidate(v.substring(0, 36)) && uuidValidate(v.substring(36));
     }
 		else if (v.length > 36) {
 			const parts = v.split('|');
 			v = parts.length === 2 ? parts[1] : v.substring(0, 36);
 		}
-		return rxref.test(v);
+		return uuidValidate(v);
 	},
 	is_empty_guid(v) {
 		return !v || v === this.blank.guid;
@@ -4268,7 +4267,7 @@ const utils = {
 utils.__define('blank', {
 	value: Object.freeze({
 		date: utils.fix_date('0001-01-01T00:00:00'),
-		guid: '00000000-0000-0000-0000-000000000000',
+		guid: uuidNil,
 		by_type: function (mtype) {
 			let v;
 			if (mtype.is_ref)

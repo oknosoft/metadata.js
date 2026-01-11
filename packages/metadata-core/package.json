@@ -9,10 +9,10 @@
     "yarn": "^1.22"
   },
   "dependencies": {
-    "alasql": "^4.11",
+    "alasql": "^4.17",
     "debug": "^4.4",
     "moment": "^2.30",
-    "uuid": "^11.1"
+    "uuid": "11.1"
   },
   "repository": {
     "type": "git",

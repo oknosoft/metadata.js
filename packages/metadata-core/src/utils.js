@@ -4,7 +4,7 @@ import {DataObj, DocObj} from './objs';
 import {TabularSection, TabularSectionRow} from './tabulars';
 
 // UUID
-const {v7: uuidv7} = require('uuid');
+const {v7: uuidv7, validate: uuidValidate, NIL: uuidNil } = require('uuid');
 
 // Moment для операций с интервалами и датами
 const moment = require('moment');
@@ -114,8 +114,6 @@ if (!Object.prototype.__define) {
 
 const date_frmts = ['DD-MM-YYYY', 'YYYY-MM-DD', 'DD-MM-YYYY HH:mm', 'DD-MM-YYYY HH:mm:ss', 'DD-MM-YY HH:mm', 'YYYYDDMMHHmmss', 'YYYY-MM-DDTHH:mm:ss[Z]',
    'DD.MM.YYYY', 'DD.MM.YYYY HH:mm', 'DD.MM.YYYY HH:mm:ss', 'DD.MM.YY HH:mm'];
-
-const rxref = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 const translit = {
   in: "а А б Б в В г Г д Д е Е ё Ё ж Ж з З и И й Й к К л Л м М н Н о О п П р Р с С т Т у У ф Ф х Х ц Ц ч Ч ш Ш щ Щ ъ Ъ ы Ы ь Ь э Э ю Ю я Я « » № { [ } ] | \ ^ ~ `".split(' '),
@@ -546,13 +544,13 @@ const utils = {
 			return false;
 		}
     else if (v.length === 72) {
-      return rxref.test(v.substring(0, 36)) && rxref.test(v.substring(36));
+      return uuidValidate(v.substring(0, 36)) && uuidValidate(v.substring(36));
     }
 		else if (v.length > 36) {
 			const parts = v.split('|');
 			v = parts.length === 2 ? parts[1] : v.substring(0, 36);
 		}
-		return rxref.test(v);
+		return uuidValidate(v);
 	},
 
 	/**
@@ -1383,7 +1381,7 @@ const utils = {
 utils.__define('blank', {
 	value: Object.freeze({
 		date: utils.fix_date('0001-01-01T00:00:00'),
-		guid: '00000000-0000-0000-0000-000000000000',
+		guid: uuidNil,
 		by_type: function (mtype) {
 			let v;
 			if (mtype.is_ref)
