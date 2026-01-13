@@ -5,6 +5,7 @@ import {TabularSection, TabularSectionRow} from './tabulars';
 
 // UUID
 const {v7: uuidv7, validate: uuidValidate, NIL: uuidNil } = require('uuid');
+const rxref = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 // Moment для операций с интервалами и датами
 const moment = require('moment');
@@ -357,7 +358,7 @@ const utils = {
 	 * @return {Date|*}
 	 */
 	fix_date(str, strict) {
-		if (str instanceof Date || (!strict && (this.is_guid(str) || (str?.length === 11 || str?.length === 9)))){
+		if (str instanceof Date || (!strict && (this.is_guid(str, true) || (str?.length === 11 || str?.length === 9)))){
       return str;
     }
 		else {
@@ -418,7 +419,7 @@ const utils = {
 			}
 		}
 
-		if (generate === false || this.is_guid(ref)) {
+		if (generate === false || this.is_guid(ref, true)) {
 			return ref;
 		}
 		else if (generate) {
@@ -536,10 +537,11 @@ const utils = {
 	 * ### Проверяет, является ли значение guid-ом
 	 *
 	 * @method is_guid
-	 * @param v {*} - проверяемое значение
+	 * @param {Any} v - проверяемое значение
+   * @param {Boolean} [soft] - нестрогая проверка
 	 * @return {Boolean} - true, если значение соответствует регурярному выражению guid
 	 */
-	is_guid(v) {
+	is_guid(v, soft) {
 		if (typeof v !== 'string' || v.length < 36) {
 			return false;
 		}
@@ -550,7 +552,7 @@ const utils = {
 			const parts = v.split('|');
 			v = parts.length === 2 ? parts[1] : v.substring(0, 36);
 		}
-		return uuidValidate(v);
+		return soft ? rxref.test(v) : uuidValidate(v);
 	},
 
 	/**

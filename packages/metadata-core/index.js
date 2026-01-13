@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.39-beta.1, built:2025-12-30
+ metadata-core v2.0.39-beta.1, built:2026-01-13
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -656,7 +656,7 @@ class BaseDataObj {
       if(mf.digits && typeof res === 'number') {
         return res;
       }
-      if(mf.hasOwnProperty('str_len') && !utils.is_guid(res)) {
+      if(mf.hasOwnProperty('str_len') && !utils.is_guid(res, true)) {
         return res;
       }
       const {_manager} = this;
@@ -724,7 +724,7 @@ class BaseDataObj {
       _obj[f] = utils.fix_guid(v, false);
     }
     else if(mf.is_ref) {
-      if(mf.digits && typeof v === 'number' || mf.hasOwnProperty('str_len') && typeof v === 'string' && !utils.is_guid(v)) {
+      if(mf.digits && typeof v === 'number' || mf.hasOwnProperty('str_len') && typeof v === 'string' && !utils.is_guid(v, true)) {
         _obj[f] = v;
       }
       else if(typeof v === 'boolean' && mf.types.includes('boolean')) {
@@ -1499,7 +1499,7 @@ TabularSectionRow.prototype._getter = DataObj.prototype._getter;
 TabularSectionRow.prototype.__setter = DataObj.prototype.__setter;
 class CatObj extends DataObj {
   constructor(attr, manager, loading) {
-    const direct = loading && attr && utils.is_guid(attr.ref);
+    const direct = loading && attr && utils.is_guid(attr.ref, loading);
     super(attr, manager, loading, direct);
     if(direct) {
       this._fix_plain();
@@ -1580,7 +1580,7 @@ const NumberDocAndDate = (superclass) => class extends superclass {
 };
 class DocObj extends NumberDocAndDate(DataObj) {
   constructor(attr, manager, loading) {
-    const direct = loading && attr && utils.is_guid(attr.ref);
+    const direct = loading && attr && utils.is_guid(attr.ref, loading);
     super(attr, manager, loading, direct);
     if(direct) {
       this._fix_plain(this);
@@ -2368,7 +2368,7 @@ class RefDataManager extends DataManager{
 		    res.push.apply(res, this.load_array(attr.rows, forse));
 		    continue;
       }
-			let obj = this.by_ref[utils.fix_guid(attr)];
+			let obj = this.by_ref[utils.fix_guid(attr, false)];
 			if(!obj){
         if(forse === 'update_only') {
 					continue;
@@ -3352,6 +3352,7 @@ var data_managers = /*#__PURE__*/Object.freeze({
 });
 
 const {v7: uuidv7, validate: uuidValidate, NIL: uuidNil } = require('uuid');
+const rxref = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 const moment$1 = require('moment');
 require('moment/locale/ru');
 moment$1.locale('ru');
@@ -3569,7 +3570,7 @@ const utils = {
     });
   },
 	fix_date(str, strict) {
-		if (str instanceof Date || (!strict && (this.is_guid(str) || (str?.length === 11 || str?.length === 9)))){
+		if (str instanceof Date || (!strict && (this.is_guid(str, true) || (str?.length === 11 || str?.length === 9)))){
       return str;
     }
 		else {
@@ -3619,7 +3620,7 @@ const utils = {
 				ref = (typeof ref.ref == 'object' && ref.ref.hasOwnProperty('ref')) ? ref.ref.ref : ref.ref;
 			}
 		}
-		if (generate === false || this.is_guid(ref)) {
+		if (generate === false || this.is_guid(ref, true)) {
 			return ref;
 		}
 		else if (generate) {
@@ -3689,7 +3690,7 @@ const utils = {
 	generate_guid() {
 		return uuidv7();
 	},
-	is_guid(v) {
+	is_guid(v, soft) {
 		if (typeof v !== 'string' || v.length < 36) {
 			return false;
 		}
@@ -3700,7 +3701,7 @@ const utils = {
 			const parts = v.split('|');
 			v = parts.length === 2 ? parts[1] : v.substring(0, 36);
 		}
-		return uuidValidate(v);
+		return soft ? rxref.test(v) : uuidValidate(v);
 	},
 	is_empty_guid(v) {
 		return !v || v === this.blank.guid;

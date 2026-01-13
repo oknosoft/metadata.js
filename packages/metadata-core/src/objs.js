@@ -86,7 +86,7 @@ export class BaseDataObj {
         return res;
       }
 
-      if(mf.hasOwnProperty('str_len') && !utils.is_guid(res)) {
+      if(mf.hasOwnProperty('str_len') && !utils.is_guid(res, true)) {
         return res;
       }
 
@@ -172,7 +172,7 @@ export class BaseDataObj {
     }
     else if(mf.is_ref) {
 
-      if(mf.digits && typeof v === 'number' || mf.hasOwnProperty('str_len') && typeof v === 'string' && !utils.is_guid(v)) {
+      if(mf.digits && typeof v === 'number' || mf.hasOwnProperty('str_len') && typeof v === 'string' && !utils.is_guid(v, true)) {
         _obj[f] = v;
       }
       else if(typeof v === 'boolean' && mf.types.includes('boolean')) {
@@ -1310,7 +1310,7 @@ export class CatObj extends DataObj {
 
   constructor(attr, manager, loading) {
 
-    const direct = loading && attr && utils.is_guid(attr.ref);
+    const direct = loading && attr && utils.is_guid(attr.ref, loading);
 
     // выполняем конструктор родительского объекта
     super(attr, manager, loading, direct);
@@ -1467,7 +1467,7 @@ export class DocObj extends NumberDocAndDate(DataObj) {
 
   constructor(attr, manager, loading) {
 
-    const direct = loading && attr && utils.is_guid(attr.ref);
+    const direct = loading && attr && utils.is_guid(attr.ref, loading);
 
     // выполняем конструктор родительского объекта
     super(attr, manager, loading, direct);

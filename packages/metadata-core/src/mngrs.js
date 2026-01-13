@@ -826,7 +826,7 @@ export class RefDataManager extends DataManager{
 		    res.push.apply(res, this.load_array(attr.rows, forse));
 		    continue;
       }
-			let obj = this.by_ref[utils.fix_guid(attr)];
+			let obj = this.by_ref[utils.fix_guid(attr, false)];
 			if(!obj){
         if(forse === 'update_only') {
 					continue;
