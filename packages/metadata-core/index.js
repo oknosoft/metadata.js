@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.39-beta.1, built:2026-01-13
+ metadata-core v2.0.39-beta.1, built:2026-01-27
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -2155,7 +2155,7 @@ class DataManager extends MetaEventEmitter{
 			if (utils.is_data_obj(property)){
 				oproperty = property;
 			}
-			else if (utils.is_guid(property)){
+			else if (utils.is_guid(property, true)){
 				oproperty = $p.cch.properties.get(property);
 			}
 			else {
@@ -2185,7 +2185,7 @@ class DataManager extends MetaEventEmitter{
 				else if((property = row[f]) instanceof DataObj){
 					return property._manager;
 				}
-				else if(utils.is_guid(property) && property != utils.blank.guid){
+				else if(utils.is_guid(property, true) && property != utils.blank.guid){
 					for(const mgr of rt){
 						if(mgr.by_ref[property]){
 							return mgr;
@@ -2317,7 +2317,7 @@ class RefDataManager extends DataManager{
 		else if(utils.is_data_obj(attr)){
 			return Promise.resolve(attr);
 		}
-		if(!attr.ref || !utils.is_guid(attr.ref) || utils.is_empty_guid(attr.ref)){
+		if(!attr.ref || !utils.is_guid(attr.ref, true) || utils.is_empty_guid(attr.ref)){
 			attr.ref = utils.generate_guid();
 		}
 		let o = this.by_ref[attr.ref];
@@ -2539,7 +2539,7 @@ class RefDataManager extends DataManager{
                 s += and + "(not _t_." + key + ") ";
               }
               else if(typeof sel[key] == "object"){
-                if(utils.is_data_obj(sel[key]) || utils.is_guid(sel[key])){
+                if(utils.is_data_obj(sel[key]) || utils.is_guid(sel[key], true)){
                   s += and + "(_t_." + key + " = '" + sel[key] + "') ";
                 }
                 else {

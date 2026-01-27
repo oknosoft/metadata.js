@@ -497,7 +497,7 @@ export class DataManager extends MetaEventEmitter{
 			if (utils.is_data_obj(property)){
 				oproperty = property;
 			}
-			else if (utils.is_guid(property)){
+			else if (utils.is_guid(property, true)){
 				oproperty = $p.cch.properties.get(property);
 			}
 			else{
@@ -531,7 +531,7 @@ export class DataManager extends MetaEventEmitter{
 				else if((property = row[f]) instanceof DataObj){
 					return property._manager;
 				}
-				else if(utils.is_guid(property) && property != utils.blank.guid){
+				else if(utils.is_guid(property, true) && property != utils.blank.guid){
 					for(const mgr of rt){
 						if(mgr.by_ref[property]){
 							return mgr;
@@ -744,7 +744,7 @@ export class RefDataManager extends DataManager{
 			return Promise.resolve(attr);
 		}
 
-		if(!attr.ref || !utils.is_guid(attr.ref) || utils.is_empty_guid(attr.ref)){
+		if(!attr.ref || !utils.is_guid(attr.ref, true) || utils.is_empty_guid(attr.ref)){
 			attr.ref = utils.generate_guid();
 		}
 
@@ -1034,7 +1034,7 @@ export class RefDataManager extends DataManager{
                 s += and + "(not _t_." + key + ") ";
               }
               else if(typeof sel[key] == "object"){
-                if(utils.is_data_obj(sel[key]) || utils.is_guid(sel[key])){
+                if(utils.is_data_obj(sel[key]) || utils.is_guid(sel[key], true)){
                   s += and + "(_t_." + key + " = '" + sel[key] + "') ";
                 }
                 else{
