@@ -199,9 +199,9 @@ export class DynList extends MDNRComponent {
       if(mode === 'ram') {
         // фильтруем в озу
         const selector = _mgr.get_search_selector({
-          _obj: _owner ? (_owner._obj || _owner.props && _owner.props._obj) : null,
-          _meta: _owner ? _owner._meta : {},
-          _fld: _owner && _owner.props._fld,
+          _obj: _owner ? (_owner._obj || _owner.props?._obj) : null,
+          _meta: _owner?._meta || {},
+          _fld: _owner?.props?._fld,
           _ref: !scrollSetted && ref,
           source_mode: mode,
           search: scheme._search,

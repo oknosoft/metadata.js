@@ -151,6 +151,7 @@ export default {
               }}
               selectionMode
               denyAddDel
+              {...other}
             />;
             iface_state.value.noSpace = true;
             iface_state.value.hide_actions = true;
