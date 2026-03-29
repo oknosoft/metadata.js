@@ -281,6 +281,12 @@ function adapter({AbstracrAdapter}) {
               if(user.su) {
                 username = user.su;
               }
+              for(const name in remote) {
+                const db = remote[name];
+                if(!db.__opts.auth) {
+                  db.__opts.auth = {username, password};
+                }
+              }
             }
             else {
               const {roles} = user;

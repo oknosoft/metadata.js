@@ -1,5 +1,5 @@
 /*!
- metadata-pouchdb v2.0.39-beta.1, built:2025-12-11
+ metadata-pouchdb v2.0.39-beta.1, built:2026-03-28
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -609,6 +609,12 @@ function adapter({AbstracrAdapter}) {
               }
               if(user.su) {
                 username = user.su;
+              }
+              for(const name in remote) {
+                const db = remote[name];
+                if(!db.__opts.auth) {
+                  db.__opts.auth = {username, password};
+                }
               }
             }
             else {
