@@ -272,9 +272,11 @@ export class TabularSection {
 
 		// присваиваем типизированные значения по умолчанию
     const data = row._obj;
-    for (const f in row._metadata().fields){
-      if(!data.hasOwnProperty(f)) {
-        row[f] = attr[f] || '';
+    if(!(silent && raw)) {
+      for (const f in row._metadata().fields){
+        if(!data.hasOwnProperty(f)) {
+          row[f] = attr[f] || '';
+        }
       }
     }
 
@@ -330,7 +332,7 @@ export class TabularSection {
 
 		try {
       const res = this.aggregate(dimensions, resources, 'SUM', true);
-			return this.load(res);
+			return this.load(res, true);
 		}
 		catch (err) {
 			this._owner._manager._owner.$p.record_log(err);
