@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.39-beta.1, built:2026-04-05
+ metadata-core v2.0.40-beta.1, built:2026-04-07
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -363,7 +363,7 @@ class TabularSection {
     !_data._loading && _manager.emit_async('rows', _owner, {[_name]: true});
     _data._modified = true;
 	}
-	add(attr = {}, silent, Constructor, raw) {
+	add(attr = {}, silent, Constructor, raw, nodef) {
     if(raw && attr.hasOwnProperty('_row')) {
       raw = false;
     }
@@ -374,7 +374,7 @@ class TabularSection {
 		  return;
     }
     const data = row._obj;
-    if(!(silent && raw)) {
+    if(!nodef) {
       for (const f in row._metadata().fields){
         if(!data.hasOwnProperty(f)) {
           row[f] = attr[f] || '';
@@ -404,7 +404,7 @@ class TabularSection {
 	group_by(dimensions, resources) {
 		try {
       const res = this.aggregate(dimensions, resources, 'SUM', true);
-			return this.load(res, true);
+			return this.load(res, true, true);
 		}
 		catch (err) {
 			this._owner._manager._owner.$p.record_log(err);
@@ -509,7 +509,7 @@ class TabularSection {
 			$p.record_log(err);
 		}
 	};
-	load(aattr, raw) {
+	load(aattr, raw, nodef) {
     const {_owner, _name, _obj} = this;
     const {_manager, _data} = _owner;
     const {_loading} = _data;
@@ -518,7 +518,7 @@ class TabularSection {
     }
     this.clear();
 		for(let row of aattr instanceof TabularSection ? aattr._obj : (Array.isArray(aattr) ? aattr : [])){
-      this.add(row, raw, null, raw);
+      this.add(row, raw, null, raw, nodef);
     }
     _data._loading = _loading;
     !_loading && _manager.emit_async('rows', _owner, {[_name]: true});
@@ -5359,7 +5359,7 @@ class MetaEngine {
     this.md.off(type, listener);
   }
   get version() {
-    return "2.0.39-beta.1";
+    return "2.0.40-beta.1";
   }
   toString() {
     return 'Oknosoft data engine. v:' + this.version;

@@ -250,13 +250,14 @@ export class TabularSection {
 	 * @param {Boolean} [silent] - тихий режим, без генерации событий изменения объекта
    * @param {Function} [Constructor] - альтернативный конструктор строки
    * @param {Boolean} [raw] - использовать сырые данные из attr
+   * @param {Boolean} [nodef] - не присваивать значения по умолчанию
 	 * @return {TabularSectionRow}
 	 *
 	 * @example
 	 *     // Добавляет строку в табчасть и заполняет её значениями, переданными в аргументе
 	 *     const row = ts.add({field1: value1});
 	 */
-	add(attr = {}, silent, Constructor, raw) {
+	add(attr = {}, silent, Constructor, raw, nodef) {
 
     if(raw && attr.hasOwnProperty('_row')) {
       raw = false;
@@ -272,7 +273,7 @@ export class TabularSection {
 
 		// присваиваем типизированные значения по умолчанию
     const data = row._obj;
-    if(!(silent && raw)) {
+    if(!nodef) {
       for (const f in row._metadata().fields){
         if(!data.hasOwnProperty(f)) {
           row[f] = attr[f] || '';
@@ -332,7 +333,7 @@ export class TabularSection {
 
 		try {
       const res = this.aggregate(dimensions, resources, 'SUM', true);
-			return this.load(res, true);
+			return this.load(res, true, true);
 		}
 		catch (err) {
 			this._owner._manager._owner.$p.record_log(err);
@@ -485,8 +486,9 @@ export class TabularSection {
 	 * @method load
 	 * @param {Array.<Object>} aattr - массив объектов к загрузке
 	 * @param {Boolean} [raw] - признак не пересоздавать сырые данные строк, а использовать из aattr
+	 * @param {Boolean} [nodef] - признак не присваивать значения по умолчанию
 	 */
-	load(aattr, raw) {
+	load(aattr, raw, nodef) {
 
     const {_owner, _name, _obj} = this;
     const {_manager, _data} = _owner;
@@ -499,7 +501,7 @@ export class TabularSection {
     this.clear();
 
 		for(let row of aattr instanceof TabularSection ? aattr._obj : (Array.isArray(aattr) ? aattr : [])){
-      this.add(row, raw, null, raw);
+      this.add(row, raw, null, raw, nodef);
     }
 
     // obj, {ts_name: null}
