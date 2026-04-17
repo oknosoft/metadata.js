@@ -316,13 +316,14 @@ export default {
     if(this.handleIfaceState) {
       // если у компонента определён метод класса beforeOpen, вызываем его перед открытием окна
       const pre = typeof Component.beforeOpen === 'function' ?
-        Component.beforeOpen({obj, title, attr, print}) : Promise.resolve(); 
+        Component.beforeOpen({obj, title, attr, print}) : Promise.resolve();
       pre.then((props) => {
         this.handleIfaceState({
           component: '',
           name: 'wnd_portal',
           value: {
             open: true,
+            stamp: Date.now(),
             Component,
             obj,
             title,
