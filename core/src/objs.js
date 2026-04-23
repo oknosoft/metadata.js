@@ -1281,7 +1281,22 @@ export class DocObj extends DataObj {
 }
 
 export class CchObj extends CatObj {
-
+  [get](f) {
+    if(f === 'type') {
+      const res = this._raw(f);
+      let {type} = this._metadata(f);
+      if(res) {
+        const {TypeDef} = this._manager.root.classes;
+        if(res instanceof TypeDef) {
+          return res;
+        }
+      }
+      return type;
+    }
+    else {
+      return super[get](f);
+    }
+  }
 }
 
 
