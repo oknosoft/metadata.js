@@ -4,6 +4,7 @@ import {enmFields} from '../system';
 
 /**
  * Абстрактный класс со ссылкой на владельца
+ * @abstract
  */
 export class OwnerObj {
   /**
@@ -39,16 +40,13 @@ export class OwnerObj {
 /**
  * @summary Описание метаданных объекта
  * @desc Не путать с виртуальным справочником CatMetaObjs
- * @class MetaObj
+ * @param {Meta} owner - Корень метаданных
+ * @param {String} alias - Имя коллекции
+ * @param {Object} raw - Сырое описание метаданных
+ * @extends OwnerObj
  */
 export class MetaObj extends OwnerObj {
 
-  /**
-   *
-   * @param {Meta} owner - Корень метаданных
-   * @param {String} alias - Имя коллекции
-   * @param {Object} raw - Сырое описание метаданных
-   */
   constructor(owner, alias, raw) {
 
     super(owner, alias);
@@ -252,7 +250,7 @@ export class MetaObj extends OwnerObj {
 /**
  * @summary Описание метаданных поля
  * @desc Не путать с виртуальным справочником CatMetaFields
- * @class MetaField
+ * @extends OwnerObj
  */
 export class MetaField extends OwnerObj {
   constructor(owner, name, fields) {
@@ -292,6 +290,7 @@ export class MetaField extends OwnerObj {
 
 /**
  * @summary Коллекция полей метаданных
+ * @extends OwnerObj
  */
 export class MetaFields extends OwnerObj {
   static alias = 'Реквизиты';
@@ -321,6 +320,7 @@ export class MetaFields extends OwnerObj {
 
 /**
  * @summary Коллекция схем компоновки
+ * @extends OwnerObj
  */
 export class MetaSchemas extends OwnerObj {
   #raw;
@@ -343,6 +343,7 @@ export class MetaSchemas extends OwnerObj {
 
 /**
  * @summary Коллекция метаданных табличных частей
+ * @extends OwnerObj
  */
 export class MetaTabulars extends OwnerObj {
   constructor(owner, tabulars, fields) {
@@ -368,6 +369,7 @@ export class MetaTabulars extends OwnerObj {
 
 /**
  * @summary Метаданные табчасти
+ * @extends OwnerObj
  */
 export class MetaTabular extends OwnerObj {
   constructor(owner, name, raw) {

@@ -44,8 +44,8 @@ class ManagersCollection extends OwnerObj {
 
 /**
  * @summary Коллекция менеджеров перечислений
- * - Состав коллекции определяется метаданными используемой конфигурации
- * - Тип элементов коллекции: {{#crossLink "EnumManager"}}{{/crossLink}}
+ * @desc Состав коллекции определяется метаданными используемой конфигурации
+ * Тип элементов коллекции: {@link EnumManager}
  */
 class Enumerations extends ManagersCollection {
   //#Manager;
@@ -57,8 +57,8 @@ class Enumerations extends ManagersCollection {
 
 /**
  * @summary Коллекция менеджеров справочников
- * - Состав коллекции определяется метаданными используемой конфигурации
- * - Тип элементов коллекции: {{#crossLink "CatManager"}}{{/crossLink}}
+ * @desc Состав коллекции определяется метаданными используемой конфигурации
+ * Тип элементов коллекции: {@link CatManager}
  */
 class Catalogs extends ManagersCollection {
   constructor(owner) {
@@ -68,8 +68,8 @@ class Catalogs extends ManagersCollection {
 
 /**
  * @summary Коллекция менеджеров документов
- * - Состав коллекции определяется метаданными используемой конфигурации
- * - Тип элементов коллекции: {{#crossLink "DocManager"}}{{/crossLink}}
+ * @desc Состав коллекции определяется метаданными используемой конфигурации
+ * Тип элементов коллекции: {@link DocManager}
  *
  */
 class Documents extends ManagersCollection {
@@ -80,8 +80,8 @@ class Documents extends ManagersCollection {
 
 /**
  * @summary Коллекция менеджеров регистров сведений
- * - Состав коллекции определяется метаданными используемой конфигурации
- * - Тип элементов коллекции: {{#crossLink "InfoRegManager"}}{{/crossLink}}
+ * @desc Состав коллекции определяется метаданными используемой конфигурации
+ * Тип элементов коллекции: {@link InfoRegManager}
  *
  */
 class InfoRegs extends ManagersCollection {
@@ -92,8 +92,8 @@ class InfoRegs extends ManagersCollection {
 
 /**
  * @summary Коллекция менеджеров регистров накопления
- * - Состав коллекции определяется метаданными используемой конфигурации
- * - Тип элементов коллекции: {{#crossLink "RegisterManager"}}{{/crossLink}}
+ * @desc Состав коллекции определяется метаданными используемой конфигурации
+ * Тип элементов коллекции: {@link RegisterManager}
  *
  */
 class AccumRegs extends ManagersCollection {
@@ -104,8 +104,8 @@ class AccumRegs extends ManagersCollection {
 
 /**
  * @summary Коллекция менеджеров обработок
- * - Состав коллекции определяется метаданными используемой конфигурации
- * - Тип элементов коллекции: {{#crossLink "DataProcessorsManager"}}{{/crossLink}}
+ * @desc Состав коллекции определяется метаданными используемой конфигурации
+ * Тип элементов коллекции: {@link DataProcessorsManager}
  *
  */
 class DataProcessors extends ManagersCollection {
@@ -116,8 +116,8 @@ class DataProcessors extends ManagersCollection {
 
 /**
  * @summary Коллекция менеджеров отчетов
- * - Состав коллекции определяется метаданными используемой конфигурации
- * - Тип элементов коллекции: {{#crossLink "DataProcessorsManager"}}{{/crossLink}}
+ * @desc Состав коллекции определяется метаданными используемой конфигурации
+ * Тип элементов коллекции: {@link DataProcessorsManager}
  *
  */
 class Reports extends ManagersCollection {
@@ -129,8 +129,8 @@ class Reports extends ManagersCollection {
 
 /**
  * @summary Коллекция менеджеров планов видов характеристик
- * - Состав коллекции определяется метаданными используемой конфигурации
- * - Тип элементов коллекции: {{#crossLink "ChartOfCharacteristicManager"}}{{/crossLink}}
+ * @desc Состав коллекции определяется метаданными используемой конфигурации
+ * Тип элементов коллекции: {@link ChartOfCharacteristicManager}
  *
  */
 class ChartsOfCharacteristics extends ManagersCollection {
@@ -148,6 +148,7 @@ function mngrs(owner, meta, raw) {
      * Коллекция менеджеров перечислений
      * @type Enumerations
      * @memberOf MetaEngine#
+     * @final
      */
     enm: {value: new Enumerations(owner)},
 
@@ -155,6 +156,7 @@ function mngrs(owner, meta, raw) {
      * Коллекция менеджеров справочников
      * @type Catalogs
      * @memberOf MetaEngine#
+     * @final
      */
     cat: {value: new Catalogs(owner)},
 
@@ -162,6 +164,7 @@ function mngrs(owner, meta, raw) {
      * Коллекция менеджеров документов
      * @type Documents
      * @memberOf MetaEngine#
+     * @final
      */
     doc: {value: new Documents(owner)},
 
@@ -169,6 +172,7 @@ function mngrs(owner, meta, raw) {
      * Коллекция менеджеров регистров сведений
      * @type InfoRegs
      * @memberOf MetaEngine#
+     * @final
      */
     ireg: {value: new InfoRegs(owner)},
 
@@ -176,6 +180,7 @@ function mngrs(owner, meta, raw) {
      * Коллекция менеджеров регистров накопления
      * @type AccumRegs
      * @memberOf MetaEngine#
+     * @final
      */
     areg: {value: new AccumRegs(owner)},
 
@@ -183,6 +188,7 @@ function mngrs(owner, meta, raw) {
      * Коллекция менеджеров обработок
      * @type DataProcessors
      * @memberOf MetaEngine#
+     * @final
      */
     dp: {value: new DataProcessors(owner)},
 
@@ -190,6 +196,7 @@ function mngrs(owner, meta, raw) {
      * Коллекция менеджеров отчетов
      * @type Reports
      * @memberOf MetaEngine#
+     * @final
      */
     rep: {value: new Reports(owner)},
 
@@ -197,6 +204,7 @@ function mngrs(owner, meta, raw) {
      * Коллекция менеджеров планов видов характеристик
      * @type ChartsOfCharacteristics
      * @memberOf MetaEngine#
+     * @final
      */
     cch: {value: new ChartsOfCharacteristics(owner)},
 

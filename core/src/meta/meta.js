@@ -1,9 +1,3 @@
-/**
- * Метаданные на стороне js: конструкторы, заполнение, кеширование, поиск
- *
- * @module  metadata
- * @submodule meta_meta
- */
 
 import MetaEventEmitter from './emitter';
 import {DataManager} from '../mngrs';

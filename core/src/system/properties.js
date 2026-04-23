@@ -315,6 +315,11 @@ export default function propertiesClasses({cat, classes, symbols}, exclude) {
   const {CchObj, ChartOfCharacteristicManager, TabularSectionRow} = classes;
   const {get, set} = symbols;
 
+  /**
+   * @summary Свойства объектов
+   * @desc План видов характеристик _Свойства объектов_ позволяет задать
+   * дополнительные реквизиты документов и справочников со стороны приложения
+   */
   class CchProperties extends CchObj {
     get shown(){return this[get]('shown')}
     set shown(v){this[set]('shown',v)}

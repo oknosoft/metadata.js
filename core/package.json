@@ -5,13 +5,12 @@
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (https://oknosoft.ru)",
   "license": "MIT",
   "engines": {
-    "node": "^20.2",
+    "node": ">=20.19",
     "yarn": "^1.22"
   },
   "dependencies": {
-    "change-case": "^5.4",
     "dayjs": "^1.11",
-    "uuid": "^10.0"
+    "uuid": "^14.0"
   },
   "repository": {
     "type": "git",

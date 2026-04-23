@@ -792,6 +792,9 @@ export default function schemeSettingsClasses({classes, symbols, md, utils}, exc
   const {CatSchemeSettings: CatObj} = classes;
   const {get, set} = symbols;
 
+  /**
+   * @summary Схемы компоновки данных
+   */
   class CatSchemeSettings extends CatObj {
 
     filter(rows, selection) {

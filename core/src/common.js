@@ -1,13 +1,7 @@
-/**
- * Глобальные переменные и общие методы фреймворка __metadata.js__ <i>Oknosoft data engine</i>
- *
- * Экспортирует глобальную переменную __$p__ типа {{#crossLink "MetaEngine"}}{{/crossLink}}
- * @module  metadata
- */
 
 import MetaUtils from './utils';
-import JobPrm from './jobprm';
-import Meta from './meta';
+import {JobPrm} from './jobprm';
+import AppMetadata from './meta';
 import msg from './i18n.ru';
 import classes from './classes';
 import * as symbols from './meta/symbols';
@@ -15,22 +9,19 @@ import {DataAdapters} from './adapter';
 
 
 /**
- * Metadata.js - проект с открытым кодом
- * Приглашаем к сотрудничеству всех желающих. Будем благодарны за любую помощь
+ * @summary Глобальный объект metadata.js
+ * @desc Обычно, создаётся на старте приложения в единственном экземпляре,
+ * но при необходимости, в памяти одного процесса можно создать несколько MetaEngine
+ * с разными или одинаковыми метаданными и данными
  *
- * ### Почему Metadata.js?
- * Библиотека предназначена для разработки бизнес-ориентированных и учетных offline-first браузерных приложений
- * и содержит JavaScript реализацию [Объектной модели 1С](http://v8.1cru/overview/Platform.htm).
- * Библиотека эмулирует наиболее востребованные классы API 1С внутри браузера или Node.js, дополняя их средствами автономной работы и обработки данных на клиенте.
+ * Внутри MetaEngine, создаются коллекции менеджеров данных, внутри которых,
+ * в свою очередь сами менеджеры и коллекции их data-объектов
  *
- * ### Для кого?
- * Для разработчиков мобильных и браузерных приложений, которым близка парадигма 1С _на базе бизнес-объектов: документов и справочников_,
- * но которым тесно в рамках традиционной платформы 1С.<br />
- * Metadata.js предоставляет программисту:
- * - высокоуровневые [data-объекты](http://www.oknosoft.ru/upzp/apidocs/classes/DataObj.html), схожие по функциональности с документами, регистрами и справочниками платформы 1С
- * - инструменты декларативного описания метаданных и автогенерации интерфейса, схожие по функциональности с метаданными и формами платформы 1С
- * - средства событийно-целостной репликации и эффективные классы обработки данных, не имеющие прямых аналогов в 1С
- *
+ * @example
+ *   import MetaEngine from '@oknosoft/metadata';
+ * // Создаём экземпляр глобальной области metadata.js
+ * const $p = new MetaEngine();
+ * @order 000
  */
 class MetaEngine {
 
@@ -41,12 +32,13 @@ class MetaEngine {
     /**
      * Вспомогательные методы
      * @type MetaUtils
+     * @final
      */
     this.utils = new MetaUtils(this);
 
     /**
      * Адаптеры для PouchDB, Postgres и т.д.
-     * @type Object
+     * @type DataAdapters
      * @final
      */
     this.adapters = new DataAdapters(this);
@@ -60,10 +52,10 @@ class MetaEngine {
 
     /**
      * Mетаданные конфигурации
-     * @type Meta
+     * @type AppMetadata
      * @final
      */
-    this.md = new Meta(this);
+    this.md = new AppMetadata(this);
 
     // начинаем следить за ошибками
     let emitter;
@@ -94,7 +86,7 @@ class MetaEngine {
   }
 
   /**
-   * i18n
+   * @final
    */
   get msg() {
     return msg;
@@ -103,6 +95,7 @@ class MetaEngine {
   /**
    * дублируем ссылку на конструкторы в объекте
    * @type {Object}
+   * @final
    */
   get classes() {
     return classes;
@@ -119,6 +112,7 @@ class MetaEngine {
   /**
    * дублируем ссылку на символы в объекте
    * @type {Object}
+   * @final
    */
   get symbols() {
     return symbols;
@@ -156,8 +150,8 @@ class MetaEngine {
   }
 
   /**
-   * Подключает расширения metadata
-   * Принимает в качестве параметра объект с полями `proto` и `constructor` типа _function_
+   * @summary Подключает расширения metadata
+   * @desc Принимает в качестве параметра объект с полями `proto` и `constructor` типа _function_
    * proto выполняется в момент подключения, constructor - после основного конструктора при создании объекта
    *
    * @param obj

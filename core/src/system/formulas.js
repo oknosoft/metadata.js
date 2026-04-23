@@ -251,6 +251,10 @@ export default function formulasClasses({cat, classes, symbols, md, utils}, excl
   const {CatFormulas: CatObj, CatFormulasManager: CatManager} = classes;
   const {get, set} = symbols;
 
+  /**
+   * @summary Менеджер справочника формул
+   * @extends CatManager
+   */
   class CatFormulasManager extends CatManager {
 
     loadFormulas(src) {
@@ -301,6 +305,13 @@ export default function formulasClasses({cat, classes, symbols, md, utils}, excl
   }
   classes.CatFormulasManager = CatFormulasManager;
 
+  /**
+   * @summary Формулы
+   * @desc Фрагменты кода javascript (функции, модификаторы, печатные формы) которые можно создавать
+   * и редактировать со стороны интерфейса. Они исполняются либо на старте приложения,
+   * либо при извлечении значения параметра, вызове печатной формы или обработке заполнения объекта
+   * @extends CatObj
+   */
   class CatFormulas extends CatObj {
 
     execute(obj, attr) {

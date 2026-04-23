@@ -1,0 +1,48 @@
+{
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "source": {
+    "include": [
+      "./core/src/"
+    ],
+    "exclude": [
+      "./src/geometry/contour_nested.js"
+    ],
+    "includePattern": ".+\\.js(doc|x)?$",
+    "excludePattern": "(^|\\/|\\\\)_"
+  },
+  "templates": {
+    "systemName": "metadata",
+    "systemLogo": "./jsdoc/tutorials/imgs/flask.png",
+    "favicon": "./jsdoc/tutorials/imgs/favicon.ico",
+    "dateFormat": "DD.MM.YYYY",
+    "systemSummary": "Движок ссылочной типизации для javascript",
+    "copyright": "© 2014-2025 Oknosoft Lab <info@oknosoft.ru> (https://oknosoft.ru)",
+    "navMembers": [
+      {"kind": "class", "title": "Общее", "summary": "Все классы библиотеки"},
+      {"kind": "namespace", "title": "Зависимости", "summary": "Пространства имён"},
+      {"kind": "tutorial", "title": "Руководства", "summary": "Руководства и примеры"}
+    ],
+    "inlineNav": true,
+    "referenceTitle": "",
+    "disableSort": false,
+    "collapse": true,
+    "cleverLinks": false,
+    "monospaceLinks": false,
+    "resources": {
+      "metadata.js": "https://github.com/oknosoft/metadata.js/tree/develop/packages",
+      "paper.js": "http://paperjs.org/reference/"
+    }
+  },
+  "opts": {
+    "destination": "./jsdoc/metadata/",
+    "encoding": "utf8",
+    "private": true,
+    "recurse": true,
+    "template2": "./node_modules/foodoc/template",
+    "template": "./jsdoc/template",
+    "tutorials": "./jsdoc/tutorials/",
+    "readme": "./README.md"
+  }
+}

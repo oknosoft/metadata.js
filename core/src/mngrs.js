@@ -35,22 +35,24 @@ export class Iterator {
 
 
 /**
- * Абстрактный менеджер данных
- * Не используется для создания прикладных объектов, но является базовым классом,
- * от которого унаследованы менеджеры как ссылочных данных, так и объектов с суррогратным ключом и несохраняемых обработок<br />
+ * @summary Абстрактный менеджер данных
+ * @desc Не используется для создания прикладных объектов, но является базовым классом,
+ * от которого унаследованы менеджеры как ссылочных данных, так и объектов с суррогратным ключом и несохраняемых обработок
+ *
  * См. так же:
- * - {{#crossLink "EnumManager"}}{{/crossLink}} - менеджер перечислений
- * - {{#crossLink "RefDataManager"}}{{/crossLink}} - абстрактный менеджер ссылочных данных
- * - {{#crossLink "CatManager"}}{{/crossLink}} - менеджер регистров накопления
- * - {{#crossLink "ChartOfCharacteristicManager"}}{{/crossLink}} - менеджер регистров накопления
- * - {{#crossLink "DocManager"}}{{/crossLink}} - менеджер регистров накопления
- * - {{#crossLink "DataProcessorsManager"}}{{/crossLink}} - менеджер обработок
- * - {{#crossLink "RegisterManager"}}{{/crossLink}} - абстрактный менеджер регистра (накопления, сведений и бухгалтерии)
- * - {{#crossLink "InfoRegManager"}}{{/crossLink}} - менеджер регистров сведений
- * - {{#crossLink "LogManager"}}{{/crossLink}} - менеджер журнала регистрации
- * - {{#crossLink "AccumRegManager"}}{{/crossLink}} - менеджер регистров накопления
+ * - {@link EnumManager} - менеджер перечислений
+ * - {@link RefDataManager} - абстрактный менеджер ссылочных данных
+ * - {@link CatManager} - менеджер регистров накопления
+ * - {@link ChartOfCharacteristicManager} - менеджер регистров накопления
+ * - {@link DocManager} - менеджер регистров накопления
+ * - {@link DataProcessorsManager} - менеджер обработок
+ * - {@link RegisterManager} - абстрактный менеджер регистра (накопления, сведений и бухгалтерии)
+ * - {@link InfoRegManager} - менеджер регистров сведений
+ * - {@link LogManager} - менеджер журнала регистрации
+ * - {@link AccumRegManager} - менеджер регистров накопления
  *
  * @abstract
+ * @order 010
  * @param {ManagersCollection} owner - коллекция менеджеров
  * @param {string} className  - имя типа менеджера объекта. например, "doc.calc_order"
  */
@@ -431,10 +433,9 @@ export class DataManager extends MetaEventEmitter {
 }
 
 /**
- * ### Aбстрактный менеджер ссылочных данных
- * От него унаследованы менеджеры документов, справочников, планов видов характеристик и планов счетов
+ * @summary Aбстрактный менеджер ссылочных данных
+ * @desc От него унаследованы менеджеры документов, справочников, планов видов характеристик и планов счетов
  *
- * @class RefDataManager
  * @extends DataManager
  * @constructor
  * @param className {string} - имя типа менеджера объекта
@@ -1350,11 +1351,11 @@ export class InfoRegManager extends RegisterManager {
 }
 
 /**
- * ### Абстрактный менеджер регистра накопления
- * Экземпляры объектов этого класса создаются при выполнении конструктора {{#crossLink "Meta"}}{{/crossLink}}
- * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {{#crossLink "AccumRegs"}}{{/crossLink}}
+ * @summary Абстрактный менеджер регистра накопления
+ * @desc Экземпляры объектов этого класса создаются при выполнении конструктора {@link Meta}
+ * в соответствии с описанием метаданных конфигурации и помещаются в коллекцию {@link AccumRegs}
  *
- * @class AccumRegManager
+ * @order 011
  * @extends RegisterManager
  * @constructor
  * @param className {string} - имя типа менеджера объекта. например, "areg.goods_on_stores"

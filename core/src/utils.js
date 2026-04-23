@@ -11,7 +11,7 @@ import {own, string} from './meta/symbols';
 import {typeDef} from './meta/typeDef';
 
 import Aes from '../lib/aes';
-const {v1: uuidv1} = require('uuid');
+const {v7: uuidv7} = require('uuid');
 const moment = require('dayjs');
 require('dayjs/locale/ru');
 moment.locale('ru');
@@ -810,7 +810,7 @@ class MetaUtils extends OwnerObj {
    * Отложенное выполнение с подавлением дребезга
    * @param func {Function}
    * @param wait {Number}
-   * @return {debounced}
+   * @return {Function}
    */
   debounce(func, wait = 166) {
     let timeout;
@@ -851,7 +851,7 @@ class MetaUtils extends OwnerObj {
   /**
    * Возвращает функцию для сортировки массива объектов по полю fld
    * @param fld {String}
-   * @return {(function(*, *): (number))|*}
+   * @return {Function}
    */
   sort(fld, desc) {
     return desc ?
@@ -886,7 +886,7 @@ class MetaUtils extends OwnerObj {
    * @return {String}
    */
   generateGuid() {
-    return uuidv1();
+    return uuidv7();
   }
 
   /**

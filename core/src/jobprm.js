@@ -2,16 +2,14 @@ import {OwnerObj} from './meta/metaObjs';
 import {own} from './meta/symbols';
 
 /**
- * Параметры работы программы
- * они же - параметры сеанса. БОльшая часть, заполняется из `cch.predefined_elmnts`
+ * @summary Параметры работы программы
+ * @desc они же - параметры сеанса. БОльшая часть, заполняется из `cch.predefined_elmnts`
+ * @param {MetaEngine} owner
  */
-export default class JobPrm extends OwnerObj {
+export class JobPrm extends OwnerObj {
 
   #params = {};
 
-  /**
-   * @param {MetaEngine} owner
-   */
 	constructor(owner) {
     super(owner);
 
