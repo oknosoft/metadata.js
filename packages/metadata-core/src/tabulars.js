@@ -164,6 +164,7 @@ export class TabularSection {
     index = _obj.indexOf(row);
     if(index >= 0) {
       _obj.splice(index, 1);
+      row.row = (Math.random() - 1) * 1e6;
     }
 
 		_obj.forEach((row, index) => row.row = index + 1);

@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.40-beta.1, built:2026-04-07
+ metadata-core v2.0.40-beta.1, built:2026-04-27
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -320,6 +320,7 @@ class TabularSection {
     index = _obj.indexOf(row);
     if(index >= 0) {
       _obj.splice(index, 1);
+      row.row = (Math.random() - 1) * 1e6;
     }
 		_obj.forEach((row, index) => row.row = index + 1);
     !_data._loading && index >= 0 && _owner.after_del_row(_name, [row]);
