@@ -15,6 +15,6 @@ MetaEngine
 //require('pouchdb-authentication');
 //require('pouchdb-authentication/dist/pouchdb.authentication.min.js');
 
-const $p = new MetaEngine();
+//const $p = new MetaEngine();
 
-export default $p;
+export default MetaEngine;
