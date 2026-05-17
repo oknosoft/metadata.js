@@ -6,6 +6,7 @@ import Dialog from './Dialog';
 import MarkdownElement from '../Markdown/MarkdownElementLight';
 
 export default function Alert({text, title, html, markdown, Component, props, handleOk, open, initFullScreen, hide_btn, ...other}) {
+  const [dialogRef, registerDialod] = React.useState(null);
   if(typeof text === 'string') {
     if(text.includes('<') && text.includes('/>')) {
       html = text;
@@ -17,6 +18,7 @@ export default function Alert({text, title, html, markdown, Component, props, ha
     }
   }
   return <Dialog
+    ref={registerDialod}
     open={open}
     initFullScreen={initFullScreen}
     title={title}
@@ -27,7 +29,7 @@ export default function Alert({text, title, html, markdown, Component, props, ha
     {text && <DialogContentText>{text}</DialogContentText>}
     {html && <div dangerouslySetInnerHTML={{__html: html}}/>}
     {markdown && <MarkdownElement text={markdown} {...other}/>}
-    {Component && <Component handleOk={handleOk} {...other} {...props}/>}
+    {Component && <Component handleOk={handleOk} dialogRef={dialogRef} {...other} {...props}/>}
   </Dialog>;
 }
 
