@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.40-beta.2, built:2026-05-17
+ metadata-core v2.0.40-beta.2, built:2026-05-18
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -4175,7 +4175,11 @@ const utils = {
         delete selection._ref;
       }
     }
+    const isCatManager = this && this instanceof CatManager;
     for (const o of src) {
+      if(isCatManager && !o.id && !o.name) {
+        continue;
+      }
       if (utils._selection.call(this, o, selection)) {
         pre.push(o);
       }

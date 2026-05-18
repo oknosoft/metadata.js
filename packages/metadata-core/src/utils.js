@@ -1,5 +1,5 @@
 
-import {DataManager, EnumManager} from './mngrs';
+import {DataManager, EnumManager, CatManager} from './mngrs';
 import {DataObj, DocObj} from './objs';
 import {TabularSection, TabularSectionRow} from './tabulars';
 
@@ -1244,7 +1244,11 @@ const utils = {
     }
 
     // фильтруем
+    const isCatManager = this && this instanceof CatManager; 
     for (const o of src) {
+      if(isCatManager && !o.id && !o.name) {
+        continue;
+      }
       // выполняем колбэк с элементом и пополняем итоговый массив
       if (utils._selection.call(this, o, selection)) {
         pre.push(o);
