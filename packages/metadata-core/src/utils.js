@@ -1060,7 +1060,7 @@ const utils = {
 
 					// если свойство отбора является функцией, выполняем её, передав контекст
 					if (typeof sel == 'function') {
-						ok = sel.call(this, o, j);
+						ok = sel.call(this, o, j, selection);
             if(!ok) {
               break;
             }

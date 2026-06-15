@@ -1383,12 +1383,18 @@ function OCombo(attr){
 
 		} 
     else if(this.name == "add"){
-			if(_mgr)
-				_mgr.create({}, true)
-					.then(function (o) {
-						o._set_loaded(o.ref);
-						o.form_obj(attr.pwnd, {_obj, _field});
-					});
+			if(_mgr) {
+        if(_mgr.force_add) {
+          _mgr.force_add(attr);
+        }
+        else {
+          _mgr.create({}, true)
+            .then(function (o) {
+              o._set_loaded(o.ref);
+              o.form_obj(attr.pwnd, {_obj, _field});
+            });
+        }
+      }
 		}
 		else if(this.name == "open"){
 			if(_obj && _obj[_field] && !_obj[_field].empty())
@@ -1466,11 +1472,17 @@ function OCombo(attr){
 
 		// для полных прав разрешаем добавление элементов
 		// TODO: учесть реальные права на добавление
-		// if(!attr.hide_frm){
-		// 	var _acl = $p.current_user.get_acl(_mgr.class_name);
-		// 	if(_acl.indexOf("i") != -1)
-		// 		innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><i class='fa fa-plus fa-fwfa-fw'></i></a>";
-		// }
+		if(!attr.hide_frm){
+      if(_mgr?.force_add) {
+        innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><i class='fa fa-plus fa-fwfa-fw'></i></a>";
+      }
+      else {
+        // var _acl = $p.current_user.get_acl(_mgr.class_name);
+        // if(_acl.indexOf("i") != -1) {
+        //   innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><i class='fa fa-plus fa-fwfa-fw'></i></a>";
+        // }
+      }
+		}
 
 		// для составных типов разрешаем выбор типа
 		// TODO: реализовать поддержку примитивных типов
