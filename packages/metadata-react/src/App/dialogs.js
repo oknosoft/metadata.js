@@ -258,7 +258,7 @@ export default {
 
     return new Promise((resolve, reject) => {
 
-      const close_confirm = (res) => {
+      const handleOk = (res) => {
         this.close_confirm('alert');
         if(timer) {
           clearTimeout(timer);
@@ -266,13 +266,22 @@ export default {
         }
         resolve(res);
       };
+      
+      const handleCancel = (res) => {
+        this.close_confirm('alert');
+        if(timer) {
+          clearTimeout(timer);
+          timer = 0;
+        }
+        reject(res);
+      }
 
-      let timer = timeout && setTimeout(close_confirm, timeout);
+      let timer = timeout && setTimeout(handleOk, timeout);
 
       this.handleIfaceState({
         component: '',
         name: 'alert',
-        value: {open: true, title, handleOk: close_confirm, handleIfaceState: this.handleIfaceState, handleNavigate: this.handleNavigate, ...other}
+        value: {open: true, title, handleOk, handleCancel, handleIfaceState: this.handleIfaceState, handleNavigate: this.handleNavigate, ...other}
       });
 
     });
