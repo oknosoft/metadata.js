@@ -539,14 +539,16 @@ const utils = {
 	 * @method is_guid
 	 * @param {Any} v - проверяемое значение
    * @param {Boolean} [soft] - нестрогая проверка
-	 * @return {Boolean} - true, если значение соответствует регурярному выражению guid
+	 * @return {Boolean} - true, если значение соответствует регулярному выражению guid
 	 */
 	is_guid(v, soft) {
 		if (typeof v !== 'string' || v.length < 36) {
 			return false;
 		}
     else if (v.length === 72) {
-      return uuidValidate(v.substring(0, 36)) && uuidValidate(v.substring(36));
+      return soft ? 
+        rxref.test(v.substring(0, 36)) && rxref.test(v.substring(36)) :
+        uuidValidate(v.substring(0, 36)) && uuidValidate(v.substring(36));
     }
 		else if (v.length > 36) {
 			const parts = v.split('|');
