@@ -10,10 +10,12 @@ import {OwnerObj} from './meta/metaObjs';
 import {own, string} from './meta/symbols';
 import {typeDef} from './meta/typeDef';
 
-import Aes from '../lib/aes';
-const {v7: uuidv7} = require('uuid');
-const moment = require('dayjs');
-require('dayjs/locale/ru');
+//import Aes from '../lib/aes';
+
+import {v7 as uuidv7} from 'uuid';
+
+import moment from 'dayjs';
+import 'dayjs/locale/ru';
 moment.locale('ru');
 moment._masks = {
 	date: 'DD.MM.YY',
@@ -24,6 +26,8 @@ moment._masks = {
 if(typeof global != 'undefined'){
   global.moment = moment;
 }
+
+import b62 from './b62';
 
 const ctnames = '$eq,between,$between,$gte,gte,$gt,gt,$lte,lte,$lt,lt,ninh,inh,nin,$nin,in,$in,not,ne,$ne,nlk,lke,like,or,$or,$and'.split(',');
 
@@ -255,13 +259,12 @@ class MetaUtils extends OwnerObj {
     };
 
     /**
-     * Aes для шифрования - дешифрования строк
+     * Методы base62id
      *
      * @property aes
-     * @type Aes
      * @final
      */
-    this.aes = new Aes('metadata.js');
+    this.b62 = b62;
 
     /**
      * @typedef UtilsIs
@@ -313,7 +316,7 @@ class MetaUtils extends OwnerObj {
        * @param v {*} - проверяемое значение
        * @return {Boolean} - true, если v эквивалентен пустому guid
        */
-      emptyGuid: (v) => !v || v == this.blank.guid,
+      emptyGuid: (v) => !v || v == this.blank.guid || b62.emptyGuid(v),
 
       /**
        * Проверяет, является ли значенние Data-объектным типом

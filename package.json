@@ -9,6 +9,7 @@
     "node": ">=20.19",
     "yarn": "^1.22"
   },
+  "type": "module",
   "packageManager": "yarn@1.22.22",
   "dependencies": {
     "dayjs": "^1.11",
@@ -22,21 +23,21 @@
     "uuid": "^14.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.29",
-    "@babel/preset-env": "^7.29",
-    "@babel/preset-react": "^7.28",
+    "@babel/core": "^8.0",
+    "@babel/preset-env": "^8.0",
+    "@babel/preset-react": "^8.0",
     "@rollup/plugin-node-resolve": "^16.0",
     "@rollup/plugin-replace": "^6.0",
     "babel-loader": "^10.1",
     "foodoc": "github:oknosoft/foodoc#658dc64caca91630839a9a7031ad88f7ab8c8263",
     "react": "^19.2",
     "react-dom": "^19.2",
-    "rollup": "^4.60",
+    "rollup": "^4.62",
     "rollup-plugin-cleanup": "^3.2",
-    "typescript": "^6.0",
-    "webpack": "^5.106",
-    "webpack-cli": "^7.0",
-    "webpack-dev-server": "^5.2"
+    "typescript": "^7.0",
+    "webpack": "^5.109",
+    "webpack-cli": "^7.2",
+    "webpack-dev-server": "^6.0"
   },
   "peerDependecies": {},
   "files": [
