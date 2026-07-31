@@ -11,24 +11,20 @@ import IconButton from '@material-ui/core/IconButton';
 import CloudQueue from '@material-ui/icons/CloudQueue';
 import CloudOff from '@material-ui/icons/CloudOff';
 
-import SyncIcon from '@material-ui/icons/Sync';
-import SyncIconDisabled from '@material-ui/icons/SyncDisabled';
-import PersonOutline from '@material-ui/icons/PersonOutline';
+import AccountOn from '@material-ui/icons/PersonOutline';
 import AccountOff from './AccountOff';
 
 import Notifications from '../Notifications';
 
 import {compose} from 'redux';
-import classnames from 'classnames';
 import withStyles from './toolbar';
 import withWidth, {isWidthUp} from '@material-ui/core/withWidth';
 
 function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavigate, width, compact, barColor, CustomBtn}) {
 
-  const offline_tooltip = offline ? 'Сервер недоступен' : 'Подключение установлено';
-  const sync_tooltip = `Синхронизация ${user.logged_in && sync_started ? 'выполняется' : 'отключена'}`;
-  const login_tooltip = `${user.name}${user.logged_in ? '\n(подключен к серверу)' : '\n(автономный режим)'}`;
-  const base = typeof $p === 'object' ? $p.job_prm.base : '';
+  const offline_tooltip = offline ? 'Автономный режим' :
+    (user.logged_in ? 'Подключение установлено' : 'Вход не выполнен');
+  const login_tooltip = `${user.name}${user.logged_in ? '\n(подключен к серверу)' : '\n(не авторизован)'}`;
 
   return [
 
@@ -37,21 +33,14 @@ function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavig
 
     // индикатор доступности облака показываем только на экране шире 'sm'
     !compact && isWidthUp('sm', width) &&
-    <IconButton key="offline" title={offline_tooltip}>
+    <IconButton key="offline" title={offline_tooltip} onClick={() => 
+        handleNavigate(location.pathname.includes('offline') ? `/offline` : '/')}>
       {offline ? <CloudOff color="inherit"/> : <CloudQueue color="inherit"/>}
     </IconButton>,
 
-    !compact &&
-    <IconButton key="sync_started" title={sync_tooltip}>
-      {user.logged_in && sync_started ?
-        <SyncIcon color="inherit" className={classnames({[classes.rotation]: fetch || user.try_log_in})} />
-        :
-        <SyncIconDisabled color="inherit"/>
-      }
-    </IconButton>,
-
-    <IconButton key="logged_in" title={login_tooltip} onClick={() => handleNavigate(`${base || ''}/login`)}>
-      {user.logged_in ? <PersonOutline color="inherit"/> : <AccountOff color="inherit"/>}
+    <IconButton key="logged_in" title={login_tooltip} onClick={() => 
+        handleNavigate(location.pathname.includes('login') ? `/login` : '/')}>
+      {user.logged_in ? <AccountOn color="inherit"/> : <AccountOff color="inherit"/>}
     </IconButton>,
 
     <Notifications key="noti" barColor={barColor}/>
