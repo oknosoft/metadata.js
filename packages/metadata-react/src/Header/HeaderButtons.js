@@ -10,20 +10,19 @@ import IconButton from '@material-ui/core/IconButton';
 
 import CloudQueue from '@material-ui/icons/CloudQueue';
 import CloudOff from '@material-ui/icons/CloudOff';
+import SyncProblem from '@material-ui/icons/SyncProblem';
 
 import AccountOn from '@material-ui/icons/PersonOutline';
 import AccountOff from './AccountOff';
 
 import Notifications from '../Notifications';
 
-import {compose} from 'redux';
-import withStyles from './toolbar';
-import withWidth, {isWidthUp} from '@material-ui/core/withWidth';
+function HeaderButtons({sync_waiting, offline, user, handleNavigate, barColor, CustomBtn}) {
 
-function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavigate, width, compact, barColor, CustomBtn}) {
-
-  const offline_tooltip = offline ? 'Автономный режим' :
-    (user.logged_in ? 'Подключение установлено' : 'Вход не выполнен');
+  const offline_tooltip = sync_waiting ? 'Ожидание обмена с сервером' : (
+    offline ? 'Автономный режим' :
+      (user.logged_in ? 'Подключение установлено' : 'Вход не выполнен')
+  );
   const login_tooltip = `${user.name}${user.logged_in ? '\n(подключен к серверу)' : '\n(не авторизован)'}`;
 
   return [
@@ -32,14 +31,13 @@ function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavig
     CustomBtn && <CustomBtn key="custom_btn" user={user}/>,
 
     // индикатор доступности облака показываем только на экране шире 'sm'
-    !compact && isWidthUp('sm', width) &&
     <IconButton key="offline" title={offline_tooltip} onClick={() => 
-        handleNavigate(location.pathname.includes('offline') ? `/offline` : '/')}>
-      {offline ? <CloudOff color="inherit"/> : <CloudQueue color="inherit"/>}
+        handleNavigate(location.pathname.includes('offline') ? -1 : '/offline')}>
+      {sync_waiting ? <SyncProblem color="inherit"/> : (offline ? <CloudOff color="inherit"/> : <CloudQueue color="inherit"/>)}
     </IconButton>,
 
     <IconButton key="logged_in" title={login_tooltip} onClick={() => 
-        handleNavigate(location.pathname.includes('login') ? `/login` : '/')}>
+        handleNavigate(location.pathname.includes('login') ? -1 : '/login')}>
       {user.logged_in ? <AccountOn color="inherit"/> : <AccountOff color="inherit"/>}
     </IconButton>,
 
@@ -53,15 +51,13 @@ function HeaderButtons({sync_started, classes, fetch, offline, user, handleNavig
 // }
 
 HeaderButtons.propTypes = {
-  sync_started: PropTypes.bool, // выполняется синхронизация
-  fetch: PropTypes.bool,        // обмен данными
-  offline: PropTypes.bool,      // сервер недоступен
+  sync_waiting: PropTypes.bool, // ожидание синхронизации
+  offline: PropTypes.bool,      // используется автономный режим
   user: PropTypes.object,       // пользователь
   handleNavigate: PropTypes.func.isRequired,
-  classes: PropTypes.object.isRequired,
   compact: PropTypes.bool,      // скрывает кнопки облака
   barColor: PropTypes.string,
-  custom_btn: PropTypes.object, // дополнительные кнопки, подключаемые через redux
+  CustomBtn: PropTypes.elementType, // дополнительные кнопки, подключаемые через redux
 };
 
-export default compose(withStyles, withWidth())(HeaderButtons);
+export default HeaderButtons;

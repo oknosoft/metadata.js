@@ -1,13 +1,13 @@
 import {connect} from 'react-redux';
 import * as obj from './actions_obj';
-import {push} from 'react-router-redux';
+import {push, goBack} from 'react-router-redux';
 import {iface_state} from './actions_iface';
 
 const mapDispatchToProps = (dispatch) => {
 
   const handlers = {
     handleNavigate(path) {
-      return dispatch(push(path));
+      return dispatch(path === -1 ? goBack() : push(path));
     },
     handleIfaceState(state) {
       return dispatch(iface_state(state));
