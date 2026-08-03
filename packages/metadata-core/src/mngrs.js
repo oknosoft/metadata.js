@@ -441,8 +441,9 @@ export class DataManager extends MetaEventEmitter{
           if (tnames.length > 1 && $p[tnames[0]]) {
             return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
           }
-          tnames = $p.md._ids?.[parts[0]]?.split('.');
-          if (tnames.length > 1 && $p[tnames[0]]) {
+          const {_ids, _new_ids} = $p.md;
+          tnames = _ids?.[parts[0]]?.split('.') || _new_ids?.[parts[0]]?.split('.');
+          if (tnames?.length > 1 && $p[tnames[0]]) {
             return DataManager.mf_mgr($p[tnames[0]][tnames[1]], mf);
           }
         }
