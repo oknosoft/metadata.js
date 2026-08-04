@@ -5,7 +5,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Dialog from './Dialog';
 import MarkdownElement from '../Markdown/MarkdownElementLight';
 
-export default function Alert({text, title, html, markdown, Component, props, handleOk, open, initFullScreen, hide_btn, ...other}) {
+export default function Alert({text, title, html, markdown, Component, props, handleOk, open, initFullScreen, hide_btn, Actions, actions, ...other}) {
   const [dialogRef, registerDialod] = React.useState(null);
   if(typeof text === 'string') {
     if(text.includes('<') && text.includes('/>')) {
@@ -23,7 +23,9 @@ export default function Alert({text, title, html, markdown, Component, props, ha
     initFullScreen={initFullScreen}
     title={title}
     onClose={handleOk}
-    actions={!hide_btn && [<Button key="ok" onClick={handleOk} color="primary">Ок</Button>]}
+    actions={Actions ? 
+      <Actions handleOk={handleOk} {...other} {...props}/> : 
+      (actions ? actions : (!hide_btn && <Button key="ok" onClick={handleOk} color="primary">Ок</Button>))}
     {...other}
   >
     {text && <DialogContentText>{text}</DialogContentText>}

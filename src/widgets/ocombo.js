@@ -251,18 +251,18 @@ function OCombo(attr){
 
 	function popup_show(){
 
-		if(!_mgr || !_mgr.class_name || _mgr instanceof EnumManager){
+    if(!_mgr || !_mgr.class_name || _mgr instanceof EnumManager){
       return;
     }
 
-		popup_focused = true;
-		var div = document.createElement('div'),
-			innerHTML = attr.hide_frm ? "" : "<a href='#' name='select' title='Форма выбора {F4}'>Показать все</a>" +
-				"<a href='#' name='open' style='margin-left: 9px;' title='Открыть форму элемента {Ctrl+Shift+F4}'><i class='fa fa-external-link fa-fw'></i></a>";
+    popup_focused = true;
+    let div = document.createElement('div'),
+      innerHTML = attr.hide_frm ? "" : "<a href='#' name='select' title='Форма выбора {F4}'>Показать все</a>";
 
-		// для полных прав разрешаем добавление элементов
-		// TODO: учесть реальные права на добавление
-		if(!attr.hide_frm){
+    // для полных прав разрешаем добавление элементов
+    // TODO: учесть реальные права на добавление
+    if(!attr.hide_frm || attr.force_add){
+      innerHTML += "<a href='#' name='open' style='margin-left: 9px;' title='Открыть форму элемента {Ctrl+Shift+F4}'><i class='fa fa-external-link fa-fw'></i></a>";
       if(_mgr?.force_add) {
         innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><i class='fa fa-plus fa-fwfa-fw'></i></a>";
       }
@@ -272,28 +272,28 @@ function OCombo(attr){
         //   innerHTML += "&nbsp;<a href='#' name='add' title='Создать новый элемент {F8}'><i class='fa fa-plus fa-fwfa-fw'></i></a>";
         // }
       }
-		}
+    }
 
-		// для составных типов разрешаем выбор типа
-		// TODO: реализовать поддержку примитивных типов
-		if(_meta.type.types.length > 1)
-			innerHTML += "&nbsp;<a href='#' name='type' title='Выбрать тип значения {Alt+T}'><i class='fa fa-level-up fa-fw'></i></a>";
+    // для составных типов разрешаем выбор типа
+    // TODO: реализовать поддержку примитивных типов
+    if(_meta.type.types.length > 1)
+      innerHTML += "&nbsp;<a href='#' name='type' title='Выбрать тип значения {Alt+T}'><i class='fa fa-level-up fa-fw'></i></a>";
 
-		if(innerHTML){
-			div.innerHTML = innerHTML;
-			for(var i=0; i<div.children.length; i++)
-				div.children[i].onclick = aclick;
+    if(innerHTML){
+      div.innerHTML = innerHTML;
+      for(var i=0; i<div.children.length; i++)
+        div.children[i].onclick = aclick;
 
-			$p.iface.popup.clear();
-			$p.iface.popup.attachObject(div);
-			$p.iface.popup.show(dhx4.absLeft(t.getButton())-77, dhx4.absTop(t.getButton()), t.getButton().offsetWidth, t.getButton().offsetHeight);
+      $p.iface.popup.clear();
+      $p.iface.popup.attachObject(div);
+      $p.iface.popup.show(dhx4.absLeft(t.getButton())-77, dhx4.absTop(t.getButton()), t.getButton().offsetWidth, t.getButton().offsetHeight);
 
-			$p.iface.popup.p.onmouseover = function(){
-				popup_focused = true;
-			};
+      $p.iface.popup.p.onmouseover = function(){
+        popup_focused = true;
+      };
 
-			$p.iface.popup.p.onmouseout = popup_hide;
-		}
+      $p.iface.popup.p.onmouseout = popup_hide;
+    }
 	}
 
 	function oncontextmenu(e) {
