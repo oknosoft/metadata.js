@@ -100,7 +100,8 @@ export default ($p) => {
 						txt = '';
 						mf = {synonym: '?'};
 
-					} else {
+					} 
+          else if(pref.shown) {
 						mf = {synonym: pref.presentation, type: pref.type};
 						row_id = tabular + '|' + pref.ref;
 						by_type(pval);
@@ -120,6 +121,9 @@ export default ($p) => {
             if(pref.mandatory) {
               ft += '" class="cell_mandatory';
             }
+          }
+          else {
+            return;
           }
 				}
 				else if (typeof f === 'object') {
