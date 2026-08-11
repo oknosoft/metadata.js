@@ -1377,6 +1377,29 @@ const utils = {
     return (crc ^ (-1)) >>> 0;
   },
 
+  hasDiff(v1, v2) {
+
+    if (typeof v1 === 'object' && typeof v2 === 'object') {
+      // Find updated or added keys
+      for (const key in v2) {
+        if (this.hasDiff(v1[key], v2[key])) {
+          return true;
+        }
+      }
+
+      // Find deleted keys
+      for (const key in v1) {
+        if (this.hasDiff(v1[key], v2[key])) {
+          return true;
+        }
+      }
+
+      return false;
+    } else {
+      return v1 !== v2;
+    }
+  },
+
 };
 
 /**
