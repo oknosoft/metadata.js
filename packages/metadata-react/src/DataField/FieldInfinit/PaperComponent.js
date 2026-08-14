@@ -78,7 +78,7 @@ class PaperComponent extends React.Component {
 
   render() {
     const {props: {children, classes, ...props}, context: {owner}} = this;
-    const {props: {_obj, _fld}, _meta} = owner;
+    const {props: {_obj, _fld, hide_open}, _meta} = owner;
     const value = _obj[_fld];
     const {_manager} = value || {};
     const {ui: {prevent}, utils} = $p;
@@ -119,7 +119,7 @@ class PaperComponent extends React.Component {
           onTouchEnd={this.clear}
         ><ClearIcon/></IconButton>
 
-        {!is_enm && _manager && _manager.acl.includes('v') && <IconButton
+        {!is_enm && !hide_open && _manager?.acl?.includes('v') && <IconButton
           title={_manager.frm_obj_name}
           disabled={iconDisabled}
           onClick={owner.handleOpenObj}
