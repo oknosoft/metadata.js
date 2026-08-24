@@ -183,8 +183,8 @@ export class DataManager extends MetaEventEmitter {
   }
 
   /**
-   * Возвращает объект по ссылке (читает из локального кеша)
-   * Если нет в кеше и идентификатор не пуст, создаёт новый объект
+   * Возвращает объект по ссылке (читает из ram)
+   * Если нет в памяти и идентификатор не пуст, создаёт новый объект
    * @param {String|Object} [ref] - ссылочный идентификатор
    * @param {Boolean} [create=false] - Если false - не создавать новый. Например, при поиске элемента из конструктора
    * @return {DataObj|undefined}
@@ -204,7 +204,26 @@ export class DataManager extends MetaEventEmitter {
    * @return {String}
    */
   getRef(attr){
-    return this.utils.fix.guid(attr);
+
+    if (this.utils.is.dataObj(attr)) {
+      return attr.ref;
+    }
+    if (attr && typeof attr == 'object') {
+      return this.getRef(attr.ref || attr.uid);
+    }
+    else if(typeof attr === 'string') {
+      const {id} = this.#meta;
+      if(attr.length === 22) {
+        return id + ref;
+      }
+      else if(attr.length === 24) {
+        return attr;
+      }
+      else if(attr.length === 36) {
+        return id + this.utils.b62.encode(attr);
+      }
+    }
+    throw new TypeError(`Invalid ref '${attr}'`);
   }
 
   /**
@@ -735,12 +754,19 @@ export class EnumManager extends RefDataManager {
    * @return {String}
    */
   getRef(attr){
-    return typeof attr === string ? attr : (attr.latin || attr.name);
+    const {id} = this.metadata();
+    if(typeof attr === string) {
+      if(attr.substring(0, 2) === id) {
+        return attr;
+      }
+      return id + attr;
+    }
+    return this.getRef(attr.latin || attr.name);
   }
 
 	push(value){
     super.push(value);
-		Object.defineProperty(this, value.ref, {value});
+		Object.defineProperty(this, value.latin || value.name, {value});
 	}
 
 	/**

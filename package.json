@@ -26,18 +26,14 @@
     "@babel/core": "^8.0",
     "@babel/preset-env": "^8.0",
     "@babel/preset-react": "^8.0",
-    "@rollup/plugin-node-resolve": "^16.0",
-    "@rollup/plugin-replace": "^6.0",
+    "@rspack/cli": "^2.1",
+    "@rspack/core": "^2.1",
+    "@rspack/dev-server": "^2.2",
     "babel-loader": "^10.1",
     "foodoc": "github:oknosoft/foodoc#658dc64caca91630839a9a7031ad88f7ab8c8263",
     "react": "^19.2",
     "react-dom": "^19.2",
-    "rollup": "^4.62",
-    "rollup-plugin-cleanup": "^3.2",
-    "typescript": "^7.0",
-    "webpack": "^5.109",
-    "webpack-cli": "^7.2",
-    "webpack-dev-server": "^6.0"
+    "typescript": "^7.0"
   },
   "peerDependecies": {},
   "files": [
@@ -50,9 +46,8 @@
     "LICENSE.en.md"
   ],
   "scripts": {
-    "dev": "webpack serve -c example/webpack.config.js",
+    "dev": "rspack dev -c example/rspack.dev.js",
     "build:core": "node core/build.js",
-    "build:ui": "cd packages/ui/ && cross-env NODE_ENV=production BABEL_ENV=es babel --config-file ./babel.config.js ./src --out-dir . && node ./copy-files && cd ../../ && node packages/ui/build.js",
     "build:pouchdb": "node pouchdb/build.js",
     "build:docs": "jsdoc -c jsdoc/conf.json"
   },

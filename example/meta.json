@@ -32,10 +32,9 @@
       "synonym": "Файл"
     },
     {
-      "default": "article"
-    },
-    {
-      "tag": "Категории тегов"
+      "default": "article",
+      "tag": "Категории тегов",
+      "id": "tc"
     }
   ],
   "categorySections": [
@@ -55,7 +54,8 @@
       "synonym": "Материал"
     },
     {
-      "tag": "Классы категорий тегов"
+      "tag": "Классы категорий тегов",
+      "id": "cs"
     }
   ],
   "gender": [
@@ -70,7 +70,8 @@
       "synonym": "Женский"
     },
     {
-      "tag": "Пол физических Лиц"
+      "tag": "Пол физических Лиц",
+      "id": "se"
     }
   ],
   "nomTypes": [
@@ -93,10 +94,9 @@
       "latin": "operation"
     },
     {
-      "default": "Товар"
-    },
-    {
-      "tag": "Типы номенклатуры"
+      "default": "Товар",
+      "tag": "Типы номенклатуры",
+      "id": "nt"
     }
   ],
   "individualLegal": [
@@ -111,7 +111,8 @@
       "synonym": "Физлицо"
     },
     {
-      "tag": "Юр/ФизЛицо"
+      "tag": "Юр/ФизЛицо",
+      "id": "il"
     }
   ]
 },
@@ -132,7 +133,7 @@
       "groupHierarchy": true,
       "mainPresentation": "name",
       "codeLen": 3,
-      "id": "cr",
+      "id": "Cr",
       "fields": {
         "nameFull": {
           "synonym": "Наименование валюты",
@@ -209,7 +210,7 @@
       "groupHierarchy": true,
       "mainPresentation": "name",
       "codeLen": 0,
-      "id": "a",
+      "id": "Ac",
       "fields": {
         "prefix": {
           "synonym": "Префикс нумерации",
@@ -448,7 +449,7 @@
       "groupHierarchy": true,
       "mainPresentation": "name",
       "codeLen": 9,
-      "id": "pt",
+      "id": "Pt",
       "fields": {
         "nameFull": {
           "synonym": "Полное наименование",
@@ -781,7 +782,7 @@
       "groupHierarchy": true,
       "mainPresentation": "name",
       "codeLen": 11,
-      "id": "og",
+      "id": "Og",
       "fields": {
         "prefix": {
           "synonym": "Префикс",
@@ -878,7 +879,7 @@
       "groupHierarchy": true,
       "mainPresentation": "name",
       "codeLen": 0,
-      "id": "u",
+      "id": "Uu",
       "fields": {
         "invalid": {
           "synonym": "Недействителен",
@@ -1157,7 +1158,7 @@
       "groupHierarchy": false,
       "mainPresentation": "name",
       "codeLen": 50,
-      "id": "at",
+      "id": "At",
       "fields": {
         "h1": {
           "synonym": "H1",
@@ -1472,7 +1473,7 @@
       "groupHierarchy": true,
       "mainPresentation": "name",
       "codeLen": 0,
-      "id": "tg",
+      "id": "Tg",
       "fields": {
         "synonym": {
           "synonym": "Синоним",
@@ -1516,7 +1517,7 @@
       "groupHierarchy": true,
       "mainPresentation": "name",
       "codeLen": 9,
-      "id": "pt",
+      "id": "Pn",
       "fields": {
         "priceCurrency": {
           "synonym": "Валюта цены по умолчанию",
@@ -1613,7 +1614,7 @@
       "groupHierarchy": true,
       "mainPresentation": "name",
       "codeLen": 0,
-      "id": "f",
+      "id": "Fs",
       "fields": {
         "formula": {
           "synonym": "Формула",
@@ -1842,7 +1843,8 @@
   "doc": {
     "test": {
       "name": "Документ",
-      "fields": []
+      "fields": [],
+      "id": "t0"
     }
   },
   "ireg": {},
@@ -1865,7 +1867,7 @@
       "groupHierarchy": false,
       "mainPresentation": "name",
       "codeLen": 0,
-      "id": "ex",
+      "id": "Pr",
       "fields": {
         "shown": {
           "synonym": "Виден",
@@ -2189,7 +2191,7 @@
       "groupHierarchy": false,
       "mainPresentation": "name",
       "codeLen": 0,
-      "id": "pd",
+      "id": "Pe",
       "fields": {
         "value": {
           "synonym": "Значение",

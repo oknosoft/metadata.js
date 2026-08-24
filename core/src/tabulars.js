@@ -3,7 +3,7 @@
  *
  */
 
-import {own, alias} from './meta/symbols';
+import {own, mgr, meta, state, alias} from './meta/symbols';
 
 
 /**
@@ -30,14 +30,14 @@ export class TabularSection extends Array {
 	constructor(owner, name, raw) {
     super();
     this.#own = owner;
-    this.#meta = owner._metadata(name);
+    this.#meta = owner[meta](name);
     if(Array.isArray(raw)) {
       this.load(raw);
     }
 	}
 
   toString() {
-	  const {_manager: root} = this;
+	  const {root} = this[mgr];
     return `${root.msg.tabular} ${this.#meta.className}`;
   }
 
@@ -47,16 +47,15 @@ export class TabularSection extends Array {
 
   /**
    * Указатель на менеджера данного объекта
-   * @property _manager
    * @type DataManager
    * @final
    */
-  get _manager() {
-    return this[own]._manager;
+  get [mgr]() {
+    return this[own][mgr];
   }
 
-  get _data() {
-    return this[own]._data;
+  get [state]() {
+    return this[own][state];
   }
 
   /**
@@ -64,7 +63,7 @@ export class TabularSection extends Array {
    * @param {String} name - имя поля, данные которого интересуют
    * @return {MetaTabular|MetaField}
    */
-  _metadata(name) {
+  [meta](name) {
     return this.#meta.get(name);
   }
 
@@ -98,8 +97,7 @@ export class TabularSection extends Array {
     else {
       this.length = 0;
     }
-    const {_data, _manager} = this;
-    !_data.loading && _manager.emit('rows', this[own], {[this.#meta[alias]]: true});
+    !this[state].loading && this[mgr].emit('rows', this[own], {[this.#meta[alias]]: true});
     return this;
   }
 
@@ -109,7 +107,6 @@ export class TabularSection extends Array {
 	 */
 	del(val) {
 
-    const {_manager, _data} = this;
     const owner = this[own];
 
     let index;
@@ -122,18 +119,18 @@ export class TabularSection extends Array {
     }
 
 		// триггер
-    if(!_data.loading && owner.beforeDelRow(val) === false){
+    if(!this[state].loading && owner.beforeDelRow(val) === false){
       return;
     }
 
 		const drows = this.splice(index, 1);
 
     // триггер
-    !_data.loading && drows.length && owner.afterDelRow(drows[0]);
+    !this[state].loading && drows.length && owner.afterDelRow(drows[0]);
 
     // obj, {ts_name: null}
-    !_data.loading && _manager.emit('rows', owner, {[this.#meta[alias]]: true});
-		_data.modified = true;
+    !this[state].loading && this[mgr].emit('rows', owner, {[this.#meta[alias]]: true});
+    this[state].modified = true;
 	}
 
 	/**
@@ -146,7 +143,7 @@ export class TabularSection extends Array {
     if(typeof val === 'function') {
       return Array.prototype.find.call(this, val);
     }
-		return this[own]._manager.utils.find(this, val, columns);
+		return this[mgr].utils.find(this, val, columns);
 	}
 
   filter(filterFunc) {
@@ -215,9 +212,8 @@ export class TabularSection extends Array {
     this[rowid2] = row1;
 
     const owner = this[own];
-    const {_data, _manager} = owner;
-    !_data.loading && _manager.emit('rows', owner, {[this.#meta[alias]]: [row1, row2]});
-    _data.modified = true;
+    !this[state].loading && this[mgr].emit('rows', owner, {[this.#meta[alias]]: [row1, row2]});
+    this[state].modified = true;
 	}
 
 	/**
@@ -234,27 +230,27 @@ export class TabularSection extends Array {
 	 */
 	add(attr = {}, silent, Constructor) {
 
-    const {_manager, _data} = this;
     const owner = this[own];
+    const curr = this[state];
     //attr, owner, loading, direct
     if(!Constructor) {
-      Constructor = _manager.objConstructor(this.#meta[alias], true);
+      Constructor = this[mgr].objConstructor(this.#meta[alias], true);
     }
-		const row = new Constructor(attr, this, _data.loading || silent, true);
+		const row = new Constructor(attr, this, curr.loading || silent, true);
 
     // триггер
-		if(!_data.loading && owner.beforeAddRow(row, attr) === false){
+		if(!curr.loading && owner.beforeAddRow(row, attr) === false){
 		  return;
     }
 
     this.push(row);
-    _data.modified = true;
+    curr.modified = true;
 
     // триггер менеджера
-    !_data.loading && !silent && _manager.emit('rows', owner, {[this.#meta[alias]]: row});
+    !curr.loading && !silent && this[mgr].emit('rows', owner, {[this.#meta[alias]]: row});
 
     // триггер объекта
-    !_data.loading && owner.afterAddRow(row, attr);
+    !curr.loading && owner.afterAddRow(row, attr);
 
 		return row;
 	}
@@ -274,7 +270,7 @@ export class TabularSection extends Array {
 			return this.load(res);
 		}
 		catch (err) {
-			this._owner._manager.root.utils.recordLog(err);
+			this[mgr].root.utils.recordLog(err);
 		}
 	}
 
@@ -377,11 +373,10 @@ export class TabularSection extends Array {
 	 */
 	load(raw) {
 
-    const {_manager, _data} = this;
-    const {loading} = _data;
+    const {loading} = this[state];
 
     if (!loading) {
-      _data.loading = true;
+      this[state].loading = true;
     }
 
     this.clear();
@@ -391,7 +386,7 @@ export class TabularSection extends Array {
     }
 
     // obj, {ts_name: null}
-    _data.loading = loading;
+    this[state].loading = loading;
 
 		return this;
 	}
@@ -419,10 +414,10 @@ export class TabularSection extends Array {
 	 */
 	toJSON() {
 	  const {_owner, _obj, _name} = this;
-	  const {fields} = _owner._metadata(_name);
+	  const {fields} = _owner[meta](_name);
 	  const _manager = {
-      _owner: _owner._manager._owner,
-      metadata(fld) {
+      [own]: this[mgr][own],
+      [meta](fld) {
         return fields[fld];
       }
     };

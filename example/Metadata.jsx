@@ -1,6 +1,6 @@
 import React from 'react';
 import MetaEngine from '../core/src'; // можно из '../core/dist', который компилируется скриптом build:core
-import settings from './app.settings';
+import {settings} from './app.settings';
 import meta from './meta.json';
 
 const $p = global.$p = new MetaEngine();

@@ -323,7 +323,7 @@ export default function formulasClasses({cat, classes, symbols, md, utils}, excl
           }
           else {
             if(this.async) {
-              const AsyncFunction = Object.getPrototypeOf(eval('(async function(){})')).constructor;
+              const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
               _data._formula = (new AsyncFunction('obj,$p,attr', this.formula)).bind(this);
             }
             else {

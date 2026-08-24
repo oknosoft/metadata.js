@@ -3,7 +3,7 @@
  *
  */
 
-import {own, get, set, hash, notify, mf, struct, string} from './meta/symbols';
+import {own, get, set, hash, notify, meta, struct, state, mgr, string} from './meta/symbols';
 import {OwnerObj, MetaField, MetaTabular} from './meta/metaObjs';
 import {TabularSection} from './tabulars';
 
@@ -64,27 +64,22 @@ export class BaseDataObj extends OwnerObj {
     if(Array.isArray(manager) || (manager instanceof TabularSectionRow) || (manager instanceof DataStruct)) {
       this.#obj = direct ? attr : {};
       if(loading instanceof MetaTabular) {
-        this.#obj[mf] = loading;
+        this.#obj[meta] = loading;
       }
     }
     else {
       // в режиме direct, новый объект не создаём - используем сырые данные
       this.#obj = direct ? attr : {ref: manager.getRef(attr)};
 
-      Object.defineProperties(this, {
-
-        /**
-         * Внутренние и пользовательские данные - аналог `AdditionalProperties` _Дополнительные свойства_ в 1С
-         * @property _data
-         * @type InnerData
-         * @final
-         */
-        _data: {value: new InnerData(this, loading)}
-
-      });
+      /**
+       * Внутренние и пользовательские данные - аналог `AdditionalProperties` _Дополнительные свойства_ в 1С
+       * @type InnerData
+       * @final
+       */
+      Object.defineProperty(this, state, {value: new InnerData(this, loading)});
     }
 
-    const {tabulars, fields} = this._metadata();
+    const {tabulars, fields} = this[meta]();
     for(const name in tabulars) {
       if(!tabulars[name].virtual || (this instanceof TabularSectionRow) || (this instanceof DataStruct)) {
         this.#obj[name] = new TabularSection(this, name, this.#obj[name]);
@@ -99,11 +94,10 @@ export class BaseDataObj extends OwnerObj {
 
   /**
    * Указатель на менеджера данного объекта
-   * @property _manager
    * @type DataManager
    * @final
    */
-  get _manager() {
+  get [mgr]() {
     return this[own];
   }
 
@@ -112,13 +106,13 @@ export class BaseDataObj extends OwnerObj {
    * @param {String} [name] - Имя поля
    * @return {MetaObj}
    */
-  _metadata(name) {
-    const common = this._manager.metadata(name);
+  [meta](name) {
+    const common = this[own].metadata(name);
     if(common.choiceType) {
-      let local = this._raw(mf);
+      let local = this._raw(meta);
       if(!local) {
         local = {};
-        this._raw({[mf]: local});
+        this._raw({[meta]: local});
       }
       const {path, elm} = common.choiceType;
       if(elm !== 0) {
@@ -136,19 +130,42 @@ export class BaseDataObj extends OwnerObj {
       }
       return local[ref];
     }
-    return this._manager.metadata(name);
+    return this[own].metadata(name);
   }
 
   get className() {
-    return this._manager.className;
+    return this[own].className;
+  }
+
+  get classId() {
+    return this[own].id;
   }
 
   /**
-   * guid ссылки объекта
+   * @summary Ccылка объекта
+   * @desc Содержит в первых 2 символах, идентификатор типа
+   * и в следующих 22 - uid в формате Base62Id
    * @type String
    */
   get ref() {
-    return this._manager.getRef(this.#obj);
+    return this[own].getRef(this.#obj);
+  }
+
+  /**
+   * @summary Guid ссылки объекта
+   * @type String
+   */
+  get uid() {
+    const {uid, ref} = this.#obj;
+    if(uid) {
+      return uid;
+    }
+    if(ref.length === 36) {
+      return ref;
+    }
+    if(ref.length === 24) {
+      return this[own].utils.b62.decode(ref.substring(2));
+    }
   }
 
   /**
@@ -171,13 +188,13 @@ export class BaseDataObj extends OwnerObj {
 
   [get](f) {
     const res = this.#obj[f];
-    let {choiceType, type} = this._metadata(f);
+    let {choiceType, type} = this[meta](f);
     if(choiceType?.path) {
       const prm = this[choiceType.path.length === 2 ? choiceType.path[1] : choiceType.path[0]];
-      if(prm instanceof this._manager.root.classes.TypeDef) {
+      if(prm instanceof this[own].root.classes.TypeDef) {
         type = prm;
       }
-      else if(prm?.type instanceof this._manager.root.classes.TypeDef) {
+      else if(prm?.type instanceof this[own].root.classes.TypeDef) {
         type = prm.type;
       }
     }
@@ -185,10 +202,10 @@ export class BaseDataObj extends OwnerObj {
   }
 
   [notify](f) {
-    const {_data, _manager} = this;
-    if(_data && !_data.loading) {
-      _data.modified = true;
-      _manager.emit('update', this, {[f]: this.#obj[f]});
+    const curr = this[state];
+    if(curr && !curr.loading) {
+      curr.modified = true;
+      this[own].emit('update', this, {[f]: this.#obj[f]});
     }
   }
 
@@ -207,15 +224,16 @@ export class BaseDataObj extends OwnerObj {
    * @private
    */
   [set](f, v) {
-    const {_data, _manager: {utils}} = this;
-    const mf = this._metadata(f).type;
+    const curr = this[state];
+    const {utils} = this[own];
+    const mf = this[meta](f).type;
     const obj = this.#obj;
 
     // выполняем value_change с блокировкой эскалации
-    if(!_data.loading) {
-      _data.loading = true;
+    if(!curr.loading) {
+      curr.loading = true;
       this.valueChange(f, mf, v);
-      _data.loading = false;
+      curr.loading = false;
     }
 
     if(f === 'type' && v.types) {
@@ -226,7 +244,7 @@ export class BaseDataObj extends OwnerObj {
     }
     else if(v instanceof DataObj && mf.isRef) {
       const ref = utils.fix.guid(v, false);
-      obj[f] = mf.isSingleRef ? ref : `${v._metadata().id}|${ref}`;
+      obj[f] = mf.isSingleRef ? ref : `${v[meta]().id}|${ref}`;
     }
     else if(mf.isRef) {
 
@@ -242,11 +260,11 @@ export class BaseDataObj extends OwnerObj {
       else {
         obj[f] = utils.fix.guid(v);
 
-        if(utils.is.dataObj(v) && mf.hasType(v._manager.className)) {
+        if(utils.is.dataObj(v) && mf.hasType(v[own].className)) {
 
         }
         else {
-          let mgr = v?._manager || this._manager.value_mgr(obj, f, mf, false, v).mgr;
+          let mgr = v?.[own] || this[own].value_mgr(obj, f, mf, false, v).mgr;
           if(mgr) {
             if(mgr.isEnum) {
               if(typeof v === string) {
@@ -316,8 +334,8 @@ export class BaseDataObj extends OwnerObj {
   [hash]() {
     // накапливаем строку из всех реквизитов и табличных частей
     let str = '';
-    const {_obj, _manager} = this;
-    const {fields, tabular_sections} = _manager.metadata();
+    const {_obj} = this;
+    const {fields, tabular_sections} = this[own].metadata();
     const sfields = ['date','numberDoc','posted','id','name','_deleted','isFolder','ref'];
 
     for(const fld of Object.keys(fields).concat(sfields)) {
@@ -341,7 +359,7 @@ export class BaseDataObj extends OwnerObj {
       }
     }
 
-    return _manager.utils.crc32(str);
+    return this[own].utils.crc32(str);
   }
 
   /**
@@ -357,11 +375,11 @@ export class BaseDataObj extends OwnerObj {
    */
   toJSON() {
     const res = {};
-    const {utils: {blank}, classes: {Meta}} = this._manager.root;
+    const {utils: {blank}, classes: {Meta}} = this[own].root;
     const raw = this.#obj;
 
     for(const fld in raw) {
-      const mfld = this._metadata(fld);
+      const mfld = this[meta](fld);
       if(mfld || fld === '_attachments') {
         if(Array.isArray(raw[fld])) {
           res[fld] = this[fld].toJSON();
@@ -392,7 +410,7 @@ export class BaseDataObj extends OwnerObj {
    * @return {Boolean}
    */
   isNew() {
-    return !this._data || this._data.isNew;
+    return !this[state] || this[state].isNew;
   }
 
   /**
@@ -401,7 +419,7 @@ export class BaseDataObj extends OwnerObj {
    * @return {Boolean}
    */
   isInstanceOf(name) {
-    return this instanceof this._manager.root.classes[name];
+    return this instanceof this[own].root.classes[name];
   }
 
   /**
@@ -421,17 +439,17 @@ export class BaseDataObj extends OwnerObj {
    * Признак модифицированности
    */
   get _modified() {
-    return !!this._data.modified;
+    return !!this[state].modified;
   }
   set _modified(v) {
-    this._data.modified = !!v;
+    this[state].modified = !!v;
   }
 
   /**
    * Метод для ручной установки признака _прочитан_ (не новый)
    */
   _loaded() {
-    Object.assign(this._data, {
+    Object.assign(this[state], {
       modified: false,
       isNew: false,
       loading: false,
@@ -446,7 +464,7 @@ export class BaseDataObj extends OwnerObj {
    * @return {boolean} - true, если ссылка пустая
    */
   empty() {
-    return this._manager.utils.is.emptyGuid(this.ref);
+    return this[own].utils.is.emptyGuid(this.ref);
   }
 
   beforeAddRow() {
@@ -569,27 +587,28 @@ export class DataObj extends BaseDataObj {
    * @async
    */
   load(attr) {
-    const {_data, _manager: {utils}} = this;
-    if(this.ref == utils.blank.guid) {
-      if(_data) {
-        _data.loading = false;
-        _data.modified = false;
+    const {ref} = this;
+    const curr = this[state];
+    if(ref.substring(2) == this[own].utils.b62.nil) {
+      if(curr) {
+        curr.loading = false;
+        curr.modified = false;
       }
       return Promise.resolve(this);
     }
-    else if(_data.loading) {
+    else if(curr.loading) {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          resolve(_data.loading ? this.load(attr) : this);
+          resolve(curr.loading ? this.load(attr) : this);
         }, 1000);
       });
     }
     else {
-      _data.loading = true;
-      return this._manager.adapter.loadObj(this, attr)
+      curr.loading = true;
+      return this[own].adapter.loadObj(this, attr)
         .then(() => {
-          _data.loading = false;
-          _data.modified = false;
+          curr.loading = false;
+          curr.modified = false;
           return this.afterLoad();
         });
     }
@@ -601,11 +620,11 @@ export class DataObj extends BaseDataObj {
    * @for DataObj
    */
   unload() {
-    const {_obj, ref, _data, _manager} = this;
-    _manager.unloadObj(ref);
-    _data.loading = true;
+    const {_obj, ref} = this;
+    this[mgr].unloadObj(ref);
+    this[state].loading = true;
     //_manager.emit_async('unload', this);
-    for (const ts in this._metadata().tabular_sections) {
+    for (const ts in this[meta]().tabular_sections) {
       this[ts].clear();
     }
     for (const f in this) {
@@ -627,13 +646,12 @@ export class DataObj extends BaseDataObj {
    * @return {boolean}
    */
   checkMandatory(attr) {
-    const {fields, tabular_sections} = this._metadata();
-    const {_manager} = this;
-    const {msg, cch: {properties}, classes, utils} = _manager.root;
+    const {fields, tabular_sections} = this[meta]();
+    const {msg, cch: {properties}, classes, utils} = this[own].root;
     const flds = Object.assign({}, fields);
-    if(_manager instanceof classes.CatManager) {
-      flds.name = this._metadata('name') || {};
-      flds.id = this._metadata('id') || {};
+    if(this[own] instanceof classes.CatManager) {
+      flds.name = this[meta]('name') || {};
+      flds.id = this[meta]('id') || {};
     }
     for (const mf in flds) {
       if (flds[mf] && flds[mf].mandatory && (!this._obj[mf] || this._obj[mf] === utils.blank.guid)) {
@@ -641,7 +659,7 @@ export class DataObj extends BaseDataObj {
           obj: this,
           title: msg.mandatory_title,
           type: 'alert-error',
-          text: msg.mandatory_field.replace('%1', this._metadata(mf).synonym)
+          text: msg.mandatory_field.replace('%1', this[meta](mf).synonym)
         };
       }
     }
@@ -686,7 +704,7 @@ export class DataObj extends BaseDataObj {
    */
   save(post, operational, attachments, attr) {
 
-    const {utils} = this._manager;
+    const {utils} = this[own];
 
     if(utils.is_empty_guid(this.ref)) {
       return Promise.resolve(this);
@@ -700,9 +718,9 @@ export class DataObj extends BaseDataObj {
     }
 
     // выполняем обработчик перед записью
-    const {_data, _manager} = this;
-    _data.trans = true;
-    return _manager.emit_promise('before_save', this, attr)
+    const curr = this[state];
+    curr.trans = true;
+    return this[own].emitPromise('before_save', this, attr)
       .then(() => {
         return this.before_save(attr);
       })
@@ -716,10 +734,10 @@ export class DataObj extends BaseDataObj {
             }
           }
           else {
-            _data.modified = false;
+            curr.modified = false;
           }
-          _data._saving = 0;
-          _data.trans = false;
+          curr._saving = 0;
+          curr.trans = false;
           return this;
         };
 
@@ -740,14 +758,14 @@ export class DataObj extends BaseDataObj {
         const reset_mandatory = (msg) => {
           before_save_res = false;
           reset_modified();
-          _manager.root.md.emit('alert', msg);
+          this[own].root.md.emit('alert', msg);
           const err = new Error(msg.text);
           err.msg = msg;
           return Promise.reject(err);
         };
 
         // для объектов с иерархией установим пустого родителя, если иной не указан
-        if(this._metadata().hierarchical && !this._obj.parent) {
+        if(this[meta]().hierarchical && !this._obj.parent) {
           this._obj.parent = utils.blank.guid;
         }
 
@@ -779,10 +797,10 @@ export class DataObj extends BaseDataObj {
 
         // в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе
         return (numerator || Promise.resolve())
-          .then(() => _manager.adapter.save_obj(this, Object.assign({post, operational, attachments}, attr)))
+          .then(() => this[own].adapter.saveObj(this, Object.assign({post, operational, attachments}, attr)))
           // и выполняем обработку после записи
           .then(() => this.after_save())
-          .then(() => _manager.emit_promise('after_save', this))
+          .then(() => this[own].emitPromise('after_save', this))
           .then(reset_modified)
           .catch((err) => {
             reset_modified();
@@ -799,16 +817,15 @@ export class DataObj extends BaseDataObj {
    */
   loadLinked() {
     const adapters = new Map();
-    const {fields, tabular_sections} = this._metadata();
+    const {fields, tabular_sections} = this[meta]();
 
     function add_refs(obj, meta) {
       for(const fld in meta) {
         if(meta[fld].type.isRef) {
           const v = obj[fld];
           if(v instanceof DataObj && !v.empty() && v.isNew()) {
-            const {_manager} = v;
-            const {adapter} = _manager;
-            const db = adapter.db(_manager);
+            const {adapter} = v[own];
+            const db = adapter.db(v[own]);
             if(!adapters.get(adapter)) {
               adapters.set(adapter, new Map());
             }
@@ -847,8 +864,7 @@ export class DataObj extends BaseDataObj {
    * @param id {String} - идентификатор (имя) вложения
    */
   getAttachment(id) {
-    const {_manager, ref} = this;
-    return _manager.adapter.getAttachment(_manager, ref, id);
+    return this[own].adapter.getAttachment(this[own], this.ref, id);
   }
 
   /**
@@ -862,8 +878,8 @@ export class DataObj extends BaseDataObj {
    * @async
    */
   saveAttachment(name, attachment, type) {
-    const {_manager, ref, _obj, _attachments} = this;
-    return _manager.saveAttachment(ref, name, attachment, type)
+    const {ref, _obj, _attachments} = this;
+    return this[own].saveAttachment(ref, name, attachment, type)
       .then((att) => {
         if(!_attachments) {
           this._attachments = {};
@@ -886,8 +902,8 @@ export class DataObj extends BaseDataObj {
    * @async
    */
   deleteAttachment(name) {
-    const {_manager, ref, _obj, _attachments} = this;
-    return _manager.deleteAttachment(ref, name)
+    const {ref, _obj, _attachments} = this;
+    return this[own].deleteAttachment(ref, name)
       .then((att) => {
         if(_attachments) {
           delete _attachments[name];
@@ -905,9 +921,9 @@ export class DataObj extends BaseDataObj {
    */
   brokenLinks() {
     const res = [];
-    const {fields, tabular_sections} = this._metadata();
-    const {_obj, _manager: {root}} = this;
-    const {md, utils} = root;
+    const {fields, tabular_sections} = this[meta]();
+    const {_obj} = this;
+    const {md, utils} = this[own].root;
 
     if(this.empty() || this.isNew()){
       return res;
@@ -956,7 +972,8 @@ export class DataObj extends BaseDataObj {
    * @param {Number} [list] - если задано, переопределяет list свойства
    */
   _extra(property, value, list) {
-    const {extra_fields, _manager: {root: {cch, md}}} = this;
+    const {extra_fields} = this;
+    const {md, cch} = this[own].root;
     if(!extra_fields || !cch.properties) {
       return;
     }
@@ -1005,12 +1022,12 @@ export class DataObj extends BaseDataObj {
    * @type Array.<CchProperties>
    */
   get _extraProps() {
-    const {cat, cch} = this._manager.root;
+    const {cat, cch} = this[own].root;
     // ищем предопределенный элемент, сответствующий классу данных
     const dests = cat.destinations || cch.destinations;
     const res = [];
     if(dests) {
-      const condition = this._destinations_condition || {predefined_name: `${this instanceof DocObj ? 'Документ' : 'Справочник'}_${this._metadata().name}`};
+      const condition = this._destinations_condition || {predefined_name: `${this instanceof DocObj ? 'Документ' : 'Справочник'}_${this[meta]().name}`};
       dests.findRows(condition, destination => {
         const ts = destination.extra_fields;
         if(ts) {
@@ -1053,7 +1070,7 @@ export class CatObj extends DataObj {
    * @type {boolean}
    */
   get isFolder() {
-    const {hierarchical, groupHierarchy} = this._metadata();
+    const {hierarchical, groupHierarchy} = this[meta]();
     return hierarchical && groupHierarchy && this[get]('isFolder') ? true : false;
   }
 
@@ -1064,7 +1081,7 @@ export class CatObj extends DataObj {
    * @type String
    */
   get presentation() {
-    const meta = this._metadata();
+    const meta = this[meta]();
     if(this.empty()) {
       return '';
     }
@@ -1080,10 +1097,10 @@ export class CatObj extends DataObj {
    * @type String|Number
    */
   get id() {
-    return this._metadata().codeLength ? this[get]('id') : '';
+    return this[meta]().codeLength ? this[get]('id') : '';
   }
   set id(v) {
-    if(!this._metadata().codeLength) {
+    if(!this[meta]().codeLength) {
       throw new Error('Попытка задать код справочнику без кода');
     }
     this[set]('id', v);
@@ -1101,21 +1118,21 @@ export class CatObj extends DataObj {
   }
 
   get parent() {
-    return this._metadata().hierarchical ? this[get]('parent') : null;
+    return this[meta]().hierarchical ? this[get]('parent') : null;
 
   }
   set parent(v) {
-    if(!this._metadata().hierarchical) {
+    if(!this[meta]().hierarchical) {
       throw new Error('Попытка задать родителя плоскому справочнику');
     }
     this[set]('parent', v);
   }
 
   get owner() {
-    return this._metadata().hasOwners ? this[get]('owner') : null;
+    return this[meta]().hasOwners ? this[get]('owner') : null;
   }
   set owner(v) {
-    if(!this._metadata().hasOwners) {
+    if(!this[meta]().hasOwners) {
       throw new Error('Попытка задать владельца свободному справочнику');
     }
     this[set]('owner', v);
@@ -1127,7 +1144,7 @@ export class CatObj extends DataObj {
    * @return {Boolean}
    */
   is(name) {
-    return this._manager.predefined(name) === this;
+    return this[own].predefined(name) === this;
   }
 
 
@@ -1140,7 +1157,7 @@ export class CatObj extends DataObj {
    */
   _children(foldersOnly) {
     const res = [];
-    this._manager.forEach((o) => {
+    this[own].forEach((o) => {
       if(o != this && (!foldersOnly || o.isFolder) && o._hierarchy(this)) {
         res.push(o);
       }
@@ -1178,7 +1195,7 @@ export class CatObj extends DataObj {
     if(parent && !parent.empty()) {
       return parent._hierarchy(group);
     }
-    return group == this._manager.utils.blank.guid;
+    return group == this[own].utils.blank.guid;
   }
 
   /**
@@ -1231,12 +1248,12 @@ export class DocObj extends DataObj {
    * @type String
    */
   get presentation() {
-    const meta = this._metadata();
+    const desc = this[meta]();
     const {numberDoc, date, posted, _modified} = this;
     return numberDoc ?
-      `${meta.obj_presentation || meta.synonym}  №${numberDoc} от ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`
+      `${desc.obj_presentation || desc.synonym}  №${numberDoc} от ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`
       :
-      `${meta.obj_presentation || meta.synonym} ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`;
+      `${desc.obj_presentation || desc.synonym} ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`;
   }
 
   /**
@@ -1275,7 +1292,7 @@ export class DocObj extends DataObj {
   }
   set posted(v) {
     this[notify]('posted');
-    this._obj.posted = this._manager.utils.fix.boolean(v);
+    this._obj.posted = this[own].utils.fix.boolean(v);
   }
 
 }
@@ -1284,9 +1301,9 @@ export class CchObj extends CatObj {
   [get](f) {
     if(f === 'type') {
       const res = this._raw(f);
-      let {type} = this._metadata(f);
+      let {type} = this[meta](f);
       if(res) {
-        const {TypeDef} = this._manager.root.classes;
+        const {TypeDef} = this[own].root.classes;
         if(res instanceof TypeDef) {
           return res;
         }
@@ -1357,7 +1374,7 @@ export class EnumObj extends DataObj {
    * @type {String}
    */
   get ref() {
-    return this._manager.getRef(this);
+    return this[own].getRef(this);
   }
 
   /**
@@ -1411,7 +1428,7 @@ export class EnumObj extends DataObj {
    * @return {Boolean}
    */
   is(name) {
-    return this._manager[name] === this;
+    return this[own][name] === this;
   }
 
   /**
@@ -1473,13 +1490,12 @@ export class RegisterRow extends DataObj {
 
   /**
    * Метаданные строки регистра
-   * @method _metadata
    * @for RegisterRow
    * @param field_name
    * @type Object
    */
-  _metadata(field_name) {
-    const _meta = this._manager.metadata();
+  [meta](field_name) {
+    const _meta = this[own].metadata();
     if(!_meta.fields) {
       _meta.fields = Object.assign({}, _meta.dimensions, _meta.resources, _meta.attributes);
     }
@@ -1490,7 +1506,7 @@ export class RegisterRow extends DataObj {
    * Ключ записи регистра
    */
   get ref() {
-    return this._manager.getRef(this);
+    return this[own].getRef(this);
   }
 
   set ref(v) {
@@ -1498,7 +1514,7 @@ export class RegisterRow extends DataObj {
   }
 
   get presentation() {
-    return this._metadata().obj_presentation || this._metadata().synonym;
+    return this[meta]().obj_presentation || this[meta]().synonym;
   }
 }
 
@@ -1510,23 +1526,28 @@ export class RegisterRow extends DataObj {
  */
 export class TabularSectionRow extends BaseDataObj {
 
+  constructor(...attr) {
+    super(...attr);
+    Object.defineProperty(this, 'rowId', {value: this[mgr].utils.newId()});
+  }
+
   /**
    * @summary Метаданые строки табличной части
    * @param {String} name - имя поля, данные которого интересуют
    * @return {MetaTabular|MetaField}
    */
-  _metadata(name) {
-    return this[own]._metadata(name);
+  [meta](name) {
+    return this[own][meta](name);
   }
 
   [get](f) {
     const res = this._raw(f);
-    let {choiceType, type} = this._metadata(f);
+    let {choiceType, type} = this[meta](f);
     if(choiceType?.path) {
       const isSelf = choiceType.path.length === 2;
       const obj = isSelf ? this : this[own][own];
       const prm = obj[isSelf ? choiceType.path[1] : choiceType.path[0]];
-      const {TypeDef} = this._manager.root.classes;
+      const {TypeDef} = this[own].root.classes;
       if(prm instanceof TypeDef) {
         type = prm;
       }
@@ -1537,12 +1558,12 @@ export class TabularSectionRow extends BaseDataObj {
     return type.fetchType(res);
   }
 
-  get _manager() {
-    return this[own]._manager;
+  get [mgr]() {
+    return this[own][own][own];
   }
 
-  get _data() {
-    return this[own][own]._data;
+  get [state]() {
+    return this[own][own][state];
   }
 
   /**
@@ -1555,15 +1576,15 @@ export class TabularSectionRow extends BaseDataObj {
   }
 
   get className() {
-    return this._metadata().className;
+    return this[meta]().className;
   }
 
   /**
    * @summary Копирует строку табличной части
    */
   clone() {
-    const {_manager} = this;
-    return _manager.utils.mixin(_manager.objConstructor(this[own]._name, this[own]), this);
+    const manager = this[own][own][own];
+    return manager.utils.mixin(manager.objConstructor(this[own]._name, this[own]), this);
   }
 
   /**
@@ -1582,24 +1603,24 @@ export class DataStruct extends BaseDataObj {
    * @param {String} name - имя поля, данные которого интересуют
    * @return {MetaTabular|MetaField}
    */
-  _metadata(name) {
-    const meta = this._raw(mf);
+  [meta](name) {
+    const meta = this._raw(meta);
     if(name) {
       return meta.fields[name] || meta.tabulars[name];
     }
     return meta;
   }
 
-  get _manager() {
-    return this[own]._manager;
+  get [mgr]() {
+    return this[own][mgr];
   }
 
-  get _data() {
-    return this[own][own]._data;
+  get [state]() {
+    return this[own][own][state];
   }
 
   get className() {
-    return this._metadata().className;
+    return this[meta]().className;
   }
 }
 

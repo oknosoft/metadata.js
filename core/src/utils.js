@@ -27,7 +27,7 @@ if(typeof global != 'undefined'){
   global.moment = moment;
 }
 
-import b62 from './b62';
+import {b62} from './b62';
 
 const ctnames = '$eq,between,$between,$gte,gte,$gt,gt,$lte,lte,$lt,lt,ninh,inh,nin,$nin,in,$in,not,ne,$ne,nlk,lke,like,or,$or,$and'.split(',');
 
@@ -112,6 +112,10 @@ class MetaUtils extends OwnerObj {
 
   constructor(owner) {
     super(owner, 'utils');
+
+    let newId = 0;
+
+    this.newId = () => ++newId;
 
     this.blob = {
       /**
@@ -474,12 +478,24 @@ class MetaUtils extends OwnerObj {
       guid: (ref, generate) => {
 
         if (ref instanceof this.classes.DataObj) {
-          return ref.ref;
+          return ref.uid;
         }
 
         if (ref && typeof ref == object) {
-          if (ref.hasOwnProperty('ref')){
-            ref = ref.ref;
+          const {uid, ref: raw, name} = ref;
+          if (uid) {
+            ref = uid;
+          }
+          else if (raw) {
+            if(raw.length === 22) {
+              return this.b62.encode(raw);
+            }
+            else if(raw.length === 24) {
+              return this.b62.encode(raw.substring(2));
+            }
+            else {
+              ref = raw;
+            }
           }
           else if (ref.hasOwnProperty('name')){
             ref = ref.name;

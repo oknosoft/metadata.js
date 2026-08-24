@@ -9,7 +9,7 @@
 const isNode = typeof process !== 'undefined' && process.versions?.node;
 const lsPrefix = 'www_';
 
-module.exports = function settings(prm = {}) {
+export function settings(prm = {}) {
 
   return Object.assign(prm, {
 
