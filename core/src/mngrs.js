@@ -215,8 +215,8 @@ export class DataManager extends MetaEventEmitter {
     if (attr && typeof attr == 'object') {
       return this.getRef(attr.ref || attr.uid);
     }
-    else if(typeof attr === 'string') {
-      const {id} = this;
+    const {id} = this;
+    if(typeof attr === 'string') {
       if(attr.length === 22) {
         return id + ref;
       }
@@ -226,6 +226,9 @@ export class DataManager extends MetaEventEmitter {
       else if(attr.length === 36) {
         return id + this.utils.b62.encode(attr);
       }
+    }
+    if(!attr) {
+      return id + this.utils.b62.nil;
     }
     throw new TypeError(`Invalid ref '${attr}'`);
   }

@@ -460,7 +460,7 @@ export class BaseDataObj extends OwnerObj {
    * @return {boolean} - true, если ссылка пустая
    */
   empty() {
-    return this[own].utils.is.emptyGuid(this.ref);
+    return this[own].utils.b62.emptyGuid(this);
   }
 
   beforeAddRow() {
@@ -1077,13 +1077,13 @@ export class CatObj extends DataObj {
    * @type String
    */
   get presentation() {
-    const meta = this[meta]();
+    const md = this[meta]();
     if(this.empty()) {
       return '';
     }
-    const name = this[meta.mainPresentation];
+    const name = this[md.mainPresentation];
     if(!name && this.isNew()) {
-      return `~Оборванная ${meta.objPresentation || meta.name}`;
+      return `~Оборванная ${md.objPresentation || md.name}`;
     }
     return name;
   }
