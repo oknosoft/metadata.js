@@ -15,7 +15,7 @@ export const meta = {
       groupHierarchy: true,
       mainPresentation: "name",
       codeLength: 0,
-      id: "a",
+      id: "Ac",
       fields: {
         prefix: {
           synonym: "Префикс нумерации",

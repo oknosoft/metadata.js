@@ -69,7 +69,7 @@ export class BaseDataObj extends OwnerObj {
     }
     else {
       // в режиме direct, новый объект не создаём - используем сырые данные
-      this.#obj = direct ? attr : {ref: manager.getRef(attr)};
+      this.#obj = direct ? attr : {ref: manager.getRef(attr), uid: attr?.uid};
 
       /**
        * Внутренние и пользовательские данные - аналог `AdditionalProperties` _Дополнительные свойства_ в 1С
@@ -135,10 +135,6 @@ export class BaseDataObj extends OwnerObj {
 
   get className() {
     return this[own].className;
-  }
-
-  get classId() {
-    return this[own].id;
   }
 
   /**
@@ -1054,13 +1050,13 @@ export class CatObj extends DataObj {
 
   constructor(attr, manager, loading) {
 
-    const direct = loading && attr && manager.utils.is.guid(attr.ref);
+    const direct = loading && attr?.ref?.length === 24;
 
     // выполняем конструктор родительского объекта
     super(attr, manager, loading, direct);
 
     if(!direct) {
-      manager.utils.mixin(this, attr, null, ['ref']);
+      manager.utils.mixin(this, attr, null, ['ref', 'uid']);
     }
 
   }
@@ -1230,13 +1226,13 @@ export class DocObj extends DataObj {
 
   constructor(attr, manager, loading) {
 
-    const direct = loading && attr && manager.utils.is.guid(attr.ref);
+    const direct = loading && attr?.ref?.length === 24;
 
     // выполняем конструктор родительского объекта
     super(attr, manager, loading, direct);
 
     if(!direct) {
-      manager.utils.mixin(this, attr, null, ['ref']);
+      manager.utils.mixin(this, attr, null, ['ref', 'uid']);
     }
 
   }
@@ -1327,13 +1323,13 @@ export class DataProcessorObj extends DataObj {
 
   constructor(attr, manager, loading) {
 
-    const direct = loading && attr && manager.utils.is.guid(attr.ref);
+    const direct = loading && attr?.ref?.length === 24;
 
     // выполняем конструктор родительского объекта
     super(attr, manager, loading, direct);
 
     if(!direct) {
-      manager.utils.mixin(this, attr, null, ['ref']);
+      manager.utils.mixin(this, attr, null, ['ref', 'uid']);
     }
   }
 }

@@ -781,14 +781,14 @@ export const meta = {
         }
       },
       cachable: 'ram',
-      id: 'ss',
+      id: 'Ss',
       aliases: ['scheme_settings'],
     },
   },
 };
 
 export default function schemeSettingsClasses({classes, symbols, md, utils}, exclude) {
-  md.get('ss').constructorBase();
+  md.get('Ss').constructorBase();
   const {CatSchemeSettings: CatObj} = classes;
   const {get, set} = symbols;
 

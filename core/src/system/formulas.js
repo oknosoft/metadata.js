@@ -29,7 +29,7 @@ export const meta = {
       groupHierarchy: true,
       mainPresentation: "name",
       codeLength: 0,
-      id: "f",
+      id: "Fs",
       fields: {
         formula: {
           synonym: "Формула",
@@ -247,7 +247,7 @@ export const meta = {
 
 export default function formulasClasses({cat, classes, symbols, md, utils}, exclude) {
 
-  md.get('f').constructorBase();
+  md.get('Fs').constructorBase();
   const {CatFormulas: CatObj, CatFormulasManager: CatManager} = classes;
   const {get, set} = symbols;
 

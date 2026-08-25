@@ -12,7 +12,7 @@ export const meta = {
       groupHierarchy: true,
       mainPresentation: "name",
       codeLength: 50,
-      id: "u",
+      id: "Uu",
       fields: {
         invalid: {
           synonym: "Недействителен",

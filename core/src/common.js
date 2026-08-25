@@ -138,7 +138,7 @@ class MetaEngine {
     let user;
     if (cat && cat.users) {
 
-      if(pouch && pouch.props._user) {
+      if(pouch?.props?._user) {
         user = cat.users.get(pouch.props._user);
       }
       else {

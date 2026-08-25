@@ -12,7 +12,7 @@ export const meta = {
       groupHierarchy: false,
       mainPresentation: "name",
       codeLength: 0,
-      id: "pr",
+      id: "Pr",
       fields: {
         shown: {
           synonym: "Виден",

@@ -14,7 +14,7 @@ export const meta = {
       groupHierarchy: false,
       mainPresentation: "name",
       codeLength: 11,
-      id: "br",
+      id: "Br",
       fields: {
         suffix: {
           synonym: "Суффикс CouchDB",

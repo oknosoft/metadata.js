@@ -38,7 +38,7 @@ export const meta = {
         },
       },
       cachable: 'log',
-      id: 'log',
+      id: 'Lg',
     },
     logView: {
       name: 'Просмотр событий',

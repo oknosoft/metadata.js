@@ -127,6 +127,10 @@ export class DataManager extends MetaEventEmitter {
     return this.className.split('.')[1];
   }
 
+  get id() {
+    return this.#meta.id;
+  }
+
   /**
    * Корень метадаты
    * @type {MetaEngine}
@@ -212,7 +216,7 @@ export class DataManager extends MetaEventEmitter {
       return this.getRef(attr.ref || attr.uid);
     }
     else if(typeof attr === 'string') {
-      const {id} = this.#meta;
+      const {id} = this;
       if(attr.length === 22) {
         return id + ref;
       }
@@ -478,7 +482,8 @@ export class RefDataManager extends DataManager {
 			return attr;
 		}
 		if(!attr.ref || !utils.is.guid(attr.ref) || utils.is.emptyGuid(attr.ref)){
-			attr.ref = utils.generateGuid();
+      attr.uid = utils.generateGuid();
+			attr.ref = this.metadata().id + utils.b62.encode(attr.uid);
 		}
 
 		let o = this.byRef(attr.ref);
@@ -526,7 +531,7 @@ export class RefDataManager extends DataManager {
             }
           }
         }
-        !skipMixin && this.utils.mixin(obj, attr, null, ['ref']);
+        !skipMixin && this.utils.mixin(obj, attr, null, ['ref', 'uid']);
         attr._rev && (obj._rev = attr._rev);
 			}
       for(const ts in tabulars) {
@@ -754,7 +759,7 @@ export class EnumManager extends RefDataManager {
    * @return {String}
    */
   getRef(attr){
-    const {id} = this.metadata();
+    const {id} = this;
     if(typeof attr === string) {
       if(attr.substring(0, 2) === id) {
         return attr;

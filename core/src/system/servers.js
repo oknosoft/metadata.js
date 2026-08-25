@@ -12,7 +12,7 @@ export const meta = {
       hierarchical: false,
       mainPresentation: "name",
       codeLength: 0,
-      id: "srv",
+      id: "Sr",
       fields: {
         http: {
           synonym: "HTTP",

@@ -33,7 +33,7 @@ export class JobPrm extends OwnerObj {
     }
     // префикс параметров LocalStorage
     if (!this.lsPrefix){
-      throw new Error('lsPrefix unset in jobPrm settings');
+      throw new TypeError('lsPrefix unset in jobPrm settings');
     }
 
     // если зона не указана, устанавливаем "1"

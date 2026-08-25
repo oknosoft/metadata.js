@@ -108,6 +108,7 @@ export class TabularSection extends Array {
 	del(val) {
 
     const owner = this[own];
+    const st = this[state];
 
     let index;
     if(typeof val === "number") {
@@ -119,18 +120,18 @@ export class TabularSection extends Array {
     }
 
 		// триггер
-    if(!this[state].loading && owner.beforeDelRow(val) === false){
+    if(!st.loading && owner.beforeDelRow(val) === false){
       return;
     }
 
 		const drows = this.splice(index, 1);
 
     // триггер
-    !this[state].loading && drows.length && owner.afterDelRow(drows[0]);
+    !st.loading && drows.length && owner.afterDelRow(drows[0]);
 
     // obj, {ts_name: null}
-    !this[state].loading && this[mgr].emit('rows', owner, {[this.#meta[alias]]: true});
-    this[state].modified = true;
+    !st.loading && this[mgr].emit('rows', owner, {[this.#meta[alias]]: true});
+    st.modified = true;
 	}
 
 	/**
@@ -196,24 +197,24 @@ export class TabularSection extends Array {
 	/**
 	 * ### Меняет местами строки табчасти
 	 * @method swap
-	 * @param rowid1 {number|TabularSectionRow}
-	 * @param rowid2 {number|TabularSectionRow}
+	 * @param row1 {TabularSectionRow}
+	 * @param row2 {TabularSectionRow}
 	 */
-	swap(rowid1, rowid2) {
-    if(typeof rowid1 !== 'number') {
-      rowid1 = this.indexOf(rowid1);
-    }
-    if(typeof rowid2 !== 'number') {
-      rowid2 = this.indexOf(rowid2);
-    }
-    const row1 = this[rowid1];
-    const row2 = this[rowid2];
-    this[rowid1] = row2;
-    this[rowid2] = row1;
+	swap(row1, row2) {
+    const id1 = this.indexOf(row1);
+    const id2 = this.indexOf(row2);
+    if(id1 >= 0 && id2 >= 0) {
+      this[id1] = row2;
+      this[id2] = row1;
 
-    const owner = this[own];
-    !this[state].loading && this[mgr].emit('rows', owner, {[this.#meta[alias]]: [row1, row2]});
-    this[state].modified = true;
+      const owner = this[own];
+      const st = this[state];
+      !st.loading && this[mgr].emit('rows', owner, {[this.#meta[alias]]: [row1, row2]});
+      st.modified = true;
+    }
+    else {
+      throw new TypeError('Tabular swap error');
+    }
 	}
 
 	/**
@@ -231,26 +232,26 @@ export class TabularSection extends Array {
 	add(attr = {}, silent, Constructor) {
 
     const owner = this[own];
-    const curr = this[state];
+    const st = this[state];
     //attr, owner, loading, direct
     if(!Constructor) {
       Constructor = this[mgr].objConstructor(this.#meta[alias], true);
     }
-		const row = new Constructor(attr, this, curr.loading || silent, true);
+		const row = new Constructor(attr, this, st.loading || silent, true);
 
     // триггер
-		if(!curr.loading && owner.beforeAddRow(row, attr) === false){
+		if(!st.loading && owner.beforeAddRow(row, attr) === false){
 		  return;
     }
 
     this.push(row);
-    curr.modified = true;
+    st.modified = true;
 
     // триггер менеджера
-    !curr.loading && !silent && this[mgr].emit('rows', owner, {[this.#meta[alias]]: row});
+    !st.loading && !silent && this[mgr].emit('rows', owner, {[this.#meta[alias]]: row});
 
     // триггер объекта
-    !curr.loading && owner.afterAddRow(row, attr);
+    !st.loading && owner.afterAddRow(row, attr);
 
 		return row;
 	}
@@ -264,14 +265,8 @@ export class TabularSection extends Array {
 	 * @param [resources] {Array|String}
 	 */
 	groupBy(dimensions, resources) {
-
-		try {
-      const res = this.aggregate(dimensions, resources, 'SUM', true);
-			return this.load(res);
-		}
-		catch (err) {
-			this[mgr].root.utils.recordLog(err);
-		}
+    const tmp = this.aggregate(dimensions, resources, 'SUM', true);
+    return this.load(tmp);
 	}
 
   /**

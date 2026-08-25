@@ -14,7 +14,7 @@ export const meta = {
       groupHierarchy: true,
       mainPresentation: "name",
       codeLength: 6,
-      id: "abn",
+      id: "An",
       fields: {
         server: {
           synonym: "Сервер",
