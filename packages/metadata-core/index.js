@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.40-beta.2, built:2026-08-11
+ metadata-core v2.0.40-beta.2, built:2026-09-01
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -3355,6 +3355,43 @@ var data_managers = /*#__PURE__*/Object.freeze({
 	TaskManager: TaskManager
 });
 
+const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+const addPrefix = 0b10n << 128n;
+const mul = Array.from({length: 22}, (v, index) => 62n ** BigInt(index)).reverse();
+const nums = {};
+for(let i=0; i<63; i++) {
+  const char = alphabet[i];
+  nums[char] = BigInt(i);
+}
+const b62 = {
+  encode(str) {
+    let value = addPrefix | BigInt('0x' + str.replace(/-/g, ''));
+    const chars = new Array(22);
+    for(let i=21; i>-1; i--) {
+      chars[i] = alphabet[value % 62n];
+      value /= 62n;
+    }
+    return chars.join('');
+  },
+  decode(str) {
+    let value = 0n;
+    for(let i=21; i>=0; i--) {
+      value += nums[str[i]] * mul[i];
+    }
+    const clean = value.toString(16).substring(1);
+    return `${clean.slice(0, 8)}-${clean.slice(8, 12)}-${clean.slice(12, 16)}-${clean.slice(16, 20)}-${clean.slice(20)}`;
+  },
+  nil: 'Fa84QWiAxLXUJaHZmEVPEG',
+  emptyGuid(v) {
+    const uid = v?.valueOf();
+    if(typeof uid === 'string') {
+      const {length} = uid;
+      return  uid.substring(length - 22) === this.nil;
+    }
+    return false;
+  }
+};
+
 const {v7: uuidv7, validate: uuidValidate, NIL: uuidNil } = require('uuid');
 const rxref = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 const moment$1 = require('moment');
@@ -3425,6 +3462,7 @@ const translit = {
 translit.in.forEach((symb, index) => translit.map.set(symb, translit.out[index]));
 const utils = {
 	moment: moment$1,
+  b62,
   translit(str) {
     let res = '';
     for(let i=0; i < str.length; i++) {

@@ -2,6 +2,7 @@
 import {DataManager, EnumManager, CatManager} from './mngrs';
 import {DataObj, DocObj} from './objs';
 import {TabularSection, TabularSectionRow} from './tabulars';
+import {b62} from './b62';
 
 // UUID
 const {v7: uuidv7, validate: uuidValidate, NIL: uuidNil } = require('uuid');
@@ -134,6 +135,8 @@ translit.in.forEach((symb, index) => translit.map.set(symb, translit.out[index])
 const utils = {
 
 	moment,
+
+  b62,
 
   translit(str) {
     let res = '';
