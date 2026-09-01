@@ -134,17 +134,10 @@ class MetaEngine {
    * @final
    */
   get currentUser() {
-    const {cat, jobPrm, adapters: {pouch}} = this;
-    let user;
-    if (cat && cat.users) {
-
-      if(pouch?.props?._user) {
-        user = cat.users.get(pouch.props._user);
-      }
-      else {
-        const userName = jobPrm.get('userName');
-        user = userName && cat.users.byId(userName);
-      }
+    let {cat, jobPrm, adapters: {user}} = this;
+    if (cat?.users && !user) {
+      const userName = jobPrm.get('userName');
+      user = userName && (cat.users.byId(userName) || cat.users.byName(userName));
     }
     return user && !user.empty() ? user : null;
   }

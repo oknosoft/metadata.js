@@ -249,7 +249,7 @@ export default function formulasClasses({cat, classes, symbols, md, utils}, excl
 
   md.get('Fs').constructorBase();
   const {CatFormulas: CatObj, CatFormulasManager: CatManager} = classes;
-  const {get, set} = symbols;
+  const {get, set, state, mgr} = symbols;
 
   /**
    * @summary Менеджер справочника формул
@@ -315,28 +315,29 @@ export default function formulasClasses({cat, classes, symbols, md, utils}, excl
   class CatFormulas extends CatObj {
 
     execute(obj, attr) {
-      const {_data, _manager} = this;
-      if(!_data._formula) {
+      const {root} = this[mgr];
+      const st = this[state];
+      if(!st._formula) {
         try{
           if(this.jsx) {
-            _data._formula = new Function('$p', this.formula)(_manager.root);
+            st._formula = new Function('$p', this.formula)(root);
           }
           else {
             if(this.async) {
               const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
-              _data._formula = (new AsyncFunction('obj,$p,attr', this.formula)).bind(this);
+              st._formula = (new AsyncFunction('obj,$p,attr', this.formula)).bind(this);
             }
             else {
-              _data._formula = (new Function('obj,$p,attr', this.formula)).bind(this);
+              st._formula = (new Function('obj,$p,attr', this.formula)).bind(this);
             }
           }
         }
         catch(err){
-          _data._formula = () => false;
-          _manager.root.utils.recordLog(err);
+          st._formula = () => false;
+          root.utils.recordLog(err);
         }
       }
-      return _data._formula(obj, _manager.root, attr);
+      return st._formula(obj, root, attr);
     }
 
   }

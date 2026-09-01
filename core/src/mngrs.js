@@ -8,7 +8,7 @@ import msg from './i18n.ru';
 import MetaEventEmitter from './meta/emitter';
 import {pascalCase} from '../lib/change-case';
 
-import {own, alias, string} from './meta/symbols';
+import {own, alias, string, state} from './meta/symbols';
 
 export class Iterator {
 
@@ -524,7 +524,7 @@ export class RefDataManager extends DataManager {
 			}
 			else if(obj.isNew() || force){
 			  if(obj.isNew() || force !== 'update_only') {
-          obj._data.loading = true;
+          obj[state].loading = true;
         }
         else if(force === 'update_only' && attr.timestamp) {
           if(attr.timestamp.user === (this.adapter.authorized || jobPrm.get('userName'))) {
@@ -983,7 +983,7 @@ export class RegisterManager extends DataManager {
         continue;
       }
       else if (force) {
-        obj._data.loading = true;
+        obj[state].loading = true;
         this.utils.mixin(obj, row);
       }
 

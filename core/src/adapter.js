@@ -62,6 +62,10 @@ export class DataAdapters extends OwnerObj {
 
   }
 
+  get user() {
+    return auth.user;
+  }
+
   logIn({provider = 'couchdb', username, password}) {
     return new Promise((resolve, reject) => {
       if(auth.authorized) {
@@ -78,7 +82,9 @@ export class DataAdapters extends OwnerObj {
         .then((res) => res.json())
         .then((res) => {
           clearTimeout(timer);
-          auth.user = this[own].cat.users.create(res, false, true);
+          const {cat, jobPrm} = this[own];
+          auth.user = cat.users.create(res, false, true);
+          jobPrm.set('userName', auth.user.id || auth.user.name);
           resolve(auth.user);
         })
         .catch((err) => {
@@ -94,7 +100,8 @@ export class DataAdapters extends OwnerObj {
   }
 
   /**
-   * Загружает данные, которые не зависят от отдела абонента
+   * @summary Загружает данные, которые не зависят от отдела абонента
+   * @desc и не требуют авторизации
    * @param {Object} attr
    * @return {Promise<never>|Promise<any>}
    */
