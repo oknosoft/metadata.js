@@ -839,6 +839,120 @@ export default function schemeSettingsClasses({classes, symbols, md, utils}, exc
       } : null;
     }
 
+    /**
+     * Формирует манго селектор
+     */
+    mangoSelector({columns, skip, limit, _owner}) {
+
+      function format(date, end) {
+        const {moment} = utils;
+        let d = moment(date);
+        if(end) {
+          return d.endOf('day').format(moment._masks.iso);
+        }
+        return d.startOf('day').format(moment._masks.iso);
+      }
+
+      const res = {
+        selector: {
+          $and: [
+            {class_name: {$eq: this.obj}}
+          ]
+        },
+        fields: ['_id', 'posted'],
+      };
+
+      for (const column of (columns || this.columns())) {
+        const fld = column.id || column.key;
+        if(fld && !res.fields.includes(fld)) {
+          res.fields.push(fld);
+        }
+      }
+
+      if(this.standard_period.empty()) {
+        this._search && res.selector.$and.push({search: {$regex: this._search}});
+      }
+      else {
+        res.selector.$and.push({date: {$gte: format(this.date_from)}});
+        res.selector.$and.push({date: {$lte: format(this.date_till, true)}});
+        res.selector.$and.push({search: this._search ? {$regex: this._search} : {$gt: null}});
+        res.use_index = ['mango', 'search'];
+      }
+
+      // пока сортируем только по дате
+      this.sorting.findRows({use: true, field: 'date'}, (row) => {
+        const direction = row.direction?.name || 'asc';
+        res.sort = [{class_name: direction}, {date: direction}];
+      });
+
+      if(skip) {
+        res.skip = skip;
+      }
+
+      if(limit) {
+        res.limit = limit;
+      }
+
+      if(_owner?.props) {
+        const {input_by_string, has_owners, hierarchical, group_hierarchy, fields} = this.child_meta();
+        if(hierarchical) {
+          const _meta = fields && fields[_owner.props._fld];
+          if((group_hierarchy && _owner.props._fld === 'parent') || (_meta && _meta.choice_groups_elm === 'grp')) {
+            res.selector.$and.push({is_folder: true});
+          }
+          else if(_meta && _meta.choice_groups_elm === 'elm') {
+            res.selector.$and.push({is_folder: false});
+          }
+        }
+      }
+
+      Object.defineProperty(res, '_mango', {value: true});
+
+      return res;
+    }
+
+    /**
+     * Дополняет селектор по отбору
+     * @param selector
+     */
+    appendSelection(selector) {
+      if(selector.selector) {
+        if(!selector.sort) {
+          selector.sort = [];
+        }
+        this.sorting.findRows({use: true}, ({field, direction}) => {
+          selector.sort.push({[field]: direction.valueOf() || 'asc'});
+        });
+        selector = selector.selector;
+      }
+      if(!selector.$and) {
+        selector.$and = [];
+      }
+      this.selection.findRows({use: true}, ({left_value, left_value_type, right_value, right_value_type, comparison_type}) => {
+        if(left_value_type === 'path'){
+          if(right_value_type === 'boolean') {
+            const val = Boolean(right_value);
+            selector.$and.push({[left_value]: comparison_type.is('ne') ? {$ne: val} : val});
+          }
+          else if(right_value_type === 'calculated') {
+            const val = $p.currentUser[right_value];
+            selector.$and.push({[left_value]: comparison_type.is('ne') ? {$ne: val} : val});
+          }
+          else if(right_value_type.includes('.')) {
+            if((comparison_type.is('filled') || comparison_type.is('nfilled'))){
+              selector.$and.push({[left_value]: {[comparison_type.name]: true}});
+            }
+            else {
+              selector.$and.push({[left_value]: {[`$${comparison_type.name}`]: right_value}});
+            }
+          }
+          else if(right_value_type === 'number' && (comparison_type.is('filled') || comparison_type.is('nfilled'))){
+            selector.$and.push({[left_value]: {[comparison_type.name]: 0}});
+          }
+        }
+      });
+    }
+
     get columns() {
       const {editors, formatters} = this._manager.root.ui;
       return this.fields
