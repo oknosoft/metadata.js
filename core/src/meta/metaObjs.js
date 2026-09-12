@@ -133,7 +133,9 @@ export class MetaObj extends OwnerObj {
         return res;
       case 'ref':
         res.synonym = 'Ссылка';
-        //res.type.types[0] = `${type[owner].name}.${type.name}`;
+        return res;
+      case 'uid':
+        res.synonym = 'Идентификатор';
         return res;
     }
 

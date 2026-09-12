@@ -13,6 +13,7 @@ import {typeDef} from './meta/typeDef';
 //import Aes from '../lib/aes';
 
 import {v7 as uuidv7} from 'uuid';
+import {snakeCase, pascalCase} from '../lib/change-case';
 
 import moment from 'dayjs';
 import 'dayjs/locale/ru';
@@ -269,6 +270,9 @@ class MetaUtils extends OwnerObj {
      * @final
      */
     this.b62 = b62;
+
+    this.snakeCase = snakeCase;
+    this.pascalCase = pascalCase;
 
     /**
      * @typedef UtilsIs

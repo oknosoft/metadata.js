@@ -378,7 +378,7 @@ export class BaseDataObj extends OwnerObj {
       const mfld = this[meta](fld);
       if(mfld || fld === '_attachments') {
         if(Array.isArray(raw[fld])) {
-          res[fld] = this[fld].toJSON();
+          res[fld] = this[fld]?.toJSON?.() || [];
         }
         else {
           if(!Meta.sysFields.includes(fld) &&
@@ -559,6 +559,10 @@ export class DataObj extends BaseDataObj {
     super(attr, manager, loading, direct);
 
     manager.push(this);
+
+    if(loading && this.isNew()) {
+      this[state].loading = false;
+    }
 
   }
 

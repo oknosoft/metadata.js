@@ -218,7 +218,7 @@ export class DataManager extends MetaEventEmitter {
     const {id} = this;
     if(typeof attr === 'string') {
       if(attr.length === 22) {
-        return id + ref;
+        return id + attr;
       }
       else if(attr.length === 24) {
         return attr;

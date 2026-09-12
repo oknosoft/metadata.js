@@ -408,16 +408,8 @@ export class TabularSection extends Array {
 	 * @return {Object}
 	 */
 	toJSON() {
-	  const {_owner, _obj, _name} = this;
-	  const {fields} = _owner[meta](_name);
-	  const _manager = {
-      [own]: this[mgr][own],
-      [meta](fld) {
-        return fields[fld];
-      }
-    };
-	  const {toJSON} = _owner.constructor.prototype;
-		return _obj.map(_obj => toJSON.call({_obj, _manager}));
+	  //const {toJSON} = _owner.constructor.prototype;
+		return this.map(row => row.toJSON());
 	}
 
 }

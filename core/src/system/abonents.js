@@ -161,37 +161,6 @@ export const meta = {
             }
           }
         },
-        ex_bases: {
-          "name": "ДополнительныеБазы",
-          "synonym": "Дополнительные базы",
-          "tooltip": "Шаблоны, логгер и т.д. - копируем в _security пользователей из ram",
-          "fields": {
-            "name": {
-              "synonym": "Наименование",
-              "multiline": false,
-              "tooltip": "",
-              "mandatory": true,
-              "type": {
-                "types": [
-                  "string"
-                ],
-                strLen: 25
-              }
-            },
-            "server": {
-              "synonym": "Сервер",
-              "multiline": false,
-              "tooltip": "",
-              choiceGrp: "elm",
-              "mandatory": true,
-              "type": {
-                "types": [
-                  "cat.servers"
-                ],
-              }
-            }
-          }
-        },
         extra_fields: {
           "name": "ДополнительныеРеквизиты",
           "synonym": "Дополнительные реквизиты",
@@ -405,6 +374,12 @@ export default function abonentsClasses({cat, classes, symbols}, exclude) {
     set area(v){this[set]('area',v)}
     get servers(){return this[get]('servers')}
     set servers(v){this[set]('servers',v)}
+    get http_apis(){return this[get]('http_apis')}
+    set http_apis(v){this[set]('http_apis',v)}
+    get extra_fields(){return this[get]('extra_fields')}
+    set extra_fields(v){this[set]('extra_fields',v)}
+    get acl_objs(){return this[get]('acl_objs')}
+    set acl_objs(v){this[set]('acl_objs',v)}
     get params(){return this[get]('params')}
     prmDefault(property) {
       const value = this.params[property.valueOf()];
