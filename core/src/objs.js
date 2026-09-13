@@ -410,6 +410,16 @@ export class BaseDataObj extends OwnerObj {
   }
 
   /**
+   * @summary Признак _Предпринималась попытка прочитать с сервера_
+   * @desc Возвращает _истина_, если при попытке чтения, сервер вернул 404
+   * Так же, может быть установлен вручную для созданного в текущем сеансе объекта
+   * @return {Boolean}
+   */
+  tryingLoad() {
+    return this[state]?.tryingLoad;
+  }
+
+  /**
    * @summary Принадлежность экземпляра к типу _name_
    * @param {String} [name]
    * @return {Boolean}
@@ -600,16 +610,24 @@ export class DataObj extends BaseDataObj {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
           resolve(curr.loading ? this.load(attr) : this);
-        }, 1000);
+        }, 200);
       });
     }
     else {
       curr.loading = true;
       return this[own].adapter.loadObj(this, attr)
         .then(() => {
-          curr.loading = false;
-          curr.modified = false;
-          return this.afterLoad();
+          return this._loaded().afterLoad();
+        })
+        .catch(err => {
+          if(err.status === 404) {
+            curr.loading = false;
+            curr.tryingLoad = true;
+            return this;
+          }
+          else {
+            throw err;
+          }
         });
     }
   }
@@ -1249,7 +1267,8 @@ export class DocObj extends DataObj {
    */
   get presentation() {
     const desc = this[meta]();
-    const {numberDoc, date, posted, _modified} = this;
+    const {numberDoc, date, posted, _modified, [mgr]: {utils}} = this;
+    const {moment} = utils;
     return numberDoc ?
       `${desc.obj_presentation || desc.synonym}  №${numberDoc} от ${moment(date).format(moment._masks.date_time)} (${posted ? '' : 'не '}проведен)${_modified ? ' *' : ''}`
       :
@@ -1267,6 +1286,9 @@ export class DocObj extends DataObj {
   set numberDoc(v) {
     this[notify]('numberDoc');
     this[set]('numberDoc', v);
+  }
+  set number_doc(v) {
+    this.numberDoc = v;
   }
 
   /**
@@ -1288,11 +1310,11 @@ export class DocObj extends DataObj {
    * @type Boolean
    */
   get posted() {
-    return this._obj.posted || false;
+    return Boolean(this._raw('posted'));
   }
   set posted(v) {
     this[notify]('posted');
-    this._obj.posted = this[own].utils.fix.boolean(v);
+    this[set]('posted', v);
   }
 
 }

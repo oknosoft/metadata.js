@@ -256,7 +256,7 @@ export const meta = {
                   "cat.clrs"
                 ],
                 strLen: 1024,
-                "date_part": "date_time",
+                datePart: "DateTime",
                 "digits": 15,
                 "fraction": 3
               }
