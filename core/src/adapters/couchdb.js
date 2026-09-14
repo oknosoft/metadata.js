@@ -1,5 +1,5 @@
-import {own} from '../meta/symbols';
-import {AbstractAdapter} from './abstract';
+import {own} from '../meta/symbols.js';
+import {AbstractAdapter} from './abstract.js';
 
 class CouchdbError extends TypeError {
   constructor(message, reason, status) {

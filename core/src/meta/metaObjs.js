@@ -1,6 +1,6 @@
 
-import {own, alias, get, set, string} from './symbols';
-import {enmFields} from '../system';
+import {own, alias, get, set, string} from './symbols.js';
+import {enmFields} from '../system/index.js';
 
 /**
  * Абстрактный класс со ссылкой на владельца

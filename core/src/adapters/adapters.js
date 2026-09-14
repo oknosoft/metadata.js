@@ -1,8 +1,8 @@
 
 
-import {OwnerObj} from '../meta/metaObjs';
-import {own} from '../meta/symbols';
-import {CouchdbAdapter} from './couchdb';
+import {OwnerObj} from '../meta/metaObjs.js';
+import {own} from '../meta/symbols.js';
+import {CouchdbAdapter} from './couchdb.js';
 
 const auth = {
 
@@ -79,24 +79,41 @@ export class DataAdapters extends OwnerObj {
       const timer = setTimeout(() => {
         reject(new Error('login timeout'));
       }, 10000);
-      this.fetch(`/auth/${provider}`)
-        .then((res) => res.json())
-        .then((res) => {
-          clearTimeout(timer);
-          const {cat, jobPrm} = this[own];
-          auth.user = cat.users.create(res, false, true);
-          jobPrm.set('userName', auth.user.id || auth.user.name);
-          Object.defineProperties(this, {
-            doc: {
-              value: new CouchdbAdapter(this, 'doc'),
-            },
+      const {cat, jobPrm} = this[own];
+
+      if(jobPrm.isNode) {
+        this.fetch(jobPrm.couchLocal + '/_session')
+          .then((res) => res.json())
+          .then((res) => {
+            clearTimeout(timer);
+            jobPrm.set('userName', username);
+            resolve(username);
+          })
+          .catch((err) => {
+            Object.assign(auth, {provider: '', username: '', password: '', user: null});
+            reject(err);
           });
-          resolve(auth.user);
-        })
-        .catch((err) => {
-          Object.assign(auth, {provider: '', username: '', password: '', user: null});
-          reject(err);
-        });
+      }
+      else {
+        this.fetch(jobPrm.isNode ? jobPrm.couchLocal + '/_session' : `/auth/${provider}`)
+          .then((res) => res.json())
+          .then((res) => {
+            clearTimeout(timer);
+
+            auth.user = cat.users.create(res, false, true);
+            jobPrm.set('userName', auth.user.id || auth.user.name);
+            Object.defineProperties(this, {
+              doc: {
+                value: new CouchdbAdapter(this, 'doc'),
+              },
+            });
+            resolve(auth.user);
+          })
+          .catch((err) => {
+            Object.assign(auth, {provider: '', username: '', password: '', user: null});
+            reject(err);
+          });
+      }
     });
 
   }

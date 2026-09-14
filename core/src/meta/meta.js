@@ -1,10 +1,10 @@
 
-import MetaEventEmitter from './emitter';
-import {DataManager} from '../mngrs';
-import mngrcollections from '../mngrcollections';
-import sys, {sysFields, sysClasses} from '../system';
-import {own} from './symbols';
-import {MetaObj, MetaField, MetaFields, MetaTabulars, OwnerObj} from './metaObjs';
+import MetaEventEmitter from './emitter.js';
+import {DataManager} from '../mngrs.js';
+import mngrcollections from '../mngrcollections.js';
+import sys, {sysFields, sysClasses} from '../system/index.js';
+import {own} from './symbols.js';
+import {MetaObj, MetaField, MetaFields, MetaTabulars, OwnerObj} from './metaObjs.js';
 
 
 /**

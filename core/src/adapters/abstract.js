@@ -1,5 +1,5 @@
 
-import MetaEventEmitter from '../meta/emitter'
+import MetaEventEmitter from '../meta/emitter.js'
 
 export class AbstractAdapter extends MetaEventEmitter {
 

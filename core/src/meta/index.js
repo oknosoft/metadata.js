@@ -1,4 +1,4 @@
 
-import Meta from './meta';
+import Meta from './meta.js';
 
 export default Meta;

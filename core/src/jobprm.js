@@ -1,5 +1,5 @@
-import {OwnerObj} from './meta/metaObjs';
-import {own} from './meta/symbols';
+import {OwnerObj} from './meta/metaObjs.js';
+import {own} from './meta/symbols.js';
 
 /**
  * @summary Параметры работы программы
@@ -83,8 +83,8 @@ export class JobPrm extends OwnerObj {
     if(typeof localStorage === 'undefined') {
       if(!this.__ls) {
         this.__ls = {
-          setItem(name, value) {},
-          getItem(name) {}
+          setItem(name, value) {this[name] = value;},
+          getItem(name) {return this[name];}
         };
       }
       return this.__ls;

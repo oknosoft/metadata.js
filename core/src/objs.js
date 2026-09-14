@@ -3,9 +3,9 @@
  *
  */
 
-import {own, get, set, hash, notify, meta, struct, state, mgr, string} from './meta/symbols';
-import {OwnerObj, MetaField, MetaTabular} from './meta/metaObjs';
-import {TabularSection} from './tabulars';
+import {own, get, set, hash, notify, meta, struct, state, mgr, string} from './meta/symbols.js';
+import {OwnerObj, MetaField, MetaTabular} from './meta/metaObjs.js';
+import {TabularSection} from './tabulars.js';
 
 class InnerData {
   constructor(owner, loading) {

@@ -3,7 +3,7 @@
  *
  */
 
-import {own, mgr, meta, state, alias} from './meta/symbols';
+import {own, mgr, meta, state, alias} from './meta/symbols.js';
 
 
 /**

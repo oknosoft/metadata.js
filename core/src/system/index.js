@@ -1,16 +1,16 @@
 
-import {meta as log} from './log';
-import schemeSettingsClasses, {meta as schemeSettings} from './schemeSettings';
-import {meta as destinations} from './destinations';
-import {meta as values} from './propertyValues';
-import formulasClasses, {meta as formulas} from './formulas';
-import {meta as servers} from './servers';
-import propertiesClasses, {meta as properties} from './properties';
-import predefinedElmntsClasses, {meta as predefinedElmnts} from './predefinedElmnts';
-import accountsClasses, {meta as accounts} from './accounts';
-import usersClasses, {meta as users} from './users';
-import abonentsClasses, {meta as abonents} from './abonents';
-import branchesClasses, {meta as branches} from './branches';
+import {meta as log} from './log.js';
+import schemeSettingsClasses, {meta as schemeSettings} from './schemeSettings.js';
+import {meta as destinations} from './destinations.js';
+import {meta as values} from './propertyValues.js';
+import formulasClasses, {meta as formulas} from './formulas.js';
+import {meta as servers} from './servers.js';
+import propertiesClasses, {meta as properties} from './properties.js';
+import predefinedElmntsClasses, {meta as predefinedElmnts} from './predefinedElmnts.js';
+import accountsClasses, {meta as accounts} from './accounts.js';
+import usersClasses, {meta as users} from './users.js';
+import abonentsClasses, {meta as abonents} from './abonents.js';
+import branchesClasses, {meta as branches} from './branches.js';
 
 const meta = [
   log,

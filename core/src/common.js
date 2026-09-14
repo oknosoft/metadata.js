@@ -1,10 +1,10 @@
 
-import MetaUtils from './utils';
-import {JobPrm} from './jobprm';
-import AppMetadata from './meta';
-import msg from './i18n.ru';
-import classes from './classes';
-import * as symbols from './meta/symbols';
+import MetaUtils from './utils.js';
+import {JobPrm} from './jobprm.js';
+import AppMetadata from './meta/meta.js';
+import msg from './i18n.ru.js';
+import classes from './classes.js';
+import * as symbols from './meta/symbols.js';
 import {DataAdapters} from './adapters/adapters.js';
 
 

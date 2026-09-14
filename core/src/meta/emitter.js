@@ -1,6 +1,6 @@
 
 
-import {own} from './symbols';
+import {own} from './symbols.js';
 
 /**
  * MetaEventEmitter будет прототипом менеджеров данных

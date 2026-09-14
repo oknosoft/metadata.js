@@ -6,17 +6,17 @@
  * @final
  */
 
-import {OwnerObj} from './meta/metaObjs';
-import {own, string} from './meta/symbols';
-import {typeDef} from './meta/typeDef';
+import {OwnerObj} from './meta/metaObjs.js';
+import {own, string} from './meta/symbols.js';
+import {typeDef} from './meta/typeDef.js';
 
 //import Aes from '../lib/aes';
 
 import {v7 as uuidv7} from 'uuid';
-import {snakeCase, pascalCase} from '../lib/change-case';
+import {snakeCase, pascalCase} from '../lib/change-case.js';
 
 import moment from 'dayjs';
-import 'dayjs/locale/ru';
+import 'dayjs/locale/ru.js';
 moment.locale('ru');
 moment._masks = {
 	date: 'DD.MM.YY',
@@ -28,7 +28,7 @@ if(typeof global != 'undefined'){
   global.moment = moment;
 }
 
-import {b62} from './b62';
+import {b62} from './b62.js';
 
 const ctnames = '$eq,between,$between,$gte,gte,$gt,gt,$lte,lte,$lt,lt,ninh,inh,nin,$nin,in,$in,not,ne,$ne,nlk,lke,like,or,$or,$and'.split(',');
 

@@ -1,5 +1,5 @@
-import {own, string} from './symbols';
-import {camelCase, pascalCase} from '../../lib/change-case';
+import {own, string} from './symbols.js';
+import {camelCase, pascalCase} from '../../lib/change-case.js';
 
 export function typeDef(utils) {
 
