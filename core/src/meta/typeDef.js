@@ -25,7 +25,7 @@ export function typeDef(utils) {
      * @type {Boolean}
      */
     get isRef() {
-      return this.types.some(type => type.includes('.'));
+      return this.types?.some(type => type.includes('.'));
     }
 
     /**
@@ -33,7 +33,7 @@ export function typeDef(utils) {
      * @type {Boolean}
      */
     get isJson() {
-      return this.types[0] === 'json';
+      return this.types?.[0] === 'json';
     }
 
     /**
@@ -41,7 +41,7 @@ export function typeDef(utils) {
      * @type {Boolean}
      */
     get isTabular() {
-      return this.types.includes('tabular');
+      return this.types?.includes('tabular');
     }
 
     /**
@@ -49,7 +49,7 @@ export function typeDef(utils) {
      * @type {Boolean}
      */
     get isStruct() {
-      return this.types.includes('struct');
+      return this.types?.includes('struct');
     }
 
     /**
@@ -57,7 +57,7 @@ export function typeDef(utils) {
      * @type {Boolean}
      */
     get isComposite() {
-      return this.types.length > 1;
+      return this.types?.length > 1;
     }
 
     /**

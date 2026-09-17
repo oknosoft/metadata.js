@@ -205,7 +205,7 @@ class MetaUtils extends OwnerObj {
      */
 
     /**
-     * Mетоды создания и чтения сжатых данных
+     * Методы создания и чтения сжатых данных
      * @type MetaDeflate
      * @final
      */
@@ -1083,7 +1083,7 @@ class MetaUtils extends OwnerObj {
 
   /**
    * Подмешивает в объект свойства с иерархией объекта patch
-   * В отличии от `mixin`, не замещает, а дополняет одноименные свойства
+   * В отличие от `mixin`, не замещает, а дополняет одноименные свойства
    *
    * @param {Object} obj
    * @param {Object} patch

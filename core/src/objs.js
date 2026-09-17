@@ -85,11 +85,6 @@ export class BaseDataObj extends OwnerObj {
         this.#obj[name] = new TabularSection(this, name, this.#obj[name]);
       }
     }
-    // TODO: заменить на метод класса MetaObj
-    if(fields?.type && this.#obj.type) {
-      this.#obj.type = new manager.root.classes.TypeDef(this.#obj.type);
-    }
-
   }
 
   /**
@@ -297,10 +292,10 @@ export class BaseDataObj extends OwnerObj {
     else if(mf.digits) {
       obj[f] = utils.fix.number(v, !mf.hasOwnProperty('str_len'));
     }
-    else if(mf.types[0] == 'boolean') {
+    else if(mf.types?.[0] == 'boolean') {
       obj[f] = utils.fix.boolean(v);
     }
-    else if(mf.types[0] == 'json') {
+    else if(mf.types?.[0] == 'json') {
       if(v && typeof v === string) {
         try {
           v = JSON.parse(v);
@@ -1320,6 +1315,18 @@ export class DocObj extends DataObj {
 }
 
 export class CchObj extends CatObj {
+  constructor(attr, manager, loading, direct) {
+    if(attr) {
+      const {type, ...other} = attr;
+      attr = {
+        type: new manager.root.classes.TypeDef(type),
+        ...other,
+      }
+    }
+    super(attr, manager, loading, direct);
+  }
+
+  //TODO: заменить на переопределение get type
   [get](f) {
     if(f === 'type') {
       const res = this._raw(f);
