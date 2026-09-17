@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.40-beta.2, built:2026-09-01
+ metadata-core v2.0.40-beta.2, built:2026-09-15
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -1109,7 +1109,9 @@ class DataObj extends BaseDataObj {
       });
     }
     else {
-      _data._loading = true;
+      if(!attr?.emit) {
+        _data._loading = true;
+      }
       return this._manager.adapter.load_obj(this, attr)
         .then(() => {
           _data._loading = false;

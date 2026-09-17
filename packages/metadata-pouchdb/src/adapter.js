@@ -969,7 +969,7 @@ function adapter({AbstracrAdapter}) {
 
       // нас могли попросить прочитать объект не из родной базы менеджера, а из любой другой
       const {_manager} = tObj;
-      const db = (attr && attr.db) || this.db(_manager);
+      const db = attr?.db || this.db(_manager);
 
       if(!db) {
         return Promise.resolve(tObj);
@@ -999,7 +999,9 @@ function adapter({AbstracrAdapter}) {
           return queue ? queue.then(() => raw) : raw;
         })
         .then((res) => {
-          tObj._data._loading = true;
+          if(!attr?.emit) {
+            tObj._data._loading = true;
+          }
           tObj._mixin(res);
           tObj._obj._rev = res._rev;
         })

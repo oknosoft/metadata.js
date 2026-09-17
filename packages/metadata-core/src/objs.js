@@ -777,7 +777,9 @@ export class DataObj extends BaseDataObj {
       });
     }
     else {
-      _data._loading = true;
+      if(!attr?.emit) {
+        _data._loading = true;
+      }
       return this._manager.adapter.load_obj(this, attr)
         .then(() => {
           _data._loading = false;
