@@ -223,7 +223,7 @@ class MetaUtils extends OwnerObj {
           const fileReader = new FileReader();
           fileReader.onload = function (r) {
             const dataUrl = fileReader.result;
-            const base64 = dataUrl.substr(dataUrl.indexOf(',') + 1);
+            const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1);
             resolve(base64);
           };
           const blob = new Blob([buffer], {type: 'application/octet-binary'});
@@ -233,33 +233,39 @@ class MetaUtils extends OwnerObj {
 
       /**
        * Сжимает строку в Uint8Array
-       * @param string {String}
-       * @return {Promise<Uint8Array>}
+       * @param {String} string
+       * @param {String} [format] - gzip|deflate
+       * @param {String} [as] - string|buffer|array
+       * @return {Promise<String|Buffer|Uint8Array>}
        */
-      compress(string) {
+      compress(string, format = 'gzip', as = 'string') {
         const byteArray = new TextEncoder().encode(string);
-        const cs = new CompressionStream('deflate');
+        const cs = new CompressionStream(format);
         const writer = cs.writable.getWriter();
         writer.write(byteArray);
         writer.close();
         return new Response(cs.readable)
           .arrayBuffer()
-          .then((buffer) => new Uint8Array(buffer));
+          .then((buffer) => as === 'string' ?
+            this.bufferToBase64Async(buffer) : (as === 'buffer' ? buffer : new Uint8Array(buffer)));
       },
 
       /**
        * Извлекает строку из сжатого Uint8Array
-       * @param byteArray {Uint8Array}
-       * @return {Promise<string>}
+       * @param {Uint8Array} byteArray
+       * @param {String} [format] - gzip|deflate
+       * @param {String} [as] - string|buffer|array
+       * @return {Promise<String|Buffer|Uint8Array>}
        */
-      decompress(byteArray) {
-        const cs = new DecompressionStream('deflate');
+      decompress(byteArray, format = 'gzip', as = 'string') {
+        const cs = new DecompressionStream(format);
         const writer = cs.writable.getWriter();
         writer.write(byteArray);
         writer.close();
         return new Response(cs.readable)
           .arrayBuffer()
-          .then((arrayBuffer) => new TextDecoder().decode(arrayBuffer));
+          .then((arrayBuffer) => as === 'string' ?
+            new TextDecoder().decode(arrayBuffer) : (as === 'buffer' ? buffer : new Uint8Array(buffer)));
       }
     };
 

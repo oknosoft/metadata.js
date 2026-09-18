@@ -1,4 +1,4 @@
-import {own} from '../meta/symbols.js';
+import {own, meta} from '../meta/symbols.js';
 import {AbstractAdapter} from './abstract.js';
 
 class CouchdbError extends TypeError {
@@ -35,6 +35,24 @@ export class CouchdbAdapter extends AbstractAdapter {
           const raw = await res.json();
           throw new CouchdbError(raw.error, raw.reason, res.status);
         }
+      })
+      .then(raw => {
+        let queue;
+        for(const ts in obj[meta]().tabulars) {
+          if(typeof raw[ts] === 'string') {
+            const {deflate} = utils;
+            const decompress = () => deflate.base64ToBufferAsync(raw[ts])
+              .then((uint8Array) => deflate.decompress(uint8Array))
+              .then(string => raw[ts] = JSON.parse(string));
+            if(queue) {
+              queue = queue.then(decompress);
+            }
+            else {
+              queue = decompress();
+            }
+          }
+        }
+        return queue ? queue.then(() => raw) : raw;
       })
       .then(raw => {
         utils.mixin(obj, raw, null, ['_id', 'class_name', 'ref', 'uid', 'timestamp']);
