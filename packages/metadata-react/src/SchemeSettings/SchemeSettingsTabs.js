@@ -20,7 +20,7 @@ import Tab from '@material-ui/core/Tab';
 
 import TabularSection from '../TabularSection';
 import SchemeSettingsSelect from './SchemeSettingsSelect';
-import DataField, {FieldSelect} from '../DataField';
+import DataField from '../DataField';
 import Divider from '@material-ui/core/Divider';
 
 

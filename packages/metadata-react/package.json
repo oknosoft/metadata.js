@@ -12,6 +12,7 @@
     "@material-ui/core": "^4.12",
     "@material-ui/icons": "^4.11",
     "@material-ui/lab": "^4.0.0-alpha.61",
+    "@material-ui/styles": "^4.11",
     "classnames": "^2.5",
     "font-awesome": "^4.7.0",
     "hammerjs": "^2.0.8",

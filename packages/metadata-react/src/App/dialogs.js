@@ -52,7 +52,8 @@ export default {
                 timeout = 30000,
                 type,
                 list,
-                initialValue,
+                initialValue, 
+                render,
                 ...other
   }) {
 
@@ -62,14 +63,16 @@ export default {
     if(this._confirm) {
       return Promise.reject('already open');
     }
-    if(!type && !list) {
-      return Promise.reject('type or list must be defined');
-    }
-    if(list && list.some((v) => {
-      const key = v.value || v.ref || v;
-      return !key || typeof key !== 'string';
-    })) {
-      return Promise.reject('list keys must be defined and has a string type');
+    if(!render) {
+      if(!type && !list) {
+        return Promise.reject('type or list must be defined');
+      }
+      if(list && list.some((v) => {
+        const key = v.value || v.ref || v;
+        return !key || typeof key !== 'string';
+      })) {
+        return Promise.reject('list keys must be defined and has a string type');
+      }
     }
 
     return new Promise((resolve, reject) => {
@@ -110,7 +113,11 @@ export default {
         }
       }
 
-      if(list) {
+      if(render) {
+        value = null;
+        iface_state.value.children = render;
+      }
+      else if(list) {
         if (type === "checkbox") {
           value = list;
           iface_state.value.children = <InputCheckbox list={list} />;
