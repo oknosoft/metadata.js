@@ -151,7 +151,7 @@ export default class MetaEventEmitter extends EventEmitter{
     return listeners.length ? 
       listeners.reduce(
         (acc, curr) => acc.then(curr.bind(this, ...args)), Promise.resolve())
-        .then(() => args[0]): Promise.resolve(args[0]);
+        .then((res) => res || args[0]): Promise.resolve(args[0]);
   }
 
   /**

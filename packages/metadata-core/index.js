@@ -1,5 +1,5 @@
 /*!
- metadata-core v2.0.40-beta.2, built:2026-09-15
+ metadata-core v2.0.40-beta.2, built:2026-09-22
  © 2014-2024 Evgeniy Malyarov and the Oknosoft team http://www.oknosoft.ru
  metadata.js may be freely distributed under the MIT
  To obtain commercial license and technical support, contact info@oknosoft.ru
@@ -855,6 +855,19 @@ class BaseDataObj {
       }
     }
     return utils.crc32(str);
+  }
+  set_async(f, v) {
+    return this._manager.emit_promise('set_async', this, f, v)
+      .then(transformed => {
+        if(Array.isArray(transformed)) {
+          for(const [f, v] of transformed) {
+            this._setter(f, v);
+          }
+        }
+        else {
+          this._setter(f, v);
+        }
+      });
   }
   valueOf() {
     return this.ref;
@@ -1867,7 +1880,7 @@ class MetaEventEmitter extends EventEmitter{
     return listeners.length ?
       listeners.reduce(
         (acc, curr) => acc.then(curr.bind(this, ...args)), Promise.resolve())
-        .then(() => args[0]): Promise.resolve(args[0]);
+        .then((res) => res || args[0]): Promise.resolve(args[0]);
   }
   emit_add_fields(obj, fields){
     const {_async} = this;

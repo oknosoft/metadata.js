@@ -268,8 +268,8 @@ export class BaseDataObj {
 
   /**
    * Устанваливает значение, если оно отличается от предыдущего
-   * @param f
-   * @param v
+   * @param {String} f - имя поля
+   * @param {*} v - значение, которое необходимо присвоить
    * @private
    */
   _setter(f, v) {
@@ -328,6 +328,42 @@ export class BaseDataObj {
     }
 
     return utils.crc32(str);
+  }
+
+  /**
+   * @summary Метод для асинхронной установки значений полей объекта
+   * @desc Облегчает переопределение в коде или подписке
+   * @param {String} f - имя поля
+   * @param {*} v - значение, которое необходимо присвоить
+   * 
+   * @example
+   * // пример обработчика в подписке
+   * manager.on('set_async', async (obj, f, v) => {
+   *   if(f === 'coordinates') {
+   *     // при установке координат, дополнительные асинхронные вычисления
+   *     const res = await asyncCall(...attr);
+   *     // если хотим записать в объект изменённое значение, вернём массив пар [поле, значение]
+   *     // можем установить N полей в ответ на единственное изменение или ничего не менять, вернув пустой массив
+   *     return [['coordinates', 'другое значение'], ['shipping_address', 'изменённый адрес']]; - вместе с координатами, меняем адрес
+   *     // или
+   *     return [[f, f]]; - будет записано то, что ожидал автор изменений
+   *     // или
+   *     return []; - ничего записано в obj не будет
+   *   }
+   * });
+   */
+  set_async(f, v) {
+    return this._manager.emit_promise('set_async', this, f, v)
+      .then(transformed => {
+        if(Array.isArray(transformed)) {
+          for(const [f, v] of transformed) {
+            this._setter(f, v);
+          }
+        }
+        else {
+          this._setter(f, v);
+        }
+      });
   }
 
   /**
