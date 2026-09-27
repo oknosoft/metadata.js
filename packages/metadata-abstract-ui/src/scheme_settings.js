@@ -893,27 +893,27 @@ export default function scheme_settings() {
      * помещяет результат в collection._rows
      * @param collection {TabularSection}
      */
-    group_by(collection) {
+    group_by(collection, attr) {
 
       // grouping -  основные измерения
       const grouping = this.dims();
 
       // dims - конкатенация явных полей группировки с полями детальных записей
-      const dims = this.dims();
+      const dims = attr?.dims || this.dims();
 
       // ress - активные ресурсы - те, что есть в выводимых полях
-      const ress = [];
+      const ress = attr?.ress || [];
       const resources = this.resources._obj.map(v => v.field);
       const {_manager} = collection._owner;
       const meta = _manager.metadata(collection._name || 'data').fields;
       const _columns = this.rx_columns({_obj: this, _mgr: _manager, mode: 'ts', fields: meta});
       _columns.forEach(({key}) => {
-        if(dims.indexOf(key) == -1 && resources.indexOf(key) != -1) {
+        if(!dims.includes(key) && resources.includes(key)) {
           ress.push(key);
         }
         else {
           // для базовой группировки, подмешиваем в измерения всё, что не ресурс
-          dims.indexOf(key) == -1 && dims.push(key);
+          !dims.includes(key) && dims.push(key);
         }
       });
 
