@@ -180,6 +180,16 @@ export class BaseDataObj extends OwnerObj {
   [get](f) {
     const res = this.#obj[f];
     let {choiceType, type} = this[meta](f);
+    if(type.isRef && typeof res === string) {
+      if(res[0] === '\x98') {
+        return res.substring(1);
+      }
+      const {md} = this[mgr].root;
+      const vm = md.mgr(res.substring(0, 2));
+      if(vm) {
+        return vm.get(res);
+      }
+    }
     if(choiceType?.path) {
       const prm = this[choiceType.path.length === 2 ? choiceType.path[1] : choiceType.path[0]];
       if(prm instanceof this[own].root.classes.TypeDef) {
@@ -255,7 +265,7 @@ export class BaseDataObj extends OwnerObj {
 
         }
         else {
-          let mgr = v?.[own] || this[own].value_mgr(obj, f, mf, false, v).mgr;
+          let mgr = v?.[own];
           if(mgr) {
             if(mgr.isEnum) {
               if(typeof v === string) {

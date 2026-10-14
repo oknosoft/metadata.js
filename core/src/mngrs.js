@@ -449,13 +449,6 @@ export class DataManager extends MetaEventEmitter {
     return new Iterator(this.#alatable);
   }
 
-  /**
-   * @summary Заглушка для совместимости с v2.1
-   */
-  value_mgr(obj, fld, type) {
-    return this.root.md.get(type.types.find(v => v.includes('.')));
-  }
-
 }
 
 /**
