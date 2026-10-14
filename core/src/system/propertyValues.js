@@ -75,6 +75,7 @@ export const meta = {
       tabulars: {},
       cachable: "ram",
       id: "Vl",
+      joint: "Pr",
       aliases: ['property_values'],
     },
     propertyValuesHierarchy: {
@@ -150,7 +151,8 @@ export const meta = {
       },
       tabulars: {},
       cachable: "ram",
-      id: "vh",
+      id: "Vh",
+      joint: "Pr",
       aliases: ['property_values_hierarchy'],
     },
   }

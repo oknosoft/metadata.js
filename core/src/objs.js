@@ -365,25 +365,36 @@ export class BaseDataObj extends OwnerObj {
    * @desc Для сериализации возвращаем внутренний _obj
    */
   toJSON() {
-    const res = {};
-    const {utils: {blank}, classes: {Meta}} = this[own].root;
-    const raw = this.#obj;
 
-    for(const fld in raw) {
-      const mfld = this[meta](fld);
-      if(mfld || fld === '_attachments') {
-        if(Array.isArray(raw[fld])) {
-          res[fld] = this[fld]?.toJSON?.() || [];
+    const {utils: {blank, b62}, classes: {Meta}} = this[own].root;
+    const {ref, timestamp, uid, captured, editor, _attachments, ...raw} = this.#obj;
+    const {fields, tabulars} = this[meta]();
+    const res = {ref};
+    //Meta.sysFields.includes(fld)
+    for(const fld in fields) {
+      const v = raw[fld];
+      const {type} = fields[fld];
+      if(v !== undefined) {
+        if(type.isSingleType && (!v || v === blank.guid || v.substring?.(2) === b62.nil)) {
+          continue;
         }
-        else {
-          if(!Meta.sysFields.includes(fld) &&
-            (raw[fld] === blank.guid || (raw[fld] === '' && mfld.type.isSingleType && mfld.type.types[0] === string))) {
-            continue;
-          }
-          res[fld] = raw[fld];
-        }
+        res[fld] = v;
       }
     }
+    for(const fld in tabulars) {
+      const v = raw[fld];
+      const mt = tabulars[fld];
+      if(!mt.virtual && Array.isArray(v)) {
+        res[fld] = v.toJSON();
+      }
+    }
+    if(timestamp) {
+      res.timestamp = timestamp;
+    }
+    if(_attachments) {
+      res._attachments = _attachments;
+    }
+
     return res;
   }
 
@@ -501,7 +512,7 @@ export class BaseDataObj extends OwnerObj {
    *
    * @event AFTER_LOAD
    */
-  async afterLoad(raw) {
+  async afterLoad() {
     return this;
   }
 
@@ -1673,6 +1684,7 @@ export class ExtraFieldsRow extends TabularSectionRow {
   get txt_row(){return this[get]('txt_row')}
   set txt_row(v){this[set]('txt_row',v)}
 }
+
 
 
 

@@ -41,15 +41,15 @@ export class OwnerObj {
  * @summary Описание метаданных объекта
  * @desc Не путать с виртуальным справочником CatMetaObjs
  * @param {Meta} owner - Корень метаданных
- * @param {String} alias - Имя коллекции
+ * @param {String} name - Имя коллекции
  * @param {Object} raw - Сырое описание метаданных
  * @extends OwnerObj
  */
 export class MetaObj extends OwnerObj {
 
-  constructor(owner, alias, raw) {
+  constructor(owner, name, raw) {
 
-    super(owner, alias);
+    super(owner, name);
 
     if(Array.isArray(raw)) {
       this.values = [];
@@ -68,9 +68,55 @@ export class MetaObj extends OwnerObj {
     }
     else {
       let {fields, tabulars, tabular_sections, schemas, ...other} = raw;
+      const {codeLength, hierarchical, mainPresentation} = other;
       if(tabular_sections) {
         tabulars = tabular_sections;
       }
+      switch (this[own][alias]) {
+        case 'doc':
+          fields.posted = {
+            synonym: 'Проведен',
+            type: {types: ['boolean']},
+          };
+          fields.date = {
+            synonym: 'Дата',
+            tooltip: 'Дата документа',
+            mandatory: true,
+            type: {types: ['date'], datePart: 'dateTime'},
+          };
+          fields.number_doc = {
+            synonym: 'Номер',
+            tooltip: 'Номер документа',
+            mandatory: true,
+            type: {types: [string], strLen: 11},
+          };
+
+        case 'cat':
+        case 'cch':
+          const pre = {
+            name: {
+              synonym: 'Наименование',
+              mandatory: other.mainPresentation === 'name',
+              type: {types: [string]},
+            }
+          }
+          if(codeLength) {
+            pre.id = {
+              synonym: 'Код',
+              mandatory: true,
+              type: {types: [string], strLen: codeLength},
+            };
+          }
+          if(hierarchical) {
+            pre.is_folder = {
+              synonym: 'Это группа',
+              type: {types: ['boolean']},
+            };
+          }
+          fields = {...pre, ...fields};
+          break;
+      }
+
       this.fields = new MetaFields(this, fields);
       this.schemas = new MetaSchemas(this, schemas);
       this.tabulars = new MetaTabulars(this, tabulars);
@@ -153,6 +199,7 @@ export class MetaObj extends OwnerObj {
             res.type.types[0] = 'date';
             return res;
           case 'numberDoc':
+          case 'number_doc':
             res.synonym = 'Номер';
             res.tooltip = 'Номер документа';
             res.type.strLen = 11;
@@ -162,6 +209,7 @@ export class MetaObj extends OwnerObj {
       case 'cch':
         switch (field) {
           case 'isFolder':
+          case 'is_folder':
             res.synonym = 'Это группа';
             res.type.types[0] = 'boolean';
             return res;
@@ -171,7 +219,7 @@ export class MetaObj extends OwnerObj {
             return res;
           case 'name':
             res.synonym = 'Наименование';
-            res.mandatory = this.main_presentation_name;
+            res.mandatory = this.mainPresentation === 'name';
             return res;
           case 'predefinedName':
             res.synonym = 'Имя предопределенных данных';

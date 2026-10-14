@@ -56,7 +56,7 @@ export const enmFields = {
   },
 };
 
-export const sysFields = ['zone','id','numberDoc','date','parent','owner'];
+export const sysFields = ['zone','id','numberDoc','number_doc','date','parent','owner'];
 
 export const sysObjs = [];
 export const sysClasses = [

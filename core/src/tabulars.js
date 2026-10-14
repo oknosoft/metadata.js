@@ -35,10 +35,13 @@ export class TabularSection extends Array {
       this.load(raw);
     }
 	}
+  
+  get root() {
+    return this.#meta.root;
+  }
 
   toString() {
-	  const {root} = this[mgr];
-    return `${root.msg.tabular} ${this.#meta.className}`;
+    return `${this.root.msg.tabular} ${this.#meta.className}`;
   }
 
   get [own]() {
