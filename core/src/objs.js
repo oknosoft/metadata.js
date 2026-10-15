@@ -1661,3 +1661,4 @@ export class ExtraFieldsRow extends TabularSectionRow {
   }
   get txt_row(){return this[get]('txt_row')}
   set txt_row(v){this[set]('txt_row',v)}
+}
