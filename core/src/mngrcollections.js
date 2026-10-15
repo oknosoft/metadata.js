@@ -1,7 +1,7 @@
 import {
   EnumManager, CatManager, DocManager, InfoRegManager, AccumRegManager,
   DataProcessorsManager, ChartOfCharacteristicManager} from './mngrs.js';
-import {CatObj, DocObj, DataProcessorObj, RegisterRow} from './objs.js';
+import {CatObj, CchObj, DocObj, DataProcessorObj, RegisterRow} from './objs.js';
 import {own, alias} from './meta/symbols.js';
 import {OwnerObj} from './meta/metaObjs.js';
 
@@ -135,7 +135,7 @@ class Reports extends ManagersCollection {
  */
 class ChartsOfCharacteristics extends ManagersCollection {
   constructor(owner) {
-    super(owner, 'cch', ChartOfCharacteristicManager, CatObj, 'chartscharacteristics');
+    super(owner, 'cch', ChartOfCharacteristicManager, CchObj, 'chartscharacteristics');
   }
 }
 

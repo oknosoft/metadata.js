@@ -179,27 +179,17 @@ export class BaseDataObj extends OwnerObj {
 
   [get](f) {
     const res = this.#obj[f];
-    let {choiceType, type} = this[meta](f);
-    if(type.isRef && typeof res === string) {
+    let {type} = this[meta](f);
+    if(type.isRef && res && typeof res === string) {
       if(res[0] === '\x98') {
         return res.substring(1);
       }
-      const {md} = this[mgr].root;
-      const vm = md.mgr(res.substring(0, 2));
+      const vm = type.mgr(res.substring(0, 2));
       if(vm) {
         return vm.get(res);
       }
     }
-    if(choiceType?.path) {
-      const prm = this[choiceType.path.length === 2 ? choiceType.path[1] : choiceType.path[0]];
-      if(prm instanceof this[own].root.classes.TypeDef) {
-        type = prm;
-      }
-      else if(prm?.type instanceof this[own].root.classes.TypeDef) {
-        type = prm.type;
-      }
-    }
-    return type.fetchType(res, this.#obj, f);
+    return type.fetchType(res);
   }
 
   [notify](f) {
@@ -249,7 +239,7 @@ export class BaseDataObj extends OwnerObj {
     }
     else if(mf.isRef) {
 
-      if(mf.digits && typeof v === 'number' || mf.hasOwnProperty('str_len') && typeof v === string && !utils.is.guid(v)) {
+      if(mf.digits && typeof v === 'number' || mf.hasOwnProperty('strLen') && typeof v === string && !utils.is.guid(v)) {
         obj[f] = v;
       }
       else if(typeof v === 'boolean' && mf.types.indexOf('boolean') != -1) {
@@ -297,10 +287,10 @@ export class BaseDataObj extends OwnerObj {
       }
     }
     else if(mf.datePart) {
-      obj[f] = utils.fix.date(v, !mf.hasOwnProperty('str_len'));
+      obj[f] = utils.fix.date(v, !mf.hasOwnProperty('strLen'));
     }
     else if(mf.digits) {
-      obj[f] = utils.fix.number(v, !mf.hasOwnProperty('str_len'));
+      obj[f] = utils.fix.number(v, !mf.hasOwnProperty('strLen'));
     }
     else if(mf.types?.[0] == 'boolean') {
       obj[f] = utils.fix.boolean(v);
@@ -394,7 +384,7 @@ export class BaseDataObj extends OwnerObj {
     for(const fld in tabulars) {
       const v = raw[fld];
       const mt = tabulars[fld];
-      if(!mt.virtual && Array.isArray(v)) {
+      if(!mt.virtual && Array.isArray(v) && v.length) {
         res[fld] = v.toJSON();
       }
     }
@@ -1338,31 +1328,9 @@ export class DocObj extends DataObj {
 export class CchObj extends CatObj {
   constructor(attr, manager, loading, direct) {
     if(attr) {
-      const {type, ...other} = attr;
-      attr = {
-        type: new manager.root.classes.TypeDef(type),
-        ...other,
-      }
+      attr.type = new manager.root.classes.TypeDef(attr.type || {});
     }
     super(attr, manager, loading, direct);
-  }
-
-  //TODO: заменить на переопределение get type
-  [get](f) {
-    if(f === 'type') {
-      const res = this._raw(f);
-      let {type} = this[meta](f);
-      if(res) {
-        const {TypeDef} = this[own].root.classes;
-        if(res instanceof TypeDef) {
-          return res;
-        }
-      }
-      return type;
-    }
-    else {
-      return super[get](f);
-    }
   }
 }
 
@@ -1693,8 +1661,3 @@ export class ExtraFieldsRow extends TabularSectionRow {
   }
   get txt_row(){return this[get]('txt_row')}
   set txt_row(v){this[set]('txt_row',v)}
-}
-
-
-
-

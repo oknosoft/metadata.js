@@ -7,12 +7,12 @@ export function typeDef(utils) {
    * @summary Описание типа
    */
   class TypeDef {
-    constructor({date_part, str_len, str_fix, ...def}) {
+    constructor({date_part, str_len, str_fix, is_ref, ...def}) {
       if(date_part) {
         def.datePart = pascalCase(date_part);
       }
       if(str_len) {
-        def.strLen = true;
+        def.strLen = str_len;
       }
       if(str_fix) {
         def.strFix = true;
@@ -108,22 +108,30 @@ export function typeDef(utils) {
     /**
      * @summary Приведение типа
      * @param res
-     * @param {Object} [obj] - сырые данные
-     * @param {String} [f] - имя поля
      * @return {*}
      */
-    fetchType(res, obj, f) {
-      if(this.isTabular || this.isStruct || (utils.is.dataObj(res) && this.hasType(res.className))) {
+    fetchType(res) {
+      const {fix, is} = utils;
+      if(this.isTabular || this.isStruct || (is.dataObj(res) && this.hasType(res.className))) {
         return res;
       }
       const {types} = this;
       // для простых типов, возвращаем почти в лоб
       if(this.isSingleType) {
-        return utils.fix.type(res, this);
+        if (this.datePart) {
+          return fix.date(res, true);
+        }
+        if (this.digits) {
+          return fix.number(res, true);
+        }
+        if (types?.[0] ==='boolean') {
+          return fix.boolean(res);
+        }
+        return typeof res === string ? res : '';
       }
 
       // для простых ссылочных, тоже почти в лоб
-      if(this.isSingleRef) {
+      if(this.isSingleRef && types) {
         return this.mgr(types[0]).get(res);
       }
 
@@ -149,7 +157,7 @@ export function typeDef(utils) {
       if(this.isRef && rtype === string) {
         const parts = res.split('|');
         if(parts.length === 1) {
-          if(utils.is.guid(res) && !utils.is.emptyGuid(res)) {
+          if(is.guid(res) && !is.emptyGuid(res)) {
             for(const test of types) {
               if(test.includes('.')) {
                 const mgr = this.mgr(test);
@@ -183,19 +191,19 @@ export function typeDef(utils) {
           return res;
         }
 
-        if(this.hasOwnProperty('str_len') && !utils.is.guid(res)) {
+        if(this.hasOwnProperty('str_len') && !is.guid(res)) {
           return res;
         }
 
         // затычка
-        const mgr = this.mgr(types.find(v => v.includes('.') || types[0]));
+        const mgr = this.mgr(types.find(v => v.includes('.') || types?.[0]));
         if(mgr) {
           return mgr.get(res);
         }
 
         // const mgr = _manager.value_mgr(_obj, f, this);
         // if(mgr) {
-        //   if(utils.is.dataMgr(mgr)) {
+        //   if(is.dataMgr(mgr)) {
         //     return mgr.get(res, false, false);
         //   }
         //   else {
@@ -211,15 +219,15 @@ export function typeDef(utils) {
 
       }
       else if(this.datePart) {
-        return utils.fix.date(res, true);
+        return fix.date(res, true);
       }
       else if(this.digits) {
-        return utils.fix.number(res, !this.hasOwnProperty('strLen'));
+        return fix.number(res, !this.hasOwnProperty('strLen'));
       }
-      else if(types[0] == 'boolean') {
-        return utils.fix.boolean(res);
+      else if(types?.[0] == 'boolean') {
+        return fix.boolean(res);
       }
-      else if(types[0] == 'json') {
+      else if(types?.[0] == 'json') {
         return rtype === 'object' ? res : {};
       }
       else {

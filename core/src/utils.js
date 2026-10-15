@@ -561,7 +561,7 @@ class MetaUtils extends OwnerObj {
         if (typeof str === string) {
           return !(!str || str.toLowerCase() === 'false');
         }
-        return !!str;
+        return Boolean(str);
       },
 
       /**
