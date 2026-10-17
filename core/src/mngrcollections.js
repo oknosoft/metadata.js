@@ -1,6 +1,6 @@
 import {
   EnumManager, CatManager, DocManager, InfoRegManager, AccumRegManager,
-  DataProcessorsManager, ChartOfCharacteristicManager} from './mngrs.js';
+  DataProcessorsManager, ChartOfCharacteristicManager, Iterator} from './mngrs.js';
 import {CatObj, CchObj, DocObj, DataProcessorObj, RegisterRow} from './objs.js';
 import {own, alias} from './meta/symbols.js';
 import {OwnerObj} from './meta/metaObjs.js';
@@ -26,6 +26,11 @@ class ManagersCollection extends OwnerObj {
     return {type: this.constructor.name, name: this.toString()};
   }
 
+  /**
+   * @summary Создаёт менеджера данных
+   * @param {String} name
+   * @return {DataManager}
+   */
   create(name) {
     const className = this[alias] + '.' + name;
     const Manager = this[own].classes[this.Manager.objConstructor(className) + 'Manager'];
@@ -33,12 +38,25 @@ class ManagersCollection extends OwnerObj {
     return this[name];
   }
 
+  /**
+   * @summary Обход элементов коллекции
+   */
   forEach(cb) {
     for(const el in this) {
       if(this[el] instanceof this.Manager) {
         cb(this[el]);
       }
     }
+  }
+
+  /**
+   * @summary Итератор
+   * @return {Iterator}
+   */
+  [Symbol.iterator]() {
+    const all = [];
+    this.forEach(mgr => all.push(mgr));
+    return new Iterator(all);
   }
 }
 

@@ -1,16 +1,16 @@
 {
   "name": "@oknosoft/metadata",
   "description": "Library for building offline-first browser-based business applications",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "private": true,
   "author": "Evgeniy Malyarov <info@oknosoft.ru> (http://www.oknosoft.ru)",
   "license": "MIT",
   "engines": {
-    "node": ">=20.19",
-    "yarn": "^1.22"
+    "node": ">=24.20",
+    "pnpm": ">=12"
   },
+  "packageManager": "pnpm@12.8.1",
   "type": "module",
-  "packageManager": "yarn@1.22.22",
   "dependencies": {
     "dayjs": "^1.11",
     "pouchdb-adapter-http": "^9.0",
@@ -26,13 +26,13 @@
     "@babel/core": "^8.0",
     "@babel/preset-env": "^8.0",
     "@babel/preset-react": "^8.0",
-    "@rspack/cli": "^2.1",
-    "@rspack/core": "^2.1",
+    "@rspack/cli": "^2.2",
+    "@rspack/core": "^2.2",
     "@rspack/dev-server": "^2.2",
     "babel-loader": "^10.1",
     "foodoc": "github:oknosoft/foodoc#658dc64caca91630839a9a7031ad88f7ab8c8263",
-    "react": "^19.2",
-    "react-dom": "^19.2",
+    "react": "^19.3",
+    "react-dom": "^19.3",
     "typescript": "^7.0"
   },
   "peerDependecies": {},

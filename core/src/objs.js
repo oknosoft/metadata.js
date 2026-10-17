@@ -85,6 +85,8 @@ export class BaseDataObj extends OwnerObj {
         this.#obj[name] = new TabularSection(this, name, this.#obj[name]);
       }
     }
+
+    this.afterCreate(this.#obj, attr, loading, direct);
   }
 
   /**
@@ -367,10 +369,12 @@ export class BaseDataObj extends OwnerObj {
   toJSON() {
 
     const {utils: {blank, b62}, classes: {Meta}} = this[own].root;
-    const {ref, timestamp, uid, captured, editor, _attachments, ...raw} = this.#obj;
-    const {fields, tabulars} = this[meta]();
-    const res = {ref};
-    //Meta.sysFields.includes(fld)
+    const {ref, timestamp, uid, captured, editor, _attachments, is_folder, ...raw} = this.#obj;
+    const {fields, tabulars, hierarchical, groupHierarchy} = this[meta]();
+    const res = this instanceof TabularSectionRow ? {} : {ref};
+    if(hierarchical && groupHierarchy && is_folder) {
+      res.is_folder = true;
+    }
     for(const fld in fields) {
       const v = raw[fld];
       const {type} = fields[fld];
@@ -502,7 +506,7 @@ export class BaseDataObj extends OwnerObj {
    *
    * @event AFTER_CREATE
    */
-  async fillDefault() {
+  afterCreate(raw, attr, loading, direct) {
     return this;
   }
 
@@ -1095,7 +1099,7 @@ export class CatObj extends DataObj {
    */
   get isFolder() {
     const {hierarchical, groupHierarchy} = this[meta]();
-    return hierarchical && groupHierarchy && this[get]('isFolder') ? true : false;
+    return hierarchical && groupHierarchy && this[get]('is_folder') ? true : false;
   }
 
   /**
@@ -1435,7 +1439,8 @@ export class EnumObj extends DataObj {
    */
   empty() {
     const {ref} = this;
-    return !ref || ref == '_';
+    const {id} = this[own];
+    return ref == `${id}_` || ref == '_' || !ref;
   }
 
   /**

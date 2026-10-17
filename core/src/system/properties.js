@@ -313,7 +313,7 @@ export const meta = {
 export default function propertiesClasses({cat, classes, symbols}, exclude) {
 
   const {CchObj, ChartOfCharacteristicManager, TabularSectionRow} = classes;
-  const {get, set} = symbols;
+  const {get, set, mgr} = symbols;
 
   /**
    * @summary Свойства объектов
@@ -374,6 +374,59 @@ export default function propertiesClasses({cat, classes, symbols}, exclude) {
 
     calculatedValue(obj) {
       return this.calculated.execute(obj);
+    }
+
+    values() {
+      const {propertyValues} = this[mgr].root.cat;
+      const refs = this._raw('values') || propertyValues.filter((v) => v.owner === this);
+      return refs.map(ref => propertyValues.get(ref));
+    }
+
+    valuesHierarchy() {
+      const {propertyValuesHierarchy} = this[mgr].root.cat;
+      return (this._raw('valuesHierarchy') || []).map(ref => propertyValuesHierarchy.get(ref));
+    }
+
+    afterCreate(raw, attr, loading, direct) {
+      const {propertyValues, propertyValuesHierarchy} = this[mgr].root.cat;
+      let {values, valuesHierarchy, ref} = raw;
+      if(valuesHierarchy) {
+        for(const urow of valuesHierarchy) {
+          urow.owner = ref;
+        }
+        propertyValuesHierarchy.load(valuesHierarchy);
+        raw.values = values.map(v => v.ref);
+      }
+      if(values) {
+        for(const urow of values) {
+          urow.owner = ref;
+        }
+        propertyValues.load(values);
+        raw.values = values.map(v => v.ref);
+      }
+    }
+
+    toJSON() {
+      const raw = super.toJSON();
+      const values = this.values();
+      if(values.length) {
+        raw.values = values.map(v => {
+          const json = v.toJSON();
+          delete json.owner;
+          delete json.timestamp;
+          return json;
+        });
+      }
+      const valuesHierarchy = this.valuesHierarchy();
+      if(valuesHierarchy.length) {
+        raw.valuesHierarchy = valuesHierarchy.map(v => {
+          const json = v.toJSON();
+          delete json.owner;
+          delete json.timestamp;
+          return json;
+        });
+      }
+      return raw;
     }
   }
   classes.CchProperties = CchProperties;

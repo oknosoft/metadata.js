@@ -31,7 +31,7 @@ export class TabularSection extends Array {
     super();
     this.#own = owner;
     this.#meta = owner[meta](name);
-    if(Array.isArray(raw)) {
+    if(Array.isArray(raw) && raw.length) {
       this.load(raw);
     }
 	}

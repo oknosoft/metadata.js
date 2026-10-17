@@ -714,15 +714,17 @@ export class EnumManager extends RefDataManager {
 
     const meta = this.metadata();
     const EnumConstructor = this.root.classes[this.objConstructor()] || this.root.classes.EnumObj;
-		for(var v of meta.values){
+		for(var v of meta.values) {
       const value = new EnumConstructor(v, this, true);
-      if(v.latin && !this.hasOwnProperty(v.name)) {
+      if(!this.hasOwnProperty(v.name)) {
         Object.defineProperty(this, v.name, {value});
       }
+      if(v.latin && !this.hasOwnProperty(v.latin)) {
+        Object.defineProperty(this, v.latin, {value});
+      }
 		}
-    if(meta.default) {
-      Object.defineProperty(this, '_', {value: this.get(meta.default)});
-    }
+    const value = this.get(meta.default || '') || new EnumConstructor({name: '_', order: 0, synonym: ''}, this, true);
+    Object.defineProperty(this, '_', {value});
 	}
 
   get isEnum() {
@@ -730,23 +732,17 @@ export class EnumManager extends RefDataManager {
   }
 
   get(ref, create) {
-    const {utils} = this;
-    if (utils.is.emptyGuid(ref)) {
-      ref = "_";
+    const {is} = this.utils;
+    if (is.emptyGuid(ref)) {
+      ref = '_';
     }
-    else if(utils.is.dataObj(ref) && ref._manager === this) {
+    else if(is.dataObj(ref) && ref[own] === this) {
       return ref;
     }
     else if(typeof ref === 'object') {
       ref = this.getRef(ref)
     }
-    if(!this[ref]) {
-      if(ref === "_" || create) {
-        const value = this.objConstructor('', [{ref, order: 0, synonym: ''}, this]);
-        Object.defineProperty(this, ref, {value});
-      }
-    }
-    return this[ref];
+    return this.byRef(ref) || this[ref] || this[ref.substring(2)] || this._;
   }
 
   /**
@@ -764,11 +760,6 @@ export class EnumManager extends RefDataManager {
     }
     return this.getRef(attr.latin || attr.name);
   }
-
-	push(value){
-    super.push(value);
-		Object.defineProperty(this, value.latin || value.name, {value});
-	}
 
 	/**
 	 * Bозаращает запрос для создания таблиц объекта

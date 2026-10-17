@@ -45,8 +45,7 @@ export const meta = {
           type: {
             types: [
               "cch.properties"
-            ],
-            "is_ref": true
+            ]
           }
         },
         parent: {
@@ -67,8 +66,7 @@ export const meta = {
           type: {
             types: [
               "cat.property_values"
-            ],
-            "is_ref": true
+            ]
           }
         }
       },
@@ -122,8 +120,7 @@ export const meta = {
           type: {
             types: [
               "cch.properties"
-            ],
-            "is_ref": true
+            ]
           }
         },
         parent: {
@@ -144,8 +141,7 @@ export const meta = {
           type: {
             types: [
               "cat.property_values"
-            ],
-            "is_ref": true
+            ]
           }
         }
       },
