@@ -41,8 +41,8 @@ export const boolean = 'boolean';
  * @method toJSON
  * @for Date
  */
-Date.prototype.toJSON = Date.prototype.toISOString = function () {
-	return moment(this).format(moment._masks.iso);
+Date.prototype.toJSON = function () {
+	return this.toISOString().replace(/\..*/, 'Z');
 };
 
 
@@ -90,6 +90,7 @@ const dateFormats = [
 ];
 
 const rxref = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+const rxdate = /.*-.*T.*:/;
 
 /**
  * Вспомогательная таблица для crc32
@@ -473,6 +474,18 @@ class MetaUtils extends OwnerObj {
       date: (str, strict) => {
         if (str instanceof Date){
           return str;
+        }
+        if(str) {
+          str = str.toUpperCase();
+          if(rxdate.test(str)) {
+            if(!str.endsWith('Z')) {
+              str += 'Z';
+            }
+            const date = new Date(str);
+            if(!isNaN(date.getTime())) {
+              return date;
+            }
+          }
         }
         const m = moment(str, dateFormats);
         return m.isValid() ? m.toDate() : (strict ? this.blank.date : str);
