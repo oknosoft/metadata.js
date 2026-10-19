@@ -36,7 +36,6 @@ export const meta = {
         },
         no_mdm: {
           synonym: "NoMDM",
-          multiline: false,
           tooltip: "Отключить MDM для данного абонента (напрмиер, если это dev-база)",
           type: {
             types: ["boolean"]
@@ -44,7 +43,6 @@ export const meta = {
         },
         lang: {
           synonym: "Язык",
-          multiline: false,
           tooltip: "Язык интерфейса пользователя",
           type: {
             types: ["string"],
@@ -67,7 +65,6 @@ export const meta = {
           "fields": {
             "obj": {
               "synonym": "Объект",
-              "multiline": false,
               "tooltip": "",
               "type": {
                 "types": [
@@ -150,7 +147,6 @@ export const meta = {
             },
             "type": {
               "synonym": "Тип",
-              "multiline": false,
               "tooltip": "",
               "type": {
                 "types": [
@@ -168,7 +164,6 @@ export const meta = {
           "fields": {
             "property": {
               "synonym": "Свойство",
-              "multiline": false,
               "tooltip": "Дополнительный реквизит",
               choiceGrp: "elm",
               "type": {
@@ -179,7 +174,6 @@ export const meta = {
             },
             "value": {
               "synonym": "Значение",
-              "multiline": false,
               "tooltip": "Значение дополнительного реквизита",
               choiceLinks: [
                 {
@@ -263,7 +257,6 @@ export const meta = {
             },
             "txt_row": {
               "synonym": "Текстовая строка",
-              "multiline": false,
               "tooltip": "Полный текст строкового дополнительного реквизита",
               "type": {
                 "types": [
@@ -281,7 +274,6 @@ export const meta = {
           "fields": {
             "is_supplier": {
               "synonym": "Поставщик",
-              "multiline": false,
               "tooltip": "",
               choiceGrp: "elm",
               "type": {
@@ -292,7 +284,6 @@ export const meta = {
             },
             "partner": {
               "synonym": "Контрагент",
-              "multiline": false,
               "tooltip": "Этот контрагент будет указан в Заказах поставщику",
               "mandatory": true,
               "type": {
@@ -303,7 +294,6 @@ export const meta = {
             },
             "server": {
               "synonym": "Сервер",
-              "multiline": false,
               "tooltip": "Сервер для доступа к API поставщика",
               choiceGrp: "elm",
               "type": {
@@ -321,7 +311,6 @@ export const meta = {
           "fields": {
             "key": {
               "synonym": "Год",
-              "multiline": false,
               "tooltip": "",
               "mandatory": true,
               "type": {
@@ -334,7 +323,6 @@ export const meta = {
             },
             "name": {
               "synonym": "Имя базы",
-              "multiline": false,
               "tooltip": "Указывается, если имя архивной базы отличается от типового",
               "type": {
                 "types": [
@@ -345,7 +333,6 @@ export const meta = {
             },
             "proxy": {
               "synonym": "url auth-proxy",
-              "multiline": false,
               "tooltip": "Для редиректа из основного маршрута",
               "type": {
                 "types": [
@@ -397,6 +384,14 @@ export default function abonentsClasses({cat, classes, symbols}, exclude) {
     set proxy(v){this[set]('proxy',v)}
   }
   classes.CatAbonentsServersRow = CatAbonentsServersRow;
+
+  class CatAbonentsAclObjsRow extends TabularSectionRow{
+    get obj(){return this[get]('obj')}
+    set obj(v){this[set]('obj',v)}
+    get type(){return this[get]('type')}
+    set type(v){this[set]('type',v)}
+  }
+  classes.CatAbonentsAclObjsRow = CatAbonentsAclObjsRow;
 
   class CatAbonentsManager extends CatManager {
 
