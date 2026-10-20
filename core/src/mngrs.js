@@ -431,7 +431,7 @@ export class DataManager extends MetaEventEmitter {
    * Array.map() объектов в ОЗУ
    */
   map(...args) {
-    return this.#alatable.forEach(...args);
+    return this.#alatable.map(...args);
   }
 
   /**
