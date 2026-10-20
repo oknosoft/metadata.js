@@ -527,7 +527,7 @@ export class BaseDataObj extends OwnerObj {
    *
    * @event BEFORE_SAVE
    */
-  async beforeSave() {
+  async beforeSave(attr, listenersRes) {
     return this;
   }
 
@@ -546,6 +546,27 @@ export class BaseDataObj extends OwnerObj {
    */
   valueChange(f, mf, v) {
     return this;
+  }
+
+  /**
+   * Освобождает память и уничтожает объект
+   * @method unload
+   * @for DataObj
+   */
+  unload() {
+    const {ref, [mgr]: manager, [state]: current} = this;
+    manager?.unloadObj(this);
+    current.loading = true;
+    //_manager.emit_async('unload', this);
+    for (const ts in this[meta]().tabulars) {
+      this[ts].clear();
+    }
+    for (const f in this) {
+      if(this.hasOwnProperty(f)) {
+        delete this[f];
+      }
+    }
+    //delete this.#obj;
   }
 
 }
@@ -625,7 +646,7 @@ export class DataObj extends BaseDataObj {
     }
     else {
       curr.loading = true;
-      return this[own].adapter.loadObj(this, attr)
+      return (this.loadObj ? this.loadObj(attr) : this[own].adapter.loadObj(this, attr))
         .then(() => {
           return this._loaded().afterLoad();
         })
@@ -640,30 +661,6 @@ export class DataObj extends BaseDataObj {
           }
         });
     }
-  }
-
-  /**
-   * Освобождает память и уничтожает объект
-   * @method unload
-   * @for DataObj
-   */
-  unload() {
-    const {_obj, ref} = this;
-    this[mgr].unloadObj(ref);
-    this[state].loading = true;
-    //_manager.emit_async('unload', this);
-    for (const ts in this[meta]().tabular_sections) {
-      this[ts].clear();
-    }
-    for (const f in this) {
-      if(this.hasOwnProperty(f)) {
-        delete this[f];
-      }
-    }
-    for (const f in _obj) {
-      delete _obj[f];
-    }
-    delete this._obj;
   }
 
   /**
@@ -724,41 +721,40 @@ export class DataObj extends BaseDataObj {
    * @method save
    * @for DataObj
    * @param {Boolean} [post] - проведение или отмена проведения или просто запись
-   * @param {Boolean} [operational] - режим проведения документа (Оперативный, Неоперативный)
    * @param {Array} [attachments] - массив вложений
    * @param {Object} [attr] - дополнительные параметры записи
    * @return {Promise.<DataObj>} - промис с результатом выполнения операции
    * @async
    */
-  save(post, operational, attachments, attr) {
+  save(post, attachments, attr) {
 
     const {utils} = this[own];
 
-    if(utils.is_empty_guid(this.ref)) {
+    if(utils.b62.emptyGuid(this)) {
       return Promise.resolve(this);
     }
 
     // запоминаем признак проведенности, чтобы восстановить его в случае неудачной записи
-    let initial_posted;
+    let initialPosted;
     if(this instanceof DocObj && typeof post == 'boolean') {
-      initial_posted = this.posted;
+      initialPosted = this.posted;
       this.posted = post;
     }
 
     // выполняем обработчик перед записью
     const curr = this[state];
     curr.trans = true;
-    return this[own].emitPromise('before_save', this, attr)
-      .then(() => {
-        return this.before_save(attr);
+    return this[own].emitPromise('beforeSave', this, attr)
+      .then((listenersRes) => {
+        return this.beforeSave(attr, listenersRes);
       })
-      .then((before_save_res) => {
+      .then((beforeSaveRes) => {
 
         // этот код выполним в самом конце, после записи
-        const reset_modified = () => {
-          if(before_save_res === false) {
-            if(this instanceof DocObj && typeof initial_posted == 'boolean' && this.posted !== initial_posted) {
-              this.posted = initial_posted;
+        const resetModified = () => {
+          if(beforeSaveRes === false) {
+            if(this instanceof DocObj && typeof initialPosted == 'boolean' && this.posted !== initialPosted) {
+              this.posted = initialPosted;
             }
           }
           else {
@@ -770,22 +766,22 @@ export class DataObj extends BaseDataObj {
         };
 
         // если процедуры перед записью завершились неудачно - не продолжаем
-        if(before_save_res === false) {
-          return Promise.reject(reset_modified());
+        if(beforeSaveRes === false) {
+          return Promise.reject(resetModified());
         }
-        // если запись переопределена в before_save, выходим без лишних движений
-        else if(before_save_res === null) {
-          return Promise.resolve(reset_modified());
+        // если запись переопределена в beforeSave, выходим без лишних движений
+        else if(beforeSaveRes === null) {
+          return Promise.resolve(resetModified());
         }
         // TODO: обработать bulk_docs
-        else if(Array.isArray(before_save_res)) {
+        else if(Array.isArray(beforeSaveRes)) {
           ;
         }
 
         // этот код выполняем в случае ошибки незаполненных реквизитов
-        const reset_mandatory = (msg) => {
-          before_save_res = false;
-          reset_modified();
+        const resetMandatory = (msg) => {
+          beforeSaveRes = false;
+          resetModified();
           this[own].root.md.emit('alert', msg);
           const err = new Error(msg.text);
           err.msg = msg;
@@ -820,18 +816,18 @@ export class DataObj extends BaseDataObj {
           this.checkMandatory();
         }
         catch (e) {
-          return reset_mandatory(e);
+          return resetMandatory(e);
         }
 
         // в зависимости от типа кеширования, получаем saver и сохраняем объект во внешней базе
         return (numerator || Promise.resolve())
-          .then(() => this[own].adapter.saveObj(this, Object.assign({post, operational, attachments}, attr)))
+          .then(() => this[own].adapter.saveObj(this, Object.assign({post, attachments}, attr)))
           // и выполняем обработку после записи
-          .then(() => this.after_save())
-          .then(() => this[own].emitPromise('after_save', this))
-          .then(reset_modified)
+          .then(() => this.afterSave())
+          .then(() => this[own].emitPromise('afterSave', this))
+          .then(resetModified)
           .catch((err) => {
-            reset_modified();
+            resetModified();
             throw err;
           });
 

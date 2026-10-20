@@ -477,7 +477,7 @@ export class RefDataManager extends DataManager {
 		else if(utils.is.dataObj(attr)){
 			return attr;
 		}
-		if(!attr.ref || !utils.is.guid(attr.ref) || utils.is.emptyGuid(attr.ref)){
+		if(!attr.ref || attr.ref.length !== 24){
       attr.uid = utils.generateGuid();
 			attr.ref = this.metadata().id + utils.b62.encode(attr.uid);
 		}
