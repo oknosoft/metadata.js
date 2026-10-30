@@ -25,8 +25,9 @@ export class CouchdbAdapter extends AbstractAdapter {
    */
   loadObj(obj) {
     const {fetch, [own]: {utils}} = this[own];
-    const parts = obj.className.split('.');
-    return fetch(`${this.name}/${parts[0]}.${utils.snakeCase(parts[1])}|${obj.uid}`)
+    //const parts = obj.className.split('.');
+    //return fetch(`${this.name}/${parts[0]}.${utils.snakeCase(parts[1])}|${obj.uid}`)
+    return fetch(`${this.name}/${obj.ref}`)
       .then(async res => {
         if(res.status === 200) {
           return res.json();

@@ -1013,16 +1013,16 @@ export default function schemeSettingsClasses({classes, symbols, md, utils}, exc
       function format(date, end) {
         const {moment} = utils;
         let d = moment(date);
-        if(end) {
-          return d.endOf('day').format(moment._masks.iso);
-        }
-        return d.startOf('day').format(moment._masks.iso);
+        return d[end ? 'endOf' : 'startOf']('day').format(moment._masks.iso);
       }
+
+      const meta = $p.md.get(this.obj);
 
       const res = {
         selector: {
           $and: [
-            {class_name: {$eq: this.obj}}
+            {_id: {$gt: meta.id}},
+            {_id: {$lt: `${meta.id}\u0fff`}},
           ]
         },
         fields: ['_id', 'posted'],
@@ -1041,15 +1041,16 @@ export default function schemeSettingsClasses({classes, symbols, md, utils}, exc
       else {
         res.selector.$and.push({date: {$gte: format(this.date_from)}});
         res.selector.$and.push({date: {$lte: format(this.date_till, true)}});
-        res.selector.$and.push({search: this._search ? {$regex: this._search} : {$gt: null}});
-        res.use_index = ['mango', 'search'];
+        // res.selector.$and.push({search: this._search ? {$regex: this._search} : {$gt: null}});
+        // res.use_index = ['mango', 'search'];
       }
 
       // пока сортируем только по дате
-      this.sorting.findRows({use: true, field: 'date'}, (row) => {
-        const direction = row.direction?.name || 'asc';
-        res.sort = [{class_name: direction}, {date: direction}];
-      });
+      // this.sorting.findRows({use: true, field: 'date'}, (row) => {
+      //   const direction = row.direction?.name || 'asc';
+      //   //res.sort = [{class_name: direction}, {date: direction}];
+      //   res.sort = [{date: direction}];
+      // });
 
       if(skip) {
         res.skip = skip;

@@ -550,8 +550,6 @@ export class BaseDataObj extends OwnerObj {
 
   /**
    * Освобождает память и уничтожает объект
-   * @method unload
-   * @for DataObj
    */
   unload() {
     const {ref, [mgr]: manager, [state]: current} = this;
