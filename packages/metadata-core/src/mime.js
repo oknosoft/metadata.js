@@ -69,6 +69,12 @@ function constructor() {
         'application/dssc+xml': {
           'extensions': ['xdssc'],
         },
+        'application/dwg': {
+          'extensions': ['dwg'],
+        },
+        'application/dxf': {
+          'extensions': ['dxf'],
+        },
         'application/ecmascript': {
           'compressible': true,
           'extensions': ['ecma'],
@@ -2130,12 +2136,6 @@ function constructor() {
         },
         'image/vnd.dvb.subtitle': {
           'extensions': ['sub'],
-        },
-        'image/vnd.dwg': {
-          'extensions': ['dwg'],
-        },
-        'image/vnd.dxf': {
-          'extensions': ['dxf'],
         },
         'image/vnd.fastbidsheet': {
           'extensions': ['fbs'],

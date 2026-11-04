@@ -21,7 +21,7 @@ else if(typeof window !== 'undefined' && window.PouchDB) {
 }
 else {
   PouchDB = require('pouchdb-core').default
-    .plugin(require('pouchdb-adapter-http').default)
+    .plugin(require('metadata-pouchdb/adapter-http').default)
     .plugin(require('pouchdb-replication').default)
     .plugin(require('pouchdb-mapreduce').default)
     .plugin(require('pouchdb-find').default)
