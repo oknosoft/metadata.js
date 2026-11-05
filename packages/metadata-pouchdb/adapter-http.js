@@ -243,10 +243,27 @@ function HttpPouch(opts, callback) {
     
     if(options.body?.length > 1434) {
       const cs = new CompressionStream('gzip');
-      const writer = cs.writable.getWriter();
-      writer.write(new TextEncoder().encode(options.body));
-      writer.close();
-      options.body = await new Response(cs.readable).arrayBuffer();      
+      if(url.startsWith(':https:')) {
+        let sent = false;
+        const textStream = new ReadableStream({
+          pull(controller) {
+            if (!sent) {
+              controller.enqueue(options.body);
+              sent = true;
+            } 
+            else {
+              controller.close();
+            }
+          }
+        });
+        options.body = textStream.pipeThrough(new TextEncoderStream()).pipeThrough(cs);
+      }
+      else {
+        const writer = cs.writable.getWriter();
+        writer.write(new TextEncoder().encode(options.body));
+        writer.close();
+        options.body = await new Response(cs.readable).arrayBuffer();
+      }
       options.headers.set('Content-Encoding', 'gzip');
       options.duplex = 'half';
     }
