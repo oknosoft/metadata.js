@@ -226,6 +226,44 @@ function HttpPouch(opts, callback) {
       });
     }).bind(api);
   }
+  
+  async function testH2() {
+    if(!api.hasOwnProperty('useH2')) {
+      if(dbUrl.startsWith('https:')) {
+        // выполним тестовый запрос
+        const nAuth = opts.auth || host.auth;
+        const headers = new Headers(api.getBasicAuthHeaders(nAuth));
+        headers.set('Content-Type', 'application/json');
+        headers.set('Accept', 'application/json');
+        headers.set('Content-Encoding', 'gzip');
+        const { readable, writable } = new TransformStream();
+        const body = readable
+          .pipeThrough(new TextEncoderStream())
+          .pipeThrough(new CompressionStream('gzip'));
+        
+        const response = fetch(`${dbUrl}_local/testH2`, {
+          method: 'PUT',
+          headers,
+          body,
+          duplex: 'half'
+        });
+        const writer = writable.getWriter();
+        writer.write('{"description": "test h2 stream"}');
+        writer.close();
+        try {
+          const res = await response;
+          api.useH2 = res.ok || res.status === 409; 
+        }
+        catch (e) {
+          api.useH2 = false;
+        }
+      }
+      else {
+        api.useH2 = false;  
+      }
+    }
+    return api.useH2;
+  }
 
   async function fetchJSON(url, options) {
 
@@ -242,30 +280,22 @@ function HttpPouch(opts, callback) {
     }
     
     if(options.body?.length > 1434) {
-      const cs = new CompressionStream('gzip');
-      if(url.startsWith(':https:')) {
-        let sent = false;
-        const textStream = new ReadableStream({
-          pull(controller) {
-            if (!sent) {
-              controller.enqueue(options.body);
-              sent = true;
-            } 
-            else {
-              controller.close();
-            }
-          }
-        });
-        options.body = textStream.pipeThrough(new TextEncoderStream()).pipeThrough(cs);
+      const { readable, writable } = new TransformStream();
+      const body = readable
+        .pipeThrough(new TextEncoderStream())
+        .pipeThrough(new CompressionStream('gzip'));
+      const writer = writable.getWriter();
+      writer.write(options.body);
+      writer.close();
+      
+      if(await testH2()) {
+        options.body = body;
+        options.duplex = 'half';
       }
       else {
-        const writer = cs.writable.getWriter();
-        writer.write(new TextEncoder().encode(options.body));
-        writer.close();
-        options.body = await new Response(cs.readable).arrayBuffer();
+        options.body = await new Response(body).arrayBuffer();
       }
       options.headers.set('Content-Encoding', 'gzip');
-      options.duplex = 'half';
     }
 
     const response = await ourFetch(url, options);
