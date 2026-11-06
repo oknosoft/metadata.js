@@ -394,15 +394,19 @@ export default ($p) => {
 	 * @param [selection] {Object} - в ключах имена полей, в значениях значения фильтра или объект {like: "значение"}
 	 */
 	TabularSection.prototype.sync_grid = function(grid, selection){
-		var grid_data = {rows: []},
-			columns = [];
+		let grid_data = {rows: []}, columns = [];
 
-		for(var i = 0; i<grid.getColumnCount(); i++)
-			columns.push(grid.getColumnId(i));
+    for(let i = 0; i<grid.getColumnCount(); i++) {
+      columns.push(grid.getColumnId(i));
+    }
+
+    if(!selection._top) {
+      selection._top = 500;
+    }
 
 		grid.clearAll();
 		this.find_rows(selection, function(r){
-			var data = [];
+			let data = [];
 			columns.forEach(function (f) {
 				if($p.utils.is_data_obj(r[f]))
 					data.push(r[f].presentation);
@@ -421,7 +425,7 @@ export default ($p) => {
 
 	RegisterManager.prototype.caption_flds = function (attr) {
 
-		var _meta = attr.metadata || this.metadata(),
+		let _meta = attr.metadata || this.metadata(),
 			str_def = '<column id="%1" width="%2" type="%3" align="%4" sort="%5">%6</column>',
 			acols = [], s = '';
 
@@ -430,14 +434,14 @@ export default ($p) => {
 
 		} else {
 
-			for (var f in _meta['dimensions']) {
+			for (let f in _meta['dimensions']) {
 				acols.push(new Col_struct(f, '*', 'ro', 'left', 'server', _meta['dimensions'][f].synonym));
 			}
 		}
 
 		if (attr.get_header && acols.length) {
 			s = '<head>';
-			for (var col in acols) {
+			for (let col in acols) {
 				s += str_def.replace('%1', acols[col].id).replace('%2', acols[col].width).replace('%3', acols[col].type)
 					.replace('%4', acols[col].align).replace('%5', acols[col].sort).replace('%6', acols[col].caption);
 			}
@@ -455,7 +459,8 @@ export default ($p) => {
 		if (_meta.form && _meta.form[attr.form || 'selection']) {
 			acols = _meta.form[attr.form || 'selection'].cols;
 
-		} else {
+		} 
+    else {
 			acols.push(new Col_struct('date', '200', 'ro', 'left', 'server', 'Дата'));
 			acols.push(new Col_struct('class', '100', 'ro', 'left', 'server', 'Класс'));
 			acols.push(new Col_struct('note', '*', 'ro', 'left', 'server', 'Событие'));
