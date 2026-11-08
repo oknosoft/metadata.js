@@ -235,11 +235,8 @@ function HttpPouch(opts, callback) {
         const headers = new Headers(api.getBasicAuthHeaders(nAuth));
         headers.set('Content-Type', 'application/json');
         headers.set('Accept', 'application/json');
-        headers.set('Content-Encoding', 'gzip');
         const { readable, writable } = new TransformStream();
-        const body = readable
-          .pipeThrough(new TextEncoderStream())
-          .pipeThrough(new CompressionStream('gzip'));
+        const body = readable.pipeThrough(new TextEncoderStream());
         
         const response = fetch(`${dbUrl}_local/testH2`, {
           method: 'PUT',
@@ -1170,7 +1167,7 @@ function HttpPouch(opts, callback) {
     };
   };
 
-  // Given a set of document/revision IDs (given by req), tets the subset of
+  // Given a set of document/revision IDs (given by req), tests the subset of
   // those that do NOT correspond to revisions stored in the database.
   // See http://wiki.apache.org/couchdb/HttpPostRevsDiff
   api.revsDiff = adapterFun$$1('revsDiff', async function (req, opts, callback) {
