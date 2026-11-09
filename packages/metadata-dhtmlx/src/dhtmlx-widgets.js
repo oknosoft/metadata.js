@@ -399,9 +399,13 @@ export default ($p) => {
 		for(let i = 0; i<grid.getColumnCount(); i++) {
       columns.push(grid.getColumnId(i));
     }
+
+    if(!selection) {
+      selection = {};
+    }
     
     if(!selection._top) {
-      selection._top = 500;
+      selection._top = 1000;
     }
 
 		grid.clearAll();

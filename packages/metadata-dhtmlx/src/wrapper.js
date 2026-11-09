@@ -400,8 +400,12 @@ export default ($p) => {
       columns.push(grid.getColumnId(i));
     }
 
+    if(!selection) {
+      selection = {};
+    }
+    
     if(!selection._top) {
-      selection._top = 500;
+      selection._top = 1000;
     }
 
 		grid.clearAll();
