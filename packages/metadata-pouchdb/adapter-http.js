@@ -196,7 +196,7 @@ function HttpPouch(opts, callback) {
     options.credentials = 'include';
 
     if (opts.auth || host.auth) {
-      const nAuth = opts.auth || host.auth;
+      const nAuth = opts.auth || host.auth || api.__opts?.auth;
       const str = nAuth.username + ':' + nAuth.password;
       const token = btoa(unescape(encodeURIComponent(str)));
       options.headers.set('Authorization', 'Basic ' + token);
@@ -231,7 +231,7 @@ function HttpPouch(opts, callback) {
     if(!api.hasOwnProperty('useH2')) {
       if(dbUrl.startsWith('https:')) {
         // выполним тестовый запрос
-        const nAuth = opts.auth || host.auth;
+        const nAuth = opts.auth || host.auth || api.__opts?.auth;
         const headers = new Headers(api.getBasicAuthHeaders(nAuth));
         headers.set('Content-Type', 'application/json');
         headers.set('Accept', 'application/json');
