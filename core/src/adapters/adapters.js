@@ -35,7 +35,7 @@ const auth = {
       }
     }
 
-    if(!opts.headers.has('Content-Type')) {
+    if(opts.body && !opts.headers.has('Content-Type')) {
       opts.headers.set('Content-Type', 'application/json');
     }
 

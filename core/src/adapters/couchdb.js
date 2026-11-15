@@ -1,5 +1,6 @@
 import {own, meta} from '../meta/symbols.js';
 import {AbstractAdapter} from './abstract.js';
+import * as multipart from './multipartStream.js';
 
 class CouchdbError extends TypeError {
   constructor(message, reason, status) {
@@ -15,6 +16,14 @@ export class CouchdbAdapter extends AbstractAdapter {
     super(owner);
     const {jobPrm} = owner[own];
     this.name = `${jobPrm.couchPath}${jobPrm.zone}_${name}`;
+  }
+
+  get Error() {
+    return CouchdbError;
+  }
+
+  get multipart() {
+    return multipart;
   }
 
   /**
